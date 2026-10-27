@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
-loop_engine.py: Anthropic Loop Engineering Engine for IEEE Q1 Campaign
-Implements Orchestrator-Workers + Evaluator-Optimizer dynamic loop patterns
-derived from Anthropic's 'Getting Started with Loops' architecture.
-
-Evaluates progress across a 1-2 week research lifecycle:
-- Stage 1: Analytical Modeling & Academic Assignment (15M)
-- Stage 2: Loophole Exploitation, V2 Architecture & Lab System Project (40M)
-- Stage 3: Monte Carlo Statistical Mismatch & Post-Layout PEX Extraction
-- Stage 4: Publication-Grade IEEE Q1 Manuscript & Benchmark Defense
+loop_engine.py: Fast-Track Evaluator-Optimizer Engine for IEEE LMWT
+Dynamically evaluates progress across the 7 fast-track milestones:
+- M1: Baseline 180nm Circuit & 700MHz Division
+- M2: 8-Phase Waveforms, Metrics JSON & 23ECE302 Theory Assignment (15M)
+- M3: V2 Enhanced Circuit Design (Cascode Tail, Active Loads, Fmax > 3GHz)
+- M4: Multi-Corner PVT Sweep & 23ECE383 Lab System Project (40M)
+- M5: Physical Magic Layout & Zero DRC Violations
+- M6: IEEE LMWT 4-Page Publication Manuscript & TechRxiv Brief
+- M7: Submission Package Release & GitHub Tagging
 """
 
 import os
@@ -16,19 +16,8 @@ import json
 from pathlib import Path
 
 WORKSPACE = Path(__file__).resolve().parent.parent
-ROADMAP_PATH = WORKSPACE / "state" / "q1_roadmap.json"
 LOGS_DIR = WORKSPACE / "logs"
-
-def load_roadmap():
-    if not ROADMAP_PATH.exists():
-        raise FileNotFoundError(f"Roadmap not found at {ROADMAP_PATH}")
-    with open(ROADMAP_PATH, "r") as f:
-        return json.load(f)
-
-def save_roadmap(data):
-    ROADMAP_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with open(ROADMAP_PATH, "w") as f:
-        json.dump(data, f, indent=2)
+STATE_DIR = WORKSPACE / "state"
 
 def check_audit(audit_name):
     log_file = LOGS_DIR / f"{audit_name}.log"
@@ -42,90 +31,68 @@ def check_audit(audit_name):
     return False, "Incomplete audit"
 
 def evaluate_and_advance():
-    roadmap = load_roadmap()
+    milestones = {m: check_audit(f"audit_m{m}") for m in range(1, 8)}
     
-    # 1. Evaluate Stage 1: Analytical & Baseline
-    s1_pass, s1_reason = check_audit("audit_m1")
-    s2_pass, s2_reason = check_audit("audit_m2")
-    assignment_doc = WORKSPACE / "report" / "23ECE302_Theory_Assignment.md"
-    stage1_complete = s1_pass and assignment_doc.exists()
-
-    # 2. Evaluate Stage 2: V2 Architecture & Lab Project
-    s3_pass, s3_reason = check_audit("audit_m3")
-    s5_pass, s5_reason = check_audit("audit_m5")
-    s6_pass, s6_reason = check_audit("audit_m6")
+    # Check specific artifact deliverables
+    m1_pass = milestones[1][0]
+    
+    assign_doc = WORKSPACE / "report" / "23ECE302_Theory_Assignment.md"
+    m2_pass = milestones[2][0] and assign_doc.exists()
+    
+    v2_cir = WORKSPACE / "spice" / "divider_v2_enhanced.cir"
+    m3_pass = milestones[3][0] and v2_cir.exists()
+    
     lab_doc = WORKSPACE / "report" / "23ECE383_System_Design_Project_Report.md"
-    stage2_complete = s3_pass and s5_pass and s6_pass and lab_doc.exists()
-
-    # 3. Evaluate Stage 3: Monte Carlo & Layout PEX
-    s4_pass, s4_reason = check_audit("audit_m4")
+    pvt_csv = WORKSPACE / "results" / "pvt_summary_table.csv"
+    m4_pass = milestones[4][0] and lab_doc.exists() and pvt_csv.exists()
+    
     gds_file = WORKSPACE / "layout" / "divider_core.gds"
-    mc_results = WORKSPACE / "results" / "monte_carlo_phase_error.csv"
-    stage3_complete = s4_pass and gds_file.exists() and mc_results.exists()
+    m5_pass = milestones[5][0] and gds_file.exists()
+    
+    manuscript = WORKSPACE / "paper" / "manuscript_lmwt.md"
+    m6_pass = milestones[6][0] and manuscript.exists()
+    
+    m7_pass = milestones[7][0]
 
-    # 4. Evaluate Stage 4: IEEE Q1 Manuscript
-    s7_pass, s7_reason = check_audit("audit_m7")
-    manuscript = WORKSPACE / "paper" / "manuscript_v2.md"
-    stage4_complete = s7_pass and manuscript.exists()
+    verified_checks = [m1_pass, m2_pass, m3_pass, m4_pass, m5_pass, m6_pass, m7_pass]
+    passed_count = sum(1 for c in verified_checks if c)
+    readiness_pct = round((passed_count / 7.0) * 100.0, 1)
 
-    # Update Stage statuses
-    stages = roadmap["dynamic_stages"]
-    if stage1_complete:
-        stages[0]["status"] = "COMPLETED"
-        if stages[1]["status"] == "QUEUED":
-            stages[1]["status"] = "ACTIVE"
-            roadmap["current_stage"] = "STAGE_2_V2_ARCHITECTURE_ENHANCEMENT"
-            
-    if stage2_complete:
-        stages[1]["status"] = "COMPLETED"
-        if stages[2]["status"] == "QUEUED":
-            stages[2]["status"] = "ACTIVE"
-            roadmap["current_stage"] = "STAGE_3_MONTE_CARLO_AND_LAYOUT_PEX"
-            
-    if stage3_complete:
-        stages[2]["status"] = "COMPLETED"
-        if stages[3]["status"] == "QUEUED":
-            stages[3]["status"] = "ACTIVE"
-            roadmap["current_stage"] = "STAGE_4_IEEE_Q1_MANUSCRIPT_AND_PEER_AUDIT"
-            
-    if stage4_complete:
-        stages[3]["status"] = "COMPLETED"
-        roadmap["current_stage"] = "ALL_STAGES_COMPLETED"
-
-    # Compute Readiness Percentage (0 - 100%)
-    weights = [0.25, 0.35, 0.20, 0.20]
-    completion = [
-        1.0 if stage1_complete else (0.5 if s1_pass else 0.1),
-        1.0 if stage2_complete else (0.5 if s5_pass else 0.0),
-        1.0 if stage3_complete else (0.5 if s4_pass else 0.0),
-        1.0 if stage4_complete else (0.3 if manuscript.exists() else 0.0)
-    ]
-    readiness = sum(w * c for w, c in zip(weights, completion)) * 100.0
-    roadmap["overall_q1_readiness_pct"] = round(readiness, 2)
-
-    # Academic rubrics check (55 Marks)
+    # Calculate academic marks (55 marks)
     academic_marks = 0
-    if assignment_doc.exists(): academic_marks += 15
-    if s1_pass: academic_marks += 10
-    if s2_pass: academic_marks += 15
-    if s3_pass: academic_marks += 5
-    if s4_pass: academic_marks += 5
-    if s6_pass: academic_marks += 5
-    roadmap["north_star_metrics"]["academic_rubric_marks"]["verified"] = min(55, academic_marks)
+    if assign_doc.exists() and m2_pass:
+        academic_marks += 15
+    if m1_pass:
+        academic_marks += 10
+    if m4_pass:
+        academic_marks += 25
+    if m5_pass:
+        academic_marks += 5
+    academic_marks = min(55, academic_marks)
 
-    save_roadmap(roadmap)
+    # Determine current milestone target
+    next_m = 1
+    for i, p in enumerate(verified_checks, start=1):
+        if not p:
+            next_m = i
+            break
+    if passed_count == 7:
+        next_m = 7
 
-    # Return concise status for watchdog
     result = {
-        "current_stage": roadmap["current_stage"],
-        "overall_q1_readiness_pct": roadmap["overall_q1_readiness_pct"],
-        "academic_marks": f"{roadmap['north_star_metrics']['academic_rubric_marks']['verified']}/55",
-        "stage1_complete": stage1_complete,
-        "stage2_complete": stage2_complete,
-        "stage3_complete": stage3_complete,
-        "stage4_complete": stage4_complete,
-        "campaign_complete": stage4_complete and academic_marks >= 55
+        "verified_milestones": f"{passed_count}/7",
+        "next_pending_milestone": f"M{next_m}",
+        "readiness_percentage": readiness_pct,
+        "academic_marks": f"{academic_marks}/55",
+        "target_venue": "IEEE Microwave and Wireless Technology Letters (LMWT)",
+        "all_goals_achieved": passed_count == 7
     }
+
+    # Save to state
+    STATE_DIR.mkdir(parents=True, exist_ok=True)
+    with open(STATE_DIR / "loop_status.json", "w") as f:
+        json.dump(result, f, indent=2)
+
     print(json.dumps(result, indent=2))
     return result
 
