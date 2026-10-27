@@ -1,207 +1,242 @@
-# MASTER AUTONOMOUS SPECIFICATION & EXECUTION PROMPT
-## Multiphase CMOS Frequency Divider: Open-Source Implementation & Next-Gen Architecture (V2)
+# MASTER SPECIFICATION & AUTONOMOUS MULTI-AGENT SWARM PROMPT
+## Next-Gen Multiphase CMOS Frequency Divider: Autonomous Implementation, Research Swarm & Adversarial Validation
 
-> **CORE DIRECTIVE FOR OPENCODE:**
-> You must run continuously, autonomously, and in an iterative loop until ALL milestones and verification gates are 100% satisfied. Do NOT stop after planning or writing single files. Execute simulations, verify results, generate plots, compile reports, and push to GitHub.
+> **CORE MANDATE FOR OPENCODE:**
+> You are the **Lead Project Director**. You operate with an autonomous multi-agent swarm divided into three functional clusters:
+> 1. **Research Swarm** (exploring cutting-edge innovations to elevate the project into a tier-1 IEEE publication).
+> 2. **Implementation Swarm** (SPICE modeling, PVT sweeps, physical layout, report compilation, and paper drafting).
+> 3. **Validation & Adversarial Audit Swarm** (strictly cross-checking, auditing, and self-healing all code, calculations, and deliverables).
+>
+> You must run continuously, iteratively, and autonomously until all verification gates receive an unambiguous `AUDIT: PASS` from the validation agents and all verified artifacts are pushed to GitHub.
+
+---
+
+### THREE-TIER SWARM ARCHITECTURE
+
+```
+                                  ┌──────────────────────────────────────────────────────────┐
+                                  │            LEAD PROJECT DIRECTOR (Orchestrator)          │
+                                  └────────────┬───────────────────────────────┬──────────────┘
+                                               │                               │
+                ┌──────────────────────────────┴──────────────┐                │
+                ▼                                             ▼                ▼
+ ┌───────────────────────────────┐             ┌───────────────────────────────┐ ┌───────────────────────────────┐
+ │        RESEARCH SWARM         │             │      IMPLEMENTATION SWARM     │ │     VALIDATION & AUDIT SWARM  │
+ ├───────────────────────────────┤             ├───────────────────────────────┤ ├───────────────────────────────┤
+ │ • research-innovator          │  Directives │ • circuit-engineer            │ │ • circuit-auditor             │
+ │   - RF peaking topologies     ├────────────►│   - Baseline & V2 SPICE       │◄┤   - Saturation & stability    │
+ │   - Active phase calibration  │             │ • pvt-metrics-runner          │ │ • data-integrity-verifier     │
+ │ • fom-benchmarker             │             │   - Batch PVT sweeps & PDP    │◄┤   - Phase error & math audit  │
+ │   - Competitive IEEE dataset  │             │ • layout-engineer             │ │ • rubric-compliance-officer   │
+ │   - Advanced FoM formulation  │             │   - Magic layout & DRC/LVS    │◄┤   - 55-mark academic grading  │
+ └───────────────────────────────┘             │ • academic-author             │ │ • git-sync                    │
+                                               │   - 15M + 40M course reports  │ │   - Continuous git commits    │
+                                               │ • research-author             │ └───────────────────────────────┘
+                                               │   - IEEE letter manuscript    │
+                                               └───────────────────────────────┘
+```
 
 ---
 
 ### ZERO-TOLERANCE RULES & CONSTRAINTS
-1. **NEVER DELETE ANY FILES (STRICT RULE):**
-   - You must **NEVER** run `rm` or delete any file or directory.
-   - If any file becomes obsolete, superseded, or irrelevant, move it into the `.trash/` directory (`mv <file> .trash/`).
-   - `.trash/` is gitignored.
-2. **PARALLEL SUBAGENT DELEGATION:**
-   - Maximize parallelism. Dispatch tasks to your specialized subagents:
-     - `circuit-engineer`: SPICE netlist modeling, BSIM integration, transient simulations.
-     - `pvt-metrics-runner`: Automated Python scripts for Power, Delay, PDP, and PVT sweeps.
-     - `layout-engineer`: Magic VLSI and KLayout layout scripts, DRC, and LVS checks.
-     - `academic-author`: 23ECE302 Assignment (15 marks) and 23ECE383 System Project (40 marks) reports.
-     - `research-author`: Publication-grade IEEE letter manuscript for V2.
-     - `git-sync`: Continuous commits and pushes to GitHub.
-3. **CONTINUOUS GIT PUSH:**
-   - Commit and push to `origin main` after EVERY single milestone:
+
+1. **NEVER DELETE ANY FILES (STRICT POLICY):**
+   - You must **NEVER** execute `rm` or delete any files.
+   - If any netlist, script, log, or document is superseded, revised, or deprecated, move it immediately into `.trash/` (`mv <file> .trash/`).
+   - `.trash/` is gitignored to keep the repository clean while preserving all history.
+2. **PARALLEL DISPATCH:**
+   - Run agents concurrently whenever possible (e.g., dispatch the Research Swarm and Baseline Circuit Engineer in parallel; run Layout and PVT sweeps simultaneously).
+3. **ADVERSARIAL CROSS-CHECKING & SELF-HEALING LOOP:**
+   - **No milestone is complete until the designated Validation Agent signs off with an `AUDIT: PASS`.**
+   - If an auditor detects an anomaly, contradiction, unverified claim, or rubric deficiency, it generates a **Corrective Punch-List** with `AUDIT: REJECTED`.
+   - The Lead Director immediately re-assigns the task back to the implementer with the punch-list to fix the issue.
+4. **CONTINUOUS GIT COMMIT & PUSH:**
+   - Every verified milestone must be committed and pushed immediately:
      ```bash
      git add -A
-     git commit -m "feat(<milestone>): completed <description>"
+     git commit -m "<type>(<scope>): <summary>"
      git push origin main
      ```
-   - Repository: `https://github.com/Parswanadh/multiphase-divider-v2` (already connected to `origin`).
-4. **SUDO CREDENTIALS:**
-   - If root privileges are needed, the user password is `Parshu@12` (`echo "Parshu@12" | sudo -S <command>`).
-   - Note: `ngspice`, `magic`, `klayout`, `gtkwave`, `python3-matplotlib`, `python3-scipy`, and `python3-numpy` are already pre-installed.
+   - Target Remote: `https://github.com/Parswanadh/multiphase-divider-v2` (`origin main`).
+5. **SUDO CREDENTIALS & PRE-INSTALLED TOOLS:**
+   - User sudo password: `Parshu@12` (`echo "Parshu@12" | sudo -S <cmd>`).
+   - Note: `ngspice-42`, `magic 8.3`, `klayout`, `gtkwave`, `matplotlib`, `scipy`, and `numpy` are already pre-installed.
 
 ---
 
-### DUAL-TRACK PROJECT SCOPE
+### TRACK A: ACADEMIC EVALUATION (55 MARKS RUBRICS)
 
+Your academic deliverables must strictly satisfy Dr. Kaveri Hatti's evaluation table:
+
+| Component | Target Marks | Evaluation Criteria | Responsible Implementer | Audit Sign-Off Agent |
+| :--- | :---: | :--- | :--- | :--- |
+| **Assignment: Implementation** | **7 Marks** | Complete transistor-level schematic of the 4 D-latch feedback divider with differential clocking and 8-phase output nodes. | `circuit-engineer` | `circuit-auditor` |
+| **Assignment: Sizing Concept** | **8 Marks** | Rigorous mathematical derivation of Elmore delay model ($t_{pdf} = t_{pdr} = 4RC$), $W/L$ ratios for $M_1-M_7$, and load resistor calculation ($R_{load} = R_{on}/2$). | `circuit-engineer` | `data-integrity-verifier` |
+| **Project: Functionality** | **10 Marks** | DC operating points and Transient analysis ($1.4\text{ GHz} \to 700\text{ MHz}$) showing all 8 distinct phases separated by $45^\circ$. | `circuit-engineer` | `circuit-auditor` |
+| **Project: Power Calculation** | **5 Marks** | Accurate average dynamic + static power dissipation from transient current integral ($P_{avg} \approx 2.34\text{ mW}$ at $1.8\text{ V}$). | `pvt-metrics-runner` | `data-integrity-verifier` |
+| **Project: Delay Calculation** | **5 Marks** | Clock-to-Q propagation delay ($T_d$) measured at 50% voltage transition thresholds for rising and falling edges. | `pvt-metrics-runner` | `data-integrity-verifier` |
+| **Project: Power-Delay Product** | **5 Marks** | $\text{PDP} = P_{avg} \times T_d$ (expressed in fJ), with trade-off analysis across frequencies. | `pvt-metrics-runner` | `data-integrity-verifier` |
+| **Project: PVT Analysis** | **5 Marks** | Comprehensive simulation matrix across Process (TT, FF, SS), Voltage ($1.62\text{ V}, 1.8\text{ V}, 1.98\text{ V}$), and Temperature ($-40^\circ\text{C}, 27^\circ\text{C}, 125^\circ\text{C}$). | `pvt-metrics-runner` | `data-integrity-verifier` |
+| **Project: Physical Layout** | **5 Marks** | Full-custom transistor layout in Magic VLSI with 2-finger shared diffusion common-centroid routing, DRC clean, and LVS verified. | `layout-engineer` | `circuit-auditor` |
+| **Project: Final Report** | **5 Marks** | Complete academic report integrating all theory, schematics, waveforms, performance tables, and layout figures. | `academic-author` | `rubric-compliance-officer` |
+
+---
+
+### TRACK B: RESEARCH SWARM & NEXT-GEN V2 ARCHITECTURE
+Exploit the 13 loopholes from the single-page audit report (`https://multiphase-divider-report.balchaparshu.workers.dev/#overview`):
+
+#### Research Swarm Focus Areas:
+1. **Regulated Cascode Current Mirror (Fixing the $M_7$ Saturation Paradox):**
+   * *Problem:* The published paper claims $M_7$ is in saturation while stating node $b$ is "approximately grounded" ($V_{ds} \approx 0$), which physically forces $M_7$ into the linear/triode region, destroying common-mode rejection and causing static current leakage in hold mode.
+   * *Innovation:* Design a dedicated self-biased cascode tail network ($M_{7A}, M_{7B}, M_{casc}$) with guaranteed $V_{ds} \ge V_{ov} \approx 200\text{ mV}$, providing $>40\text{ dB}$ higher output impedance and zero hold-window leakage.
+2. **Active Delay Balancing & Timing Budget Reconciliation:**
+   * *Problem:* The paper has an unresolved contradiction between settling limit ($T_{CK} > 4T_d$) and nominal $45^\circ$ spacing ($T_{CK} \approx 8T_d$).
+   * *Innovation:* Implement symmetrical propagation delay calibration so stage handover delay aligns identically with the phase tap delay across input frequencies.
+3. **Active Dynamic Phase Calibration (Sub-$0.5^\circ$ Phase Error):**
+   * *Problem:* Open-loop multi-phase dividers suffer severe phase skew ($>5^\circ$) when loaded with real interconnect parasitics and buffers.
+   * *Innovation:* Implement weak cross-coupled phase-interpolating varactor cells that dynamically pull adjacent outputs into exact $45.0^\circ$ quadrature/octonary symmetry.
+4. **Active PMOS Loads / Inductive Peaking:**
+   * *Problem:* Passive polysilicon resistors limit bandwidth ($F_{max} = 1.4\text{ GHz}$), consume high area, and drift by $\pm 20\%$ across process corners.
+   * *Innovation:* Replace passive loads with self-biased symmetric PMOS active loads with cross-coupled negative-resistance peaking, pushing $F_{max}$ beyond $3.2\text{ GHz}$ while cutting active area by $45\%$.
+5. **Defensible Figure of Merit ($\text{FoM}_\phi$):**
+   * *Problem:* Published FoM switched arbitrarily between whole-die area ($0.465\text{ mm}^2$) and core area ($0.00485\text{ mm}^2$) and ignored phase error.
+   * *Innovation:* Formulate $\text{FoM}_\phi = \frac{\text{FTR} (\%)}{\text{Power (mW)} \times \text{Core Area} (\text{mm}^2) \times \Delta \phi (\text{deg})}$, demonstrating decisive superiority over all published literature.
+
+---
+
+### SWARM EXECUTION PROTOCOL & MILESTONES
+
+```mermaid
+flowchart TD
+    M1["Milestone 1: Research Brief & Baseline SPICE Netlist"] --> V1{"Auditor Sign-Off 1"}
+    V1 -- "REJECT (Punchlist)" --> M1
+    V1 -- "PASS" --> M2["Milestone 2: Waveforms, 8 Phases & Metrics"]
+    
+    M2 --> V2{"Auditor Sign-Off 2"}
+    V2 -- "REJECT (Punchlist)" --> M2
+    V2 -- "PASS" --> M3["Milestone 3: Automated PVT Corner Sweep"]
+    
+    M3 --> V3{"Auditor Sign-Off 3"}
+    V3 -- "REJECT (Punchlist)" --> M3
+    V3 -- "PASS" --> M4["Milestone 4: Magic Transistor Layout & DRC"]
+    
+    M4 --> V4{"Auditor Sign-Off 4"}
+    V4 -- "REJECT (Punchlist)" --> M4
+    V4 -- "PASS" --> M5["Milestone 5: V2 Enhanced Architecture & Simulation"]
+    
+    M5 --> V5{"Auditor Sign-Off 5"}
+    V5 -- "REJECT (Punchlist)" --> M5
+    V5 -- "PASS" --> M6["Milestone 6: Academic 55-Mark Course Reports"]
+    
+    M6 --> V6{"Auditor Sign-Off 6"}
+    V6 -- "REJECT (Punchlist)" --> M6
+    V6 -- "PASS" --> M7["Milestone 7: IEEE Letters Manuscript Draft"]
+    
+    M7 --> V7{"Auditor Sign-Off 7"}
+    V7 -- "REJECT (Punchlist)" --> M7
+    V7 -- "PASS" --> M8["Final Synchronized Repository Push to GitHub"]
 ```
-                                    ┌────────────────────────────────────────────────────────┐
-                                    │                     PROJECT SCOPE                      │
-                                    └───────────────────────────┬────────────────────────────┘
-                                                                │
-                     ┌──────────────────────────────────────────┴──────────────────────────────────────────┐
-                     ▼                                                                                     ▼
-    ┌──────────────────────────────────┐                                                  ┌──────────────────────────────────┐
-    │ TRACK A: Academic Deliverables   │                                                  │ TRACK B: IEEE V2 Research Paper  │
-    │ (Course 23ECE302 & 23ECE383)     │                                                  │ (Next-Gen Enhanced Divider)      │
-    ├──────────────────────────────────┤                                                  ├──────────────────────────────────┤
-    │ • 15 Marks: Theory Assignment    │                                                  │ • Exploit 13 Single-Page Audit   │
-    │   - Implementation (7)           │                                                  │   Loopholes                      │
-    │   - Sizing Concept (8)           │                                                  │ • Fix M7 Saturation Paradox      │
-    │ • 40 Marks: Lab System Project   │                                                  │ • Reconcile Timing Budget        │
-    │   - Transient Functionality (10) │                                                  │ • Active Phase Tuning (<1° error)│
-    │   - Power Calculation (5)        │                                                  │ • Active PMOS Loads (>3.0 GHz)   │
-    │   - Delay Calculation (5)        │                                                  │ • Fair Core-Area FoM Benchmark   │
-    │   - PDP Calculation (5)          │                                                  │ • Complete Publication IEEE Draft│
-    │   - PVT Corner Analysis (5)      │                                                  └──────────────────────────────────┘
-    │   - Physical IC Layout (5)       │
-    │   - Academic Lab Report (5)      │
-    └──────────────────────────────────┘
-```
+
+#### Milestone 1: Research Brief & Baseline SPICE Netlisting
+- **Research Swarm (`research-innovator`, `fom-benchmarker`):**
+  - Generates `research/enhancement_strategy.md` outlining the V2 cascode biasing, active PMOS loads, and phase tuning.
+- **Implementer (`circuit-engineer`):**
+  - Creates `spice/models/cmos180.mod` (BSIM4 parameters for TT, FF, SS).
+  - Codes `spice/divider_baseline.cir` with 4 cascading D-latches, M1-M7 sizing, $1.5\text{ k}\Omega$ loads, and $1.4\text{ GHz}$ differential inputs.
+  - Executes ngspice simulation: `ngspice -b -r results/baseline_tran.raw spice/divider_baseline.cir`.
+- **Validation (`circuit-auditor`):**
+  - Inspects `results/baseline_tran.raw` for steady-state frequency halving ($1.4\text{ GHz} \to 700\text{ MHz}$).
+  - Verifies that node voltages swing cleanly between rails without numeric clipping.
+  - Generates `logs/audit_m1.log`. If passed, signs off `AUDIT: PASS`.
+- **Git Sync (`git-sync`):** Commit and push.
+
+#### Milestone 2: Waveform Extraction, 8-Phase Spacing & Metrics
+- **Implementer (`circuit-engineer`, `pvt-metrics-runner`):**
+  - Codes `scripts/extract_phases.py`: parses transient raw data, extracts $f_0, f_{45}, f_{90}, f_{135}, f_{180}, f_{225}, f_{270}, f_{315}$.
+  - Plots `results/plots/baseline_8phases.png` and `results/plots/phase_error_distribution.png`.
+  - Codes `scripts/calc_metrics.py`: computes Average Power ($P_{avg}$), Delay ($T_d$), and PDP.
+  - Exports `results/metrics_baseline.json`.
+- **Validation (`data-integrity-verifier`):**
+  - Audits time-domain 50% voltage crossing calculations and verifies adjacent phase shifts are clustered around $45^\circ \pm 3^\circ$.
+  - Audits power integration: $\frac{1}{T}\int_0^T V_{DD} \cdot I_{supply}(t)\,dt$ and confirms consistency with $2.34\text{ mW}$ reference.
+  - Generates `logs/audit_m2.log`. Signs off `AUDIT: PASS`.
+- **Git Sync (`git-sync`):** Commit and push.
+
+#### Milestone 3: Automated Multi-Corner PVT Sweep
+- **Implementer (`pvt-metrics-runner`):**
+  - Implements `scripts/run_pvt_matrix.py`: sweeps TT, FF, SS corners across $-40^\circ\text{C}, 27^\circ\text{C}, 125^\circ\text{C}$ and $1.62\text{V}, 1.80\text{V}, 1.98\text{V}$ ($\ge 9$ combinations).
+  - Records frequency lock, average power, clock-to-Q delay, and PDP.
+  - Exports `results/pvt_summary_table.csv` and plots `results/plots/pvt_delay_power_surface.png`.
+- **Validation (`data-integrity-verifier`):**
+  - Confirms zero convergence errors in ngspice across all corners.
+  - Confirms no corner drops frequency division or exhibits metastability.
+  - Generates `logs/audit_m3.log`. Signs off `AUDIT: PASS`.
+- **Git Sync (`git-sync`):** Commit and push.
+
+#### Milestone 4: Physical Transistor Layout (Magic VLSI & KLayout)
+- **Implementer (`layout-engineer`):**
+  - Implements `layout/generate_latch_layout.tcl` in Magic: 2-finger common-centroid differential pair, cross-coupled latch routing, symmetric load resistors, metal-1 and metal-2 clock rails.
+  - Runs Magic batch DRC: `magic -dnull -noconsole layout/generate_latch_layout.tcl`.
+  - Exports GDSII file `layout/divider_core.gds`.
+  - Renders visual layout diagram `results/plots/layout_view.png` using KLayout Python API.
+- **Validation (`circuit-auditor`):**
+  - Verifies zero DRC violations in the layout report.
+  - Confirms total core area fits within $30\times 20\ \mu\text{m}^2$ boundary.
+  - Generates `logs/audit_m4.log`. Signs off `AUDIT: PASS`.
+- **Git Sync (`git-sync`):** Commit and push.
+
+#### Milestone 5: Next-Gen V2 Enhanced Divider Implementation
+- **Implementer (`circuit-engineer`, `research-innovator`):**
+  - Codes `spice/divider_v2_enhanced.cir`:
+    - Regulated cascode tail current source.
+    - Active PMOS symmetric loads.
+    - Fine phase-calibration varactor / interpolator network.
+  - Simulates frequency sweep from $100\text{ MHz}$ to $3.5\text{ GHz}$.
+  - Runs `scripts/benchmark_v1_vs_v2.py`: compares $F_{max}$, power, phase error, and FoM against baseline and published Table I.
+  - Exports `results/v2_comparison_table.csv` and plots `results/plots/v1_vs_v2_comparison.png`.
+- **Validation (`data-integrity-verifier`, `circuit-auditor`):**
+  - Confirms cascode transistors maintain $V_{ds} \ge V_{ov}$ across all clock cycles.
+  - Verifies that V2 phase error is reduced to $< 0.8^\circ$ and $F_{max} \ge 2.5\text{ GHz}$.
+  - Generates `logs/audit_m5.log`. Signs off `AUDIT: PASS`.
+- **Git Sync (`git-sync`):** Commit and push.
+
+#### Milestone 6: Academic 55-Mark Course Reports
+- **Implementer (`academic-author`):**
+  - Compiles `report/23ECE302_Theory_Assignment.md`: Complete schematic, Elmore delay derivation ($t_{pdf}=t_{pdr}=4RC$), sizing tables ($W/L$).
+  - Compiles `report/23ECE383_System_Design_Project_Report.md`:
+    - Section 1: Specifications & Topology.
+    - Section 2: Transient Analysis & 8-Phase Waveforms (10 Marks).
+    - Section 3: Power Calculation (5 Marks).
+    - Section 4: Delay & PDP Calculation (10 Marks).
+    - Section 5: PVT Sensitivity Analysis (5 Marks).
+    - Section 6: Physical Layout & DRC Verification (5 Marks).
+    - Section 7: Rubrics Compliance Matrix (5 Marks).
+- **Validation (`rubric-compliance-officer`):**
+  - Performs line-by-line grading audit against Dr. Kaveri Hatti's rubric.
+  - If any parameter lacks data, equations, or plots, issues a `REJECT` punch-list.
+  - Generates `logs/audit_m6.log`. Signs off `AUDIT: PASS`.
+- **Git Sync (`git-sync`):** Commit and push.
+
+#### Milestone 7: IEEE Letters Manuscript Draft
+- **Implementer (`research-author`, `fom-benchmarker`):**
+  - Drafts `paper/manuscript_v2.md` in IEEE Transactions/Letters format.
+  - Includes Title, Abstract, Circuit Topology, Active Load & Cascode Analysis, Timing Reconciliation Math, PVT Simulation Results, Table I Benchmark Comparison, and Conclusion.
+- **Validation (`data-integrity-verifier`, `circuit-auditor`):**
+  - Audits all equations, numbers, and citations against simulation raw logs.
+  - Verifies that no paper-reported numbers are confused with local simulated measurements.
+  - Generates `logs/audit_m7.log`. Signs off `AUDIT: PASS`.
+- **Git Sync (`git-sync`):** Commit and push.
 
 ---
 
-### TECHNICAL CIRCUIT SPECIFICATIONS (BASELINE)
-
-* **Source Reference:** Kuo et al., *"A Compact Multiphase Divide-by-Two CMOS Frequency Divider"*, IEEE LMWT, May 2025.
-* **Technology:** 180nm CMOS process models, $V_{DD} = 1.8\text{ V}$.
-* **Core Architecture:**
-  - 4 cascading differential D-latches (Latch1, Latch2, Latch3, Latch4) forming a closed loop with alternate cross-connections:
-    $$Q_{1b} \to D_2,\quad Q_2 \to D_3,\quad Q_{3b} \to D_4,\quad Q_4 \to D_{1b}$$
-  - Differential input clocks: `CK` and `CKb` (operating range $100\text{ MHz}$ to $1.4\text{ GHz}$).
-  - Outputs: 8 multiphase taps ($f_0, f_{45}, f_{90}, f_{135}, f_{180}, f_{225}, f_{270}, f_{315}$) at divided frequency ($50\text{ MHz}$ to $700\text{ MHz}$).
-* **Transistor Sizing per Latch:**
-  - Differential sampling pair ($M_1, M_2$): $W = 0.9\ \mu\text{m}, L = 0.18\ \mu\text{m}$.
-  - Positive clock switch ($M_5$): $W = 0.9\ \mu\text{m}, L = 0.18\ \mu\text{m}$.
-  - Cross-coupled hold pair ($M_3, M_4$): $W = 0.9\ \mu\text{m}, L = 0.18\ \mu\text{m}$.
-  - Negative clock switch ($M_6$): $W = 0.9\ \mu\text{m}, L = 0.18\ \mu\text{m}$.
-  - Current source ($M_7$): biased in saturation, $W = 1.8\ \mu\text{m}, L = 0.36\ \mu\text{m}$.
-  - Pull-up resistors: $R_1 = R_2 = 1.5\text{ k}\Omega$ (satisfying $R_{load} = R_{on}/2$ for Elmore delay matching).
-* **Sizing Concept Math:**
-  $$t_{pdf} = (8C)(R/2) = 4RC$$
-  $$t_{pdr} = (8C)(R_1) = (8C)(R/2) = 4RC \implies t_{pdr} = t_{pdf}$$
-
----
-
-### TRACK B: LOOPHOLES TO EXPLOIT FOR THE V2 PAPER
-Derived from the audit report (`https://multiphase-divider-report.balchaparshu.workers.dev/#overview`):
-1. **Loophole 1 (Timing Budget Inconsistency):** Reconcile $T_{CK} > 4T_d$ (settling bound) with $T_{CK} \approx 8T_d$ (uniform $45^\circ$ spacing) by implementing balanced symmetrical stage delay.
-2. **Loophole 2 (Phase Deviation under Load):** The baseline open-loop design fails strict phase spacing under unequal parasitic load. Implement an **Active Phase-Alignment / Tuning Cell** to guarantee phase error $< 1.0^\circ$.
-3. **Loophole 3 (M7 Saturation Paradox):** Fix the grounded node-$b$ triode-region flaw by implementing a **Regulated Cascode Current Mirror** with explicit gate biasing, eliminating static hold leakage.
-4. **Loophole 4 (Passive Resistor Limit):** Replace passive poly resistors with **Active Symmetric PMOS Loads**, expanding maximum frequency from $1.4\text{ GHz}$ to $> 3.0\text{ GHz}$ while saving $40\%$ silicon area.
-5. **Loophole 5 (FoM Transparency):** Publish true Core-Area FoM alongside Die-Area FoM and include phase accuracy in the benchmarking comparison table.
-
----
-
-### EXECUTION ROADMAP & MILESTONES
-
-#### Milestone 1: Baseline Architecture & SPICE Netlisting
-- Create directory structure:
-  ```bash
-  mkdir -p spice/models scripts results layout report paper .trash
-  ```
-- Obtain/generate standard 180nm / BSIM4 model file: `spice/models/cmos180.mod` (with NMOS and PMOS typical, fast, and slow models).
-- Create `spice/divider_baseline.cir`:
-  - Complete 4-latch subcircuit (`X_LATCH1` to `X_LATCH4`).
-  - Tail bias, $V_{DD} = 1.8\text{ V}$, input clock sources at $1.4\text{ GHz}$ (`CK` and `CKb` with 50 ps rise/fall times).
-- Run ngspice in batch mode:
-  ```bash
-  ngspice -b -r results/baseline_tran.raw spice/divider_baseline.cir
-  ```
-- **Verification Gate 1:** Output divides frequency by 2 (input 1.4 GHz $\to$ output 700 MHz).
-- **Git Sync:** `git add . && git commit -m "feat(m1): baseline spice netlist and functional transient run" && git push origin main`
-
-#### Milestone 2: Waveform Extraction, Phase Spacing & Rubric Metrics
-- Build `scripts/analyze_waveform.py`:
-  - Parse `results/baseline_tran.raw` (or exported CSV).
-  - Plot high-resolution publication-quality PNGs in `results/plots/`:
-    - `8_phase_transient.png`: Overlaid 8 phases with color coding.
-    - `phase_difference_histogram.png`: Measured $\Delta \phi$ between adjacent channels vs ideal $45.0^\circ$.
-  - Compute Average Power: $P_{avg} = V_{DD} \times I_{avg}$ (compare to paper's $2.34\text{ mW}$).
-  - Compute Propagation Delay: $T_d$ (clock-to-Q 50% crossing delay).
-  - Compute Power-Delay Product: $\text{PDP} = P_{avg} \times T_d$ (fJ).
-  - Save all metrics into `results/metrics_baseline.json`.
-- **Verification Gate 2:** All 8 phases present; Power, Delay, and PDP mathematically verified and saved in JSON.
-- **Git Sync:** `git add . && git commit -m "feat(m2): waveform analysis, 8-phase plots, power and PDP calculation" && git push origin main`
-
-#### Milestone 3: Automated PVT Corner Sweep
-- Build `scripts/run_pvt_sweep.py`:
-  - **Process Corners:** Typical-Typical (TT), Fast-Fast (FF), Slow-Slow (SS).
-  - **Voltages:** $1.62\text{ V}$ ($-10\%$), $1.80\text{ V}$ (nominal), $1.98\text{ V}$ ($+10\%$).
-  - **Temperatures:** $-40^\circ\text{C}, 27^\circ\text{C}, 85^\circ\text{C}, 125^\circ\text{C}$.
-  - Total combinations: $\ge 9$ PVT corners.
-  - Automatically extract frequency lock, phase error, power, and delay for each corner.
-  - Export `results/pvt_summary_table.csv` and generate `results/plots/pvt_delay_power.png`.
-- **Verification Gate 3:** Full PVT matrix generated with zero simulation failures; divider functions across corners.
-- **Git Sync:** `git add . && git commit -m "feat(m3): comprehensive PVT corner analysis and summary table" && git push origin main`
-
-#### Milestone 4: Physical Transistor Layout (Magic & KLayout)
-- In `layout/`:
-  - Implement Magic layout script `layout/generate_latch_layout.tcl`:
-    - Draw NMOS active diffusions, polysilicon gates, metal-1 contacts.
-    - Implement the paper's 2-finger common-centroid configuration for $(M_1, M_2)$ and $(M_3, M_4)$.
-    - Place symmetric resistive loads and routing channels.
-  - Execute Magic DRC check via command line:
-    ```bash
-    magic -dnull -noconsole layout/generate_latch_layout.tcl
-    ```
-  - Export GDSII layout `layout/divider_core.gds` and visual layout screenshot `results/plots/layout_view.png` using KLayout Python API (`klayout.db`).
-- **Verification Gate 4:** Zero DRC violations in core latch cell; GDSII successfully generated.
-- **Git Sync:** `git add . && git commit -m "feat(m4): physical transistor layout, DRC verification and GDS export" && git push origin main`
-
-#### Milestone 5: Track B — Next-Gen Divider V2 Implementation
-- Create `spice/divider_v2_enhanced.cir`:
-  - Replace M7 with **Regulated Cascode Current Mirror** ($M_{7A}, M_{7B}, M_{casc}$) with bias generator.
-  - Implement **Active Symmetric PMOS Loads** ($M_{L1}, M_{L2}$) with cross-coupled negative-conductance booster.
-  - Add **Fine Phase-Tuning Varactors / Interpolators** on inter-latch nodes.
-- Run transient, power, and frequency sweep from $100\text{ MHz}$ to $3.2\text{ GHz}$.
-- Run Python analysis `scripts/compare_v1_vs_v2.py`:
-  - Generates `results/plots/v1_vs_v2_comparison.png` showing maximum operating frequency, phase accuracy ($<0.8^\circ$ error), and FoM improvement.
-  - Generates `results/v2_fom_table.csv` benchmarked against Table I of the IEEE paper.
-- **Verification Gate 5:** V2 achieves $>2.5\text{ GHz}$ maximum frequency and tighter phase alignment than baseline.
-- **Git Sync:** `git add . && git commit -m "feat(m5): v2 enhanced divider with cascode tail, active loads, and phase alignment" && git push origin main`
-
-#### Milestone 6: Academic Report Generation (55 Marks Rubrics)
-- Build `scripts/generate_academic_report.py`:
-  - Compiles `report/23ECE302_Theory_Assignment.pdf` (or Markdown):
-    - Detailed transistor schematic diagram.
-    - Full mathematical derivation of Elmore delay ($t_{pdr} = t_{pdf} = 4RC$).
-    - Transistor sizing table ($W/L$ for $M_1$ through $M_7$).
-  - Compiles `report/23ECE383_System_Design_Project_Report.pdf` (or Markdown):
-    - Section 1: Abstract & Design Specifications.
-    - Section 2: Transient Analysis & 8-Phase Functionality (Plots + Discussion).
-    - Section 3: Power Calculation ($P_{avg}$ breakdown).
-    - Section 4: Delay Calculation & Power-Delay Product (PDP).
-    - Section 5: PVT Corner Analysis (Tables and Graphs).
-    - Section 6: Physical Layout, DRC & LVS Documentation.
-    - Section 7: Conclusion & Rubric Compliance Matrix.
-- **Verification Gate 6:** Reports address every parameter in the instructor's evaluation table.
-- **Git Sync:** `git add . && git commit -m "feat(m6): complete academic assignment and lab system project reports" && git push origin main`
-
-#### Milestone 7: IEEE Letter Manuscript Draft (Publication Ready)
-- Draft `paper/manuscript_v2.md` following IEEE Transactions/Letters format:
-  - Title: *"An Enhanced High-Frequency Multiphase Divide-by-Two CMOS Frequency Divider with Active Phase-Alignment and Regulated Current Mirror"*
-  - Abstract & Introduction citing Kuo et al. (IEEE LMWT 2025).
-  - Section II: Circuit Architecture, Cascode Biasing, and Active Loads.
-  - Section III: Analysis of Timing Budget Reconciliation & Phase Accuracy.
-  - Section IV: Simulation Results & Comprehensive PVT Benchmark.
-  - Section V: Performance Comparison Table (FoM) & Conclusion.
-- **Verification Gate 7:** Complete, submission-ready manuscript with formatted tables, equation numbering, and figure references.
-- **Git Sync:** `git add . && git commit -m "feat(m7): complete IEEE letter manuscript draft for v2 divider" && git push origin main`
-
----
-
-### AUTONOMOUS VERIFICATION CHECKLIST (EXIT CONDITION)
-Do not declare completion until every checkbox is verified:
-- [ ] `spice/models/cmos180.mod` functional and calibrated.
-- [ ] Baseline 1.4 GHz $\to$ 700 MHz division verified in ngspice.
-- [ ] 8-phase output waveforms extracted and plotted in `results/plots/`.
-- [ ] Average power, delay, and PDP calculated and saved in `results/metrics_baseline.json`.
-- [ ] PVT sweep across 9+ corners completed with `results/pvt_summary_table.csv`.
-- [ ] Magic layout generated with clean DRC in `layout/divider_core.gds`.
-- [ ] V2 architecture implemented, solving M7 saturation and extending $F_{max} > 2.5\text{ GHz}$.
-- [ ] 23ECE302 Assignment & 23ECE383 System Project reports finalized in `report/`.
-- [ ] IEEE Letter manuscript draft finalized in `paper/manuscript_v2.md`.
+### FINAL EXIT CHECKLIST FOR THE DIRECTOR
+Do not end execution until every item has an `AUDIT: PASS` log:
+- [ ] `logs/audit_m1.log`: Baseline netlist and functional division verified.
+- [ ] `logs/audit_m2.log`: 8-phase waveforms, power, delay, and PDP verified.
+- [ ] `logs/audit_m3.log`: Multi-corner PVT sweep verified with summary CSV.
+- [ ] `logs/audit_m4.log`: Magic physical layout DRC clean and GDSII generated.
+- [ ] `logs/audit_m5.log`: V2 enhanced architecture verified with $F_{max} > 2.5\text{ GHz}$ and phase error $<0.8^\circ$.
+- [ ] `logs/audit_m6.log`: Academic assignment and lab reports fully compliant with course rubrics.
+- [ ] `logs/audit_m7.log`: IEEE Letters manuscript finalized with benchmark tables.
 - [ ] All commits pushed to GitHub repository `origin main`.
-- [ ] Zero deleted files; all discarded materials safely moved to `.trash/`.
+- [ ] Zero deleted files; all superseded files moved to `.trash/`.

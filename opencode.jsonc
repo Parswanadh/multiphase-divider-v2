@@ -16,51 +16,81 @@
   },
   "agent": {
     "lead": {
-      "description": "Lead orchestrator: coordinates milestone progression, delegates tasks to subagents in parallel, verifies gates, and triggers continuous git pushes.",
+      "description": "Lead Project Director: Coordinates the Research Swarm, Implementation Engineers, and Validation/Auditing Swarm. Enforces gate approvals before any milestone is marked done.",
       "mode": "primary",
       "model": "opencode-go/longcat-2.5-preview-free",
-      "prompt": "You are the Lead Project Architect. You delegate to circuit-engineer, pvt-metrics-runner, layout-engineer, academic-author, research-author, and git-sync subagents to accomplish both Track A (Academic Evaluation) and Track B (V2 Paper). Enforce the rule: NEVER delete files; move any irrelevant files to .trash/. Verify each milestone strictly.",
+      "prompt": "You are the Lead Project Director orchestrating a three-tier agent network: (1) Research Swarm, (2) Implementation Engineers, and (3) Adversarial Validation & Audit Swarm. You dispatch tasks in parallel, enforce the zero-deletion rule (move superseded files to .trash/), require auditor sign-offs on every deliverable, and trigger continuous git pushes after each verified milestone.",
       "permission": {
         "task": {
           "*": "allow"
         }
       }
     },
+    "research-innovator": {
+      "description": "Research Swarm Agent: Investigates advanced CMOS RF divider architectures, active inductive peaking, negative-conductance boosters, dynamic phase interpolators, and cascode biasing from recent IEEE JSSC/TMTT literature to elevate the project to a premier publication.",
+      "mode": "subagent",
+      "model": "opencode-go/longcat-2.5-preview-free",
+      "steps": 120
+    },
+    "fom-benchmarker": {
+      "description": "Research Swarm Agent: Analyzes IEEE state-of-the-art frequency divider benchmarks, formulates mathematically sound Figures of Merit (FoM) incorporating phase accuracy, power, area, and frequency tuning range, and prepares competitive comparative matrices.",
+      "mode": "subagent",
+      "model": "opencode-go/longcat-2.5-preview-free",
+      "steps": 100
+    },
     "circuit-engineer": {
-      "description": "Designs and validates SPICE netlists for baseline 4-latch divider and enhanced V2 architecture in ngspice.",
+      "description": "Implementation Agent: Designs, tunes, and simulates SPICE netlists (BSIM4 models) for baseline and enhanced V2 frequency divider circuits in ngspice.",
       "mode": "subagent",
       "model": "opencode-go/longcat-2.5-preview-free",
       "steps": 120
     },
     "pvt-metrics-runner": {
-      "description": "Executes batch automated Python sweeps for Power, Delay, PDP, and PVT corners (TT, FF, SS, FS, SF, -40C to 125C, 1.8V±10%).",
+      "description": "Implementation Agent: Executes automated Python batch simulations across PVT corners (TT, FF, SS, FS, SF, -40C to 125C, 1.8V±10%), extracting delay, power, and PDP metrics.",
       "mode": "subagent",
       "model": "opencode-go/longcat-2.5-preview-free",
       "steps": 120
     },
     "layout-engineer": {
-      "description": "Generates transistor physical layout scripts for Magic VLSI and KLayout with DRC and LVS checks.",
+      "description": "Implementation Agent: Implements physical transistor layouts in Magic VLSI and KLayout with common-centroid shared diffusions and runs automated DRC/LVS.",
       "mode": "subagent",
       "model": "opencode-go/longcat-2.5-preview-free",
       "steps": 100
     },
     "academic-author": {
-      "description": "Generates complete 23ECE302 Assignment (15 marks) and 23ECE383 System Project (40 marks) reports with all derivations, sizing calculations, waveforms, and rubric alignment.",
+      "description": "Implementation Agent: Compiles the 23ECE302 Assignment (15 marks) and 23ECE383 Lab System Project (40 marks) reports with all derivations, sizing calculations, and rubric alignments.",
       "mode": "subagent",
       "model": "opencode-go/longcat-2.5-preview-free",
       "steps": 100
     },
     "research-author": {
-      "description": "Drafts the publication-grade IEEE letter manuscript for V2 Frequency Divider exploiting the 13 loopholes from the single-page audit.",
+      "description": "Implementation Agent: Drafts the formal IEEE Letters/Transactions manuscript for the V2 enhanced frequency divider, incorporating research swarm innovations.",
+      "mode": "subagent",
+      "model": "opencode-go/longcat-2.5-preview-free",
+      "steps": 100
+    },
+    "circuit-auditor": {
+      "description": "Validation & Audit Agent: Adversarially checks SPICE netlists, DC operating points, M7 saturation status (Vds >= Vgs - Vth), steady-state oscillation, division ratio (f_out = f_in/2), and signal integrity. Rejects netlists with anomalies.",
+      "mode": "subagent",
+      "model": "opencode-go/longcat-2.5-preview-free",
+      "steps": 100
+    },
+    "data-integrity-verifier": {
+      "description": "Validation & Audit Agent: Cross-checks numerical outputs, scripts, phase error assertions, power integrals, and Elmore delay math. Ensures no simulated values are hallucinated or unverified.",
+      "mode": "subagent",
+      "model": "opencode-go/longcat-2.5-preview-free",
+      "steps": 100
+    },
+    "rubric-compliance-officer": {
+      "description": "Validation & Audit Agent: Strictly grades the academic assignment and system project deliverables against the instructor's 55-mark rubric. Issues rejections and corrective punch-lists if any parameter is incomplete or substandard.",
       "mode": "subagent",
       "model": "opencode-go/longcat-2.5-preview-free",
       "steps": 100
     },
     "git-sync": {
-      "description": "Maintains git history and continuously pushes commits to GitHub after every milestone.",
+      "description": "Repository Sync Agent: Maintains git hygiene, stages verified deliverables, creates semantic commits, and pushes to GitHub origin main.",
       "mode": "subagent",
       "model": "opencode-go/longcat-2.5-preview-free",
-      "steps": 50
+      "steps": 60
     }
   }
 }
