@@ -2,6 +2,7 @@
   "$schema": "https://opencode.ai/config.json",
   "subagent_depth": 2,
   "permission": {
+    "*": "allow",
     "doom_loop": "deny",
     "bash": {
       "*": "allow",
@@ -10,87 +11,91 @@
       "git push*--force*": "deny",
       "git push* -f*": "deny"
     },
+    "task": {
+      "*": "allow"
+    },
     "external_directory": {
-      "/tmp/*": "allow"
+      "*": "allow"
     }
   },
   "agent": {
     "lead": {
-      "description": "Lead Project Director: Coordinates the Research Swarm, Implementation Engineers, and Validation/Auditing Swarm. Enforces gate approvals before any milestone is marked done.",
+      "description": "Lead Project Director: Coordinates the Research Swarm, Implementation Engineers, and Validation/Auditing Swarm. Operates 100% autonomously without human-in-the-loop until all 7 milestone gates are signed off.",
       "mode": "primary",
       "model": "opencode-go/longcat-2.5-preview-free",
-      "prompt": "You are the Lead Project Director orchestrating a three-tier agent network: (1) Research Swarm, (2) Implementation Engineers, and (3) Adversarial Validation & Audit Swarm. You dispatch tasks in parallel, enforce the zero-deletion rule (move superseded files to .trash/), require auditor sign-offs on every deliverable, and trigger continuous git pushes after each verified milestone.",
+      "prompt": "You are the Lead Project Director running 100% autonomously without human intervention. NEVER halt to prompt the user for feedback or questions. Resolve any design choices autonomously using engineering best practices and document them in decisions.md. Enforce the zero-deletion rule (move superseded files to .trash/). Delegate to subagents, demand audit sign-offs from validation agents, and trigger git pushes after every milestone.",
       "permission": {
+        "*": "allow",
         "task": {
           "*": "allow"
         }
       }
     },
     "research-innovator": {
-      "description": "Research Swarm Agent: Investigates advanced CMOS RF divider architectures, active inductive peaking, negative-conductance boosters, dynamic phase interpolators, and cascode biasing from recent IEEE JSSC/TMTT literature to elevate the project to a premier publication.",
+      "description": "Research Swarm Agent: Autonomously investigates advanced CMOS RF divider architectures, active inductive peaking, negative-conductance boosters, dynamic phase interpolators, and cascode biasing from recent IEEE JSSC/TMTT literature.",
       "mode": "subagent",
       "model": "opencode-go/longcat-2.5-preview-free",
-      "steps": 120
+      "steps": 250
     },
     "fom-benchmarker": {
       "description": "Research Swarm Agent: Analyzes IEEE state-of-the-art frequency divider benchmarks, formulates mathematically sound Figures of Merit (FoM) incorporating phase accuracy, power, area, and frequency tuning range, and prepares competitive comparative matrices.",
       "mode": "subagent",
       "model": "opencode-go/longcat-2.5-preview-free",
-      "steps": 100
+      "steps": 200
     },
     "circuit-engineer": {
       "description": "Implementation Agent: Designs, tunes, and simulates SPICE netlists (BSIM4 models) for baseline and enhanced V2 frequency divider circuits in ngspice.",
       "mode": "subagent",
       "model": "opencode-go/longcat-2.5-preview-free",
-      "steps": 120
+      "steps": 250
     },
     "pvt-metrics-runner": {
       "description": "Implementation Agent: Executes automated Python batch simulations across PVT corners (TT, FF, SS, FS, SF, -40C to 125C, 1.8V±10%), extracting delay, power, and PDP metrics.",
       "mode": "subagent",
       "model": "opencode-go/longcat-2.5-preview-free",
-      "steps": 120
+      "steps": 250
     },
     "layout-engineer": {
       "description": "Implementation Agent: Implements physical transistor layouts in Magic VLSI and KLayout with common-centroid shared diffusions and runs automated DRC/LVS.",
       "mode": "subagent",
       "model": "opencode-go/longcat-2.5-preview-free",
-      "steps": 100
+      "steps": 200
     },
     "academic-author": {
       "description": "Implementation Agent: Compiles the 23ECE302 Assignment (15 marks) and 23ECE383 Lab System Project (40 marks) reports with all derivations, sizing calculations, and rubric alignments.",
       "mode": "subagent",
       "model": "opencode-go/longcat-2.5-preview-free",
-      "steps": 100
+      "steps": 200
     },
     "research-author": {
       "description": "Implementation Agent: Drafts the formal IEEE Letters/Transactions manuscript for the V2 enhanced frequency divider, incorporating research swarm innovations.",
       "mode": "subagent",
       "model": "opencode-go/longcat-2.5-preview-free",
-      "steps": 100
+      "steps": 200
     },
     "circuit-auditor": {
       "description": "Validation & Audit Agent: Adversarially checks SPICE netlists, DC operating points, M7 saturation status (Vds >= Vgs - Vth), steady-state oscillation, division ratio (f_out = f_in/2), and signal integrity. Rejects netlists with anomalies.",
       "mode": "subagent",
       "model": "opencode-go/longcat-2.5-preview-free",
-      "steps": 100
+      "steps": 200
     },
     "data-integrity-verifier": {
       "description": "Validation & Audit Agent: Cross-checks numerical outputs, scripts, phase error assertions, power integrals, and Elmore delay math. Ensures no simulated values are hallucinated or unverified.",
       "mode": "subagent",
       "model": "opencode-go/longcat-2.5-preview-free",
-      "steps": 100
+      "steps": 200
     },
     "rubric-compliance-officer": {
       "description": "Validation & Audit Agent: Strictly grades the academic assignment and system project deliverables against the instructor's 55-mark rubric. Issues rejections and corrective punch-lists if any parameter is incomplete or substandard.",
       "mode": "subagent",
       "model": "opencode-go/longcat-2.5-preview-free",
-      "steps": 100
+      "steps": 200
     },
     "git-sync": {
       "description": "Repository Sync Agent: Maintains git hygiene, stages verified deliverables, creates semantic commits, and pushes to GitHub origin main.",
       "mode": "subagent",
       "model": "opencode-go/longcat-2.5-preview-free",
-      "steps": 60
+      "steps": 100
     }
   }
 }

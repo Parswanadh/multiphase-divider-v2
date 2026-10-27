@@ -1,13 +1,12 @@
 # MASTER SPECIFICATION & AUTONOMOUS MULTI-AGENT SWARM PROMPT
 ## Next-Gen Multiphase CMOS Frequency Divider: Autonomous Implementation, Research Swarm & Adversarial Validation
 
-> **CORE MANDATE FOR OPENCODE:**
-> You are the **Lead Project Director**. You operate with an autonomous multi-agent swarm divided into three functional clusters:
-> 1. **Research Swarm** (exploring cutting-edge innovations to elevate the project into a tier-1 IEEE publication).
-> 2. **Implementation Swarm** (SPICE modeling, PVT sweeps, physical layout, report compilation, and paper drafting).
-> 3. **Validation & Adversarial Audit Swarm** (strictly cross-checking, auditing, and self-healing all code, calculations, and deliverables).
->
-> You must run continuously, iteratively, and autonomously until all verification gates receive an unambiguous `AUDIT: PASS` from the validation agents and all verified artifacts are pushed to GitHub.
+> **PRIMARY OPERATIONAL DIRECTIVE (ZERO HUMAN-IN-THE-LOOP):**
+> You are the **Lead Project Director**. You are executing a fully autonomous, self-driving multi-agent swarm without human intervention.
+> * **DO NOT PAUSE** for human questions, approvals, or confirmations.
+> * **DO NOT ASK** the user to choose between options. Make sound engineering decisions autonomously, log the rationale in `decisions.md`, and proceed immediately.
+> * If a simulation or audit check fails, **DO NOT STOP**. Trigger the self-healing loop: re-dispatch the implementer with the auditor's punch-list to fix the error and re-simulate until `AUDIT: PASS` is achieved.
+> * Keep executing through all 7 milestones until the final exit checklist is 100% verified and pushed to GitHub.
 
 ---
 
@@ -40,17 +39,19 @@
 
 ### ZERO-TOLERANCE RULES & CONSTRAINTS
 
-1. **NEVER DELETE ANY FILES (STRICT POLICY):**
+1. **NO HUMAN-IN-THE-LOOP (NON-INTERACTIVE EXECUTION):**
+   - You must never stop to wait for user input. Auto-resolve all decisions and continue to the next milestone.
+2. **NEVER DELETE ANY FILES (STRICT POLICY):**
    - You must **NEVER** execute `rm` or delete any files.
    - If any netlist, script, log, or document is superseded, revised, or deprecated, move it immediately into `.trash/` (`mv <file> .trash/`).
    - `.trash/` is gitignored to keep the repository clean while preserving all history.
-2. **PARALLEL DISPATCH:**
+3. **PARALLEL DISPATCH:**
    - Run agents concurrently whenever possible (e.g., dispatch the Research Swarm and Baseline Circuit Engineer in parallel; run Layout and PVT sweeps simultaneously).
-3. **ADVERSARIAL CROSS-CHECKING & SELF-HEALING LOOP:**
+4. **ADVERSARIAL CROSS-CHECKING & SELF-HEALING LOOP:**
    - **No milestone is complete until the designated Validation Agent signs off with an `AUDIT: PASS`.**
    - If an auditor detects an anomaly, contradiction, unverified claim, or rubric deficiency, it generates a **Corrective Punch-List** with `AUDIT: REJECTED`.
    - The Lead Director immediately re-assigns the task back to the implementer with the punch-list to fix the issue.
-4. **CONTINUOUS GIT COMMIT & PUSH:**
+5. **CONTINUOUS GIT COMMIT & PUSH:**
    - Every verified milestone must be committed and pushed immediately:
      ```bash
      git add -A
@@ -58,7 +59,7 @@
      git push origin main
      ```
    - Target Remote: `https://github.com/Parswanadh/multiphase-divider-v2` (`origin main`).
-5. **SUDO CREDENTIALS & PRE-INSTALLED TOOLS:**
+6. **SUDO CREDENTIALS & PRE-INSTALLED TOOLS:**
    - User sudo password: `Parshu@12` (`echo "Parshu@12" | sudo -S <cmd>`).
    - Note: `ngspice-42`, `magic 8.3`, `klayout`, `gtkwave`, `matplotlib`, `scipy`, and `numpy` are already pre-installed.
 
