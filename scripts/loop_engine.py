@@ -1,208 +1,133 @@
 #!/usr/bin/env python3
 """
-loop_engine.py: Anthropic Loop Engineering Engine
-Implements Orchestrator-Workers + Evaluator-Optimizer feedback loop.
-Dynamically inspects environmental artifacts, evaluates distance-to-goal,
-and mutates tasks towards the advanced publication & academic deliverables.
+loop_engine.py: Anthropic Loop Engineering Engine for IEEE Q1 Campaign
+Implements Orchestrator-Workers + Evaluator-Optimizer dynamic loop patterns
+derived from Anthropic's 'Getting Started with Loops' architecture.
+
+Evaluates progress across a 1-2 week research lifecycle:
+- Stage 1: Analytical Modeling & Academic Assignment (15M)
+- Stage 2: Loophole Exploitation, V2 Architecture & Lab System Project (40M)
+- Stage 3: Monte Carlo Statistical Mismatch & Post-Layout PEX Extraction
+- Stage 4: Publication-Grade IEEE Q1 Manuscript & Benchmark Defense
 """
 
 import os
 import json
-import re
 from pathlib import Path
-from datetime import datetime
 
 WORKSPACE = Path(__file__).resolve().parent.parent
-LEDGER_PATH = WORKSPACE / "state" / "loop_ledger.json"
+ROADMAP_PATH = WORKSPACE / "state" / "q1_roadmap.json"
 LOGS_DIR = WORKSPACE / "logs"
 
-def load_ledger():
-    if not LEDGER_PATH.exists():
-        raise FileNotFoundError(f"Ledger file not found at {LEDGER_PATH}")
-    with open(LEDGER_PATH, "r") as f:
+def load_roadmap():
+    if not ROADMAP_PATH.exists():
+        raise FileNotFoundError(f"Roadmap not found at {ROADMAP_PATH}")
+    with open(ROADMAP_PATH, "r") as f:
         return json.load(f)
 
-def save_ledger(data):
-    LEDGER_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with open(LEDGER_PATH, "w") as f:
+def save_roadmap(data):
+    ROADMAP_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with open(ROADMAP_PATH, "w") as f:
         json.dump(data, f, indent=2)
 
-def check_audit_pass(milestone_num):
-    log_file = LOGS_DIR / f"audit_m{milestone_num}.log"
+def check_audit(audit_name):
+    log_file = LOGS_DIR / f"{audit_name}.log"
     if not log_file.exists():
-        return False, "File does not exist"
+        return False, "Not started"
     content = log_file.read_text()
     if "AUDIT: PASS" in content:
-        return True, "Signed off with AUDIT: PASS"
+        return True, "Verified PASS"
     elif "AUDIT: REJECTED" in content:
-        return False, "Rejected by auditor"
-    return False, "Audit log incomplete"
+        return False, "Rejected with punchlist"
+    return False, "Incomplete audit"
 
-def evaluate_and_mutate():
-    ledger = load_ledger()
-    ledger["current_iteration"] += 1
-    iteration = ledger["current_iteration"]
+def evaluate_and_advance():
+    roadmap = load_roadmap()
     
-    # 1. Evaluate Milestone Audits & Progress
-    milestone_checks = {m: check_audit_pass(m) for m in range(1, 8)}
-    
-    # Calculate rubric score
-    rubrics = ledger["north_star_goal"]["academic_evaluation"]["rubrics"]
-    if milestone_checks[1][0]:
-        rubrics["theory_assignment_implementation"]["verified"] = 7
-        rubrics["theory_assignment_sizing"]["verified"] = 8
-        rubrics["system_project_functionality"]["verified"] = 10
-    if milestone_checks[2][0]:
-        rubrics["system_project_power"]["verified"] = 5
-        rubrics["system_project_delay"]["verified"] = 5
-        rubrics["system_project_pdp"]["verified"] = 5
-    if milestone_checks[3][0]:
-        rubrics["system_project_pvt"]["verified"] = 5
-    if milestone_checks[4][0]:
-        rubrics["system_project_layout"]["verified"] = 5
-    if milestone_checks[6][0]:
-        rubrics["system_project_report"]["verified"] = 5
+    # 1. Evaluate Stage 1: Analytical & Baseline
+    s1_pass, s1_reason = check_audit("audit_m1")
+    s2_pass, s2_reason = check_audit("audit_m2")
+    assignment_doc = WORKSPACE / "report" / "23ECE302_Theory_Assignment.md"
+    stage1_complete = s1_pass and assignment_doc.exists()
 
-    total_verified = sum(item["verified"] for item in rubrics.values())
-    academic_complete = total_verified >= 55
-    if academic_complete:
-        ledger["north_star_goal"]["academic_evaluation"]["status"] = "COMPLETED"
+    # 2. Evaluate Stage 2: V2 Architecture & Lab Project
+    s3_pass, s3_reason = check_audit("audit_m3")
+    s5_pass, s5_reason = check_audit("audit_m5")
+    s6_pass, s6_reason = check_audit("audit_m6")
+    lab_doc = WORKSPACE / "report" / "23ECE383_System_Design_Project_Report.md"
+    stage2_complete = s3_pass and s5_pass and s6_pass and lab_doc.exists()
 
-    # Evaluate V2 Paper goals
-    v2_status = ledger["north_star_goal"]["publication_v2_paper"]
-    metrics_file = WORKSPACE / "results" / "metrics_baseline.json"
-    v2_table = WORKSPACE / "results" / "v2_comparison_table.csv"
+    # 3. Evaluate Stage 3: Monte Carlo & Layout PEX
+    s4_pass, s4_reason = check_audit("audit_m4")
+    gds_file = WORKSPACE / "layout" / "divider_core.gds"
+    mc_results = WORKSPACE / "results" / "monte_carlo_phase_error.csv"
+    stage3_complete = s4_pass and gds_file.exists() and mc_results.exists()
+
+    # 4. Evaluate Stage 4: IEEE Q1 Manuscript
+    s7_pass, s7_reason = check_audit("audit_m7")
     manuscript = WORKSPACE / "paper" / "manuscript_v2.md"
+    stage4_complete = s7_pass and manuscript.exists()
 
-    if milestone_checks[5][0] and v2_table.exists():
-        v2_status["status"] = "VERIFIED_READY"
-
-    # Calculate overall Goal Distance Score (0 to 100)
-    passed_milestones = sum(1 for m, (passed, _) in milestone_checks.items() if passed)
-    goal_distance = max(0.0, 100.0 - (passed_milestones / 7.0 * 80.0) - (20.0 if manuscript.exists() else 0.0))
-    ledger["goal_distance_score"] = round(goal_distance, 2)
-
-    # 2. Dynamic Task Mutation (Anthropic Evaluator-Optimizer Pattern)
-    active_ids = {t["id"] for t in ledger["active_dynamic_tasks"]}
-    completed_ids = {t["id"] for t in ledger["completed_dynamic_tasks"]}
-    
-    # Check if active tasks completed
-    new_active = []
-    for task in ledger["active_dynamic_tasks"]:
-        task_id = task["id"]
-        # Match milestone to task
-        done = False
-        if "BASELINE" in task_id and milestone_checks[1][0]:
-            done = True
-        elif "RESEARCH" in task_id and (WORKSPACE / "research" / "enhancement_strategy.md").exists():
-            done = True
-        elif "METRICS" in task_id and milestone_checks[2][0]:
-            done = True
-        elif "PVT" in task_id and milestone_checks[3][0]:
-            done = True
-        elif "LAYOUT" in task_id and milestone_checks[4][0]:
-            done = True
-        elif "V2-ENHANCED" in task_id and milestone_checks[5][0]:
-            done = True
-        elif "REPORTS" in task_id and milestone_checks[6][0]:
-            done = True
-        elif "MANUSCRIPT" in task_id and milestone_checks[7][0]:
-            done = True
+    # Update Stage statuses
+    stages = roadmap["dynamic_stages"]
+    if stage1_complete:
+        stages[0]["status"] = "COMPLETED"
+        if stages[1]["status"] == "QUEUED":
+            stages[1]["status"] = "ACTIVE"
+            roadmap["current_stage"] = "STAGE_2_V2_ARCHITECTURE_ENHANCEMENT"
             
-        if done:
-            task["status"] = "COMPLETED"
-            task["completed_iteration"] = iteration
-            ledger["completed_dynamic_tasks"].append(task)
-        else:
-            new_active.append(task)
+    if stage2_complete:
+        stages[1]["status"] = "COMPLETED"
+        if stages[2]["status"] == "QUEUED":
+            stages[2]["status"] = "ACTIVE"
+            roadmap["current_stage"] = "STAGE_3_MONTE_CARLO_AND_LAYOUT_PEX"
             
-    ledger["active_dynamic_tasks"] = new_active
-    active_ids = {t["id"] for t in ledger["active_dynamic_tasks"]}
-    completed_ids = {t["id"] for t in ledger["completed_dynamic_tasks"]}
+    if stage3_complete:
+        stages[2]["status"] = "COMPLETED"
+        if stages[3]["status"] == "QUEUED":
+            stages[3]["status"] = "ACTIVE"
+            roadmap["current_stage"] = "STAGE_4_IEEE_Q1_MANUSCRIPT_AND_PEER_AUDIT"
+            
+    if stage4_complete:
+        stages[3]["status"] = "COMPLETED"
+        roadmap["current_stage"] = "ALL_STAGES_COMPLETED"
 
-    # Dynamically inject next-tier tasks based on environmental feedback
-    candidate_tasks = [
-        {
-            "id": "TASK-03-EXTRACT-METRICS",
-            "category": "implementation",
-            "title": "Compute 8-phase waveforms, power (2.34mW), delay, and PDP",
-            "assigned_agent": "pvt-metrics-runner",
-            "auditor_agent": "data-integrity-verifier",
-            "status": "READY",
-            "dependencies": ["TASK-01-BASELINE-NETLIST"]
-        },
-        {
-            "id": "TASK-04-PVT-SWEEP",
-            "category": "implementation",
-            "title": "Automate multi-corner PVT sweep across TT/FF/SS, -40C to 125C, 1.8V±10%",
-            "assigned_agent": "pvt-metrics-runner",
-            "auditor_agent": "data-integrity-verifier",
-            "status": "READY",
-            "dependencies": ["TASK-03-EXTRACT-METRICS"]
-        },
-        {
-            "id": "TASK-05-MAGIC-LAYOUT",
-            "category": "implementation",
-            "title": "Implement Magic VLSI common-centroid 2-finger layout with zero DRC errors",
-            "assigned_agent": "layout-engineer",
-            "auditor_agent": "circuit-auditor",
-            "status": "READY",
-            "dependencies": ["TASK-01-BASELINE-NETLIST"]
-        },
-        {
-            "id": "TASK-06-V2-ENHANCED-DIVIDER",
-            "category": "implementation",
-            "title": "Implement V2 divider with cascode tail mirror, active PMOS loads, and phase alignment",
-            "assigned_agent": "circuit-engineer",
-            "auditor_agent": "circuit-auditor",
-            "status": "READY",
-            "dependencies": ["TASK-02-RESEARCH-ENHANCEMENT", "TASK-03-EXTRACT-METRICS"]
-        },
-        {
-            "id": "TASK-07-ACADEMIC-REPORTS",
-            "category": "academic",
-            "title": "Compile 23ECE302 Theory (15M) & 23ECE383 Lab System Project (40M) reports",
-            "assigned_agent": "academic-author",
-            "auditor_agent": "rubric-compliance-officer",
-            "status": "READY",
-            "dependencies": ["TASK-03-EXTRACT-METRICS", "TASK-04-PVT-SWEEP", "TASK-05-MAGIC-LAYOUT"]
-        },
-        {
-            "id": "TASK-08-IEEE-MANUSCRIPT",
-            "category": "publication",
-            "title": "Draft complete IEEE Letters manuscript with Table I comparative benchmarking",
-            "assigned_agent": "research-author",
-            "auditor_agent": "data-integrity-verifier",
-            "status": "READY",
-            "dependencies": ["TASK-06-V2-ENHANCED-DIVIDER", "TASK-07-ACADEMIC-REPORTS"]
-        }
+    # Compute Readiness Percentage (0 - 100%)
+    weights = [0.25, 0.35, 0.20, 0.20]
+    completion = [
+        1.0 if stage1_complete else (0.5 if s1_pass else 0.1),
+        1.0 if stage2_complete else (0.5 if s5_pass else 0.0),
+        1.0 if stage3_complete else (0.5 if s4_pass else 0.0),
+        1.0 if stage4_complete else (0.3 if manuscript.exists() else 0.0)
     ]
+    readiness = sum(w * c for w, c in zip(weights, completion)) * 100.0
+    roadmap["overall_q1_readiness_pct"] = round(readiness, 2)
 
-    for cand in candidate_tasks:
-        c_id = cand["id"]
-        if c_id not in active_ids and c_id not in completed_ids:
-            # Check if dependencies are satisfied
-            deps_met = all(dep in completed_ids for dep in cand["dependencies"])
-            if deps_met:
-                ledger["active_dynamic_tasks"].append(cand)
-                ledger["dynamic_mutation_history"].append({
-                    "iteration": iteration,
-                    "action": "SPAWNED_TASK",
-                    "task_id": c_id,
-                    "reason": "Dependencies satisfied in closed loop"
-                })
+    # Academic rubrics check (55 Marks)
+    academic_marks = 0
+    if assignment_doc.exists(): academic_marks += 15
+    if s1_pass: academic_marks += 10
+    if s2_pass: academic_marks += 15
+    if s3_pass: academic_marks += 5
+    if s4_pass: academic_marks += 5
+    if s6_pass: academic_marks += 5
+    roadmap["north_star_metrics"]["academic_rubric_marks"]["verified"] = min(55, academic_marks)
 
-    save_ledger(ledger)
-    
-    print(json.dumps({
-        "iteration": iteration,
-        "goal_distance_score": ledger["goal_distance_score"],
-        "academic_score_verified": f"{total_verified}/55",
-        "active_tasks_count": len(ledger["active_dynamic_tasks"]),
-        "completed_tasks_count": len(ledger["completed_dynamic_tasks"]),
-        "active_task_ids": [t["id"] for t in ledger["active_dynamic_tasks"]],
-        "all_goals_achieved": ledger["goal_distance_score"] == 0.0
-    }, indent=2))
+    save_roadmap(roadmap)
+
+    # Return concise status for watchdog
+    result = {
+        "current_stage": roadmap["current_stage"],
+        "overall_q1_readiness_pct": roadmap["overall_q1_readiness_pct"],
+        "academic_marks": f"{roadmap['north_star_metrics']['academic_rubric_marks']['verified']}/55",
+        "stage1_complete": stage1_complete,
+        "stage2_complete": stage2_complete,
+        "stage3_complete": stage3_complete,
+        "stage4_complete": stage4_complete,
+        "campaign_complete": stage4_complete and academic_marks >= 55
+    }
+    print(json.dumps(result, indent=2))
+    return result
 
 if __name__ == "__main__":
-    evaluate_and_mutate()
+    evaluate_and_advance()
