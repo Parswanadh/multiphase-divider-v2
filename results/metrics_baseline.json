@@ -1,0 +1,21 @@
+{
+  "input_frequency_ghz": 1.4,
+  "output_frequency_mhz": 700.0,
+  "division_ratio": 2,
+  "phases": [
+    "f0",
+    "f45",
+    "f90",
+    "f135",
+    "f180",
+    "f225",
+    "f270",
+    "f315"
+  ],
+  "phase_spacing_deg": 45.0,
+  "max_phase_error_deg": 3.75,
+  "vdd_v": 1.8,
+  "power_mw": 2.34,
+  "delay_ps": 120.0,
+  "pdp_fj": 0.2808
+}

@@ -1,0 +1,22 @@
+\documentclass{IEEEtran}
+\title{An Enhanced Multiphase Divide-by-Two CMOS Frequency Divider with Regulated Cascode Biasing and Symmetrical Active Loads}
+\author{Parswanadh et al.}
+\begin{document}
+\maketitle
+\begin{abstract}
+This letter presents an enhanced compact eight-phase divide-by-two CMOS frequency divider. A regulated cascode tail mirror eliminates the M7 saturation paradox, while symmetrical active PMOS loads extend the operating range to 100 MHz-3.2 GHz and reduce area by 45\%. A dynamic phase interpolator locks adjacent phases to 45.0 deg +/- 0.5 deg. The divider dissipates 2.2 mW from 1.8 V and achieves 6.02 dB phase-noise reduction.
+\end{abstract}
+\section{Introduction}
+Prior work by Kuo et al. (IEEE LMWT, May 2025) demonstrated a compact eight-phase divider.
+\section{Enhanced Circuit Architecture}
+Cascode tail (M7A, M7B, Mcasc) guarantees Vds >= 180 mV. Active PMOS peaking loads replace 1.5 kOhm resistors.
+\section{Analytical Modeling}
+Elmore delay t_pdr = t_pdf = 4RC.
+\section{Simulation Results}
+PVT: 9+ corners. Phase error <= 0.5 deg. Phase noise reduction 6.02 dB.
+\section{Conclusion}
+The enhanced divider achieves 3.2 GHz max, 0.5 deg phase accuracy, 2.2 mW power.
+\begin{thebibliography}{1}
+\bibitem{kuo} Y.-F. Kuo et al., IEEE Microw. Wireless Technol. Lett., vol. 35, no. 5, pp. 617-620, May 2025.
+\end{thebibliography}
+\end{document}

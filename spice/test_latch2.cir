@@ -1,0 +1,26 @@
+.include spice/models/cmos180.mod
+.global nbias
+Vdd Vdd 0 1.8
+Vbias nbias 0 1.2
+Vck CK 0 1.8
+Vd D 0 1.8
+Vdb Db 0 0
+
+.subckt DLATCH D Db Q Qb VDD
+R1 VDD Q 1.5k
+R2 VDD Qb 1.5k
+M1 Q D xs xs nmos W=0.9u L=0.18u
+M2 Qb Db xs xs nmos W=0.9u L=0.18u
+M7 xs nbias 0 0 nmos W=1.8u L=0.36u
+.ends DLATCH
+
+XD D Db Q Qb Vdd DLATCH
+.nodeset V(Q)=1.8 V(Qb)=0 V(xs)=0.5
+.tran 5p 20n
+.control
+run
+print v(q) > results/q2.txt
+print v(xs) > results/xs2.txt
+quit
+.endc
+.end

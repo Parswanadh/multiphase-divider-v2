@@ -1,0 +1,3 @@
+* 180nm CMOS model deck (TT corner, LEVEL=1)
+.model nmos NMOS (LEVEL=1 VTO=0.45 KP=220u LAMBDA=0.08 GAMMA=0.45 PHI=0.7 TOX=3.5n)
+.model pmos PMOS (LEVEL=1 VTO=-0.45 KP=90u LAMBDA=0.1 GAMMA=0.45 PHI=0.7 TOX=3.5n)

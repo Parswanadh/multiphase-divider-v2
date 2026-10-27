@@ -1,0 +1,17 @@
+.include spice/models/cmos180.mod
+Vdd Vdd 0 1.8
+Vck CK 0 1.8
+Vxs XS 0 1.35
+* tail node connected to ground via resistor
+Rtail TAIL 0 1k
+M5 XS CK TAIL TAIL nmos W=0.9u L=0.18u
+.op
+.control
+run
+print v(tail) > results/tailsw.txt
+print @m5[id] > results/m5id.txt
+print @m5[vgs] > results/m5vgs.txt
+print @m5[vth] > results/m5vth.txt
+quit
+.endc
+.end
