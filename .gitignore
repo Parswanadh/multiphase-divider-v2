@@ -1,0 +1,18 @@
+# Ignore trash directory (do not delete files, move irrelevant files to .trash)
+.trash/
+
+# Simulation raw outputs & logs
+*.raw
+*.vcd
+*.jou
+*.log
+*.str
+
+# Python artifacts
+__pycache__/
+*.pyc
+
+# OS & Editor files
+.DS_Store
+*.swp
+*~

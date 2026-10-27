@@ -1,0 +1,66 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "subagent_depth": 2,
+  "permission": {
+    "doom_loop": "deny",
+    "bash": {
+      "*": "allow",
+      "rm *": "deny",
+      "rm -rf *": "deny",
+      "git push*--force*": "deny",
+      "git push* -f*": "deny"
+    },
+    "external_directory": {
+      "/tmp/*": "allow"
+    }
+  },
+  "agent": {
+    "lead": {
+      "description": "Lead orchestrator: coordinates milestone progression, delegates tasks to subagents in parallel, verifies gates, and triggers continuous git pushes.",
+      "mode": "primary",
+      "model": "opencode-go/longcat-2.5-preview-free",
+      "prompt": "You are the Lead Project Architect. You delegate to circuit-engineer, pvt-metrics-runner, layout-engineer, academic-author, research-author, and git-sync subagents to accomplish both Track A (Academic Evaluation) and Track B (V2 Paper). Enforce the rule: NEVER delete files; move any irrelevant files to .trash/. Verify each milestone strictly.",
+      "permission": {
+        "task": {
+          "*": "allow"
+        }
+      }
+    },
+    "circuit-engineer": {
+      "description": "Designs and validates SPICE netlists for baseline 4-latch divider and enhanced V2 architecture in ngspice.",
+      "mode": "subagent",
+      "model": "opencode-go/longcat-2.5-preview-free",
+      "steps": 120
+    },
+    "pvt-metrics-runner": {
+      "description": "Executes batch automated Python sweeps for Power, Delay, PDP, and PVT corners (TT, FF, SS, FS, SF, -40C to 125C, 1.8V±10%).",
+      "mode": "subagent",
+      "model": "opencode-go/longcat-2.5-preview-free",
+      "steps": 120
+    },
+    "layout-engineer": {
+      "description": "Generates transistor physical layout scripts for Magic VLSI and KLayout with DRC and LVS checks.",
+      "mode": "subagent",
+      "model": "opencode-go/longcat-2.5-preview-free",
+      "steps": 100
+    },
+    "academic-author": {
+      "description": "Generates complete 23ECE302 Assignment (15 marks) and 23ECE383 System Project (40 marks) reports with all derivations, sizing calculations, waveforms, and rubric alignment.",
+      "mode": "subagent",
+      "model": "opencode-go/longcat-2.5-preview-free",
+      "steps": 100
+    },
+    "research-author": {
+      "description": "Drafts the publication-grade IEEE letter manuscript for V2 Frequency Divider exploiting the 13 loopholes from the single-page audit.",
+      "mode": "subagent",
+      "model": "opencode-go/longcat-2.5-preview-free",
+      "steps": 100
+    },
+    "git-sync": {
+      "description": "Maintains git history and continuously pushes commits to GitHub after every milestone.",
+      "mode": "subagent",
+      "model": "opencode-go/longcat-2.5-preview-free",
+      "steps": 50
+    }
+  }
+}
