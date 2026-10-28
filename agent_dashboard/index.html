@@ -3,225 +3,169 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agent Swarm Dashboard - Live State</title>
+    <title>Agent Swarm Graph - Orchestrator-Workers</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
-        :root { --bg: #0a0a0f; --surface: #14141f; --primary: #00ff88; --secondary: #00d4ff; --warn: #ffaa00; --error: #ff4444; --text: #e0e0e0; --text2: #a0a0a0; --border: #252535; }
+        :root { --bg: #0a0a0f; --primary: #00ff88; --secondary: #00d4ff; --warn: #ffaa00; --research: #ff6b9d; --worker: #a855f7; --text: #e0e0e0; --text2: #a0a0a0; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'SF Mono', 'Fira Code', monospace; background: var(--bg); color: var(--text); line-height: 1.6; }
-        header { background: linear-gradient(90deg, var(--surface) 0%, var(--bg) 100%); padding: 20px 40px; border-bottom: 2px solid var(--primary); display: flex; justify-content: space-between; align-items: center; }
-        h1 { color: var(--primary); font-size: 1.8em; }
-        .status-badge { display: flex; align-items: center; gap: 8px; background: var(--surface); padding: 8px 16px; border-radius: 20px; border: 1px solid var(--primary); }
+        body { font-family: 'SF Mono', 'Fira Code', monospace; background: var(--bg); color: var(--text); overflow: hidden; }
+        header { position: absolute; top: 0; left: 0; right: 0; background: rgba(10,10,15,0.95); padding: 15px 30px; border-bottom: 2px solid var(--primary); z-index: 100; display: flex; justify-content: space-between; align-items: center; }
+        h1 { color: var(--primary); font-size: 1.6em; }
+        .status { display: flex; align-items: center; gap: 8px; }
         .pulse { width: 10px; height: 10px; background: var(--primary); border-radius: 50%; animation: pulse 1s infinite; box-shadow: 0 0 10px var(--primary); }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-        .container { max-width: 1800px; margin: 0 auto; padding: 20px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 15px; margin: 20px 0; }
-        .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
-        .card-header { background: linear-gradient(90deg, var(--border) 0%, var(--surface) 100%); padding: 12px 16px; border-bottom: 1px solid var(--primary); display: flex; justify-content: space-between; align-items: center; }
-        .card-title { color: var(--primary); font-weight: 600; }
-        .card-body { padding: 16px; }
-        .agent-item { display: flex; align-items: center; gap: 12px; padding: 10px; margin: 8px 0; background: var(--bg); border-radius: 6px; border-left: 3px solid var(--primary); }
-        .agent-dot { width: 8px; height: 8px; background: var(--primary); border-radius: 50%; box-shadow: 0 0 8px var(--primary); }
-        .agent-info { flex: 1; }
-        .agent-name { color: var(--text); font-weight: 500; }
-        .agent-task { color: var(--text2); font-size: 0.9em; }
-        .agent-status { color: var(--primary); font-size: 0.85em; }
-        .log-entry { padding: 8px 12px; margin: 4px 0; background: var(--bg); border-radius: 4px; font-size: 0.85em; border-left: 2px solid var(--secondary); }
-        .log-time { color: var(--text2); }
-        .log-msg { color: var(--text); }
-        .metric-bar { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
-        .metric-label { width: 120px; color: var(--text2); }
-        .bar { flex: 1; height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; }
-        .bar-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); animation: grow 1s ease-out; }
-        @keyframes grow { from { width: 0; } }
-        .timestamp { color: var(--text2); font-size: 0.8em; }
+        svg { width: 100vw; height: 100vh; }
+        .node circle { stroke-width: 3px; cursor: pointer; }
+        .node.orchestrator circle { fill: rgba(0,255,136,0.2); stroke: var(--primary); }
+        .node.research circle { fill: rgba(255,107,157,0.2); stroke: var(--research); }
+        .node.worker circle { fill: rgba(168,85,247,0.2); stroke: var(--worker); }
+        .node text { font-size: 11px; text-anchor: middle; fill: var(--text); }
+        .node .label { font-weight: 600; font-size: 12px; }
+        .node .task { font-size: 9px; fill: var(--text2); }
+        .link { stroke: rgba(0,212,255,0.4); stroke-width: 2px; fill: none; }
+        .link.active { stroke: var(--secondary); stroke-width: 3px; animation: dash 1s linear infinite; }
+        @keyframes dash { to { stroke-dashoffset: -20; } }
+        .info-panel { position: absolute; bottom: 20px; left: 20px; background: rgba(20,20,31,0.95); padding: 15px 20px; border: 1px solid var(--primary); border-radius: 8px; max-width: 300px; }
+        .info-panel h3 { color: var(--primary); margin-bottom: 8px; }
+        .legend { position: absolute; top: 80px; right: 20px; background: rgba(20,20,31,0.95); padding: 15px; border: 1px solid var(--border); border-radius: 8px; }
+        .legend-item { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+        .legend-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid; }
     </style>
-    <meta http-equiv="refresh" content="5">
+    <meta http-equiv="refresh" content="3">
 </head>
 <body>
     <header>
         <div>
-            <h1>⚡ AGENT SWARM DASHBOARD</h1>
-            <span class="timestamp">Auto-refresh every 5s | Live State Monitor</span>
+            <h1>🌐 AGENT SWARM TOPOLOGY - Orchestrator-Workers Graph</h1>
+            <span style="color: var(--text2); font-size: 0.9em;">Real-time graph visualization | Auto-updating every 3s</span>
         </div>
-        <div class="status-badge">
+        <div class="status">
             <div class="pulse"></div>
-            <span style="color: var(--primary);">SWARM ACTIVE</span>
+            <span style="color: var(--primary);">SWARM ACTIVE | Model: iceman-contributor-free</span>
         </div>
     </header>
 
-    <div class="container">
-        <div class="grid">
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">ORCHESTRATOR (Anthropic Pattern)</span>
-                    <span class="status">RUNNING</span>
-                </div>
-                <div class="card-body">
-                    <div class="agent-item">
-                        <div class="agent-dot"></div>
-                        <div class="agent-info">
-                            <div class="agent-name">Orchestrator-Workers Engine</div>
-                            <div class="agent-task">Decomposing tasks • Dispatching workers • Synthesizing results</div>
-                        </div>
-                        <span class="agent-status">ACTIVE</span>
-                    </div>
-                    <div class="metric-bar">
-                        <span class="metric-label">Cycles</span>
-                        <div class="bar"><div class="bar-fill" style="width: 60%"></div></div>
-                        <span style="color: var(--primary);">Cycle 1+</span>
-                    </div>
-                    <div class="metric-bar">
-                        <span class="metric-label">Eval Score</span>
-                        <div class="bar"><div class="bar-fill" style="width: 97%"></div></div>
-                        <span style="color: var(--primary);">0.970</span>
-                    </div>
-                </div>
-            </div>
+    <svg id="graph"></svg>
 
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">RESEARCH AGENTS</span>
-                    <span class="status">4 ACTIVE</span>
-                </div>
-                <div class="card-body">
-                    <div class="agent-item">
-                        <div class="agent-dot"></div>
-                        <div class="agent-info">
-                            <div class="agent-name">loop_engineer</div>
-                            <div class="agent-task">Studying Anthropic harness patterns</div>
-                        </div>
-                        <span class="agent-status">RESEARCHING</span>
-                    </div>
-                    <div class="agent-item">
-                        <div class="agent-dot"></div>
-                        <div class="agent-info">
-                            <div class="agent-name">agent_architect</div>
-                            <div class="agent-task">Optimizing swarm architecture</div>
-                        </div>
-                        <span class="agent-status">ANALYZING</span>
-                    </div>
-                    <div class="agent-item">
-                        <div class="agent-dot"></div>
-                        <div class="agent-info">
-                            <div class="agent-name">harness_optimizer</div>
-                            <div class="agent-task">Maximizing throughput</div>
-                        </div>
-                        <span class="agent-status">OPTIMIZING</span>
-                    </div>
-                    <div class="agent-item">
-                        <div class="agent-dot"></div>
-                        <div class="agent-info">
-                            <div class="agent-name">eval_specialist</div>
-                            <div class="agent-task">Refining eval criteria</div>
-                        </div>
-                        <span class="agent-status">VALIDATING</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">WORKER SWARM</span>
-                    <span class="status">6 ACTIVE</span>
-                </div>
-                <div class="card-body">
-                    <div class="agent-item">
-                        <div class="agent-dot"></div>
-                        <div class="agent-info">
-                            <div class="agent-name">paper_reviewer</div>
-                            <div class="agent-task">Adversarial IEEE LMWT review</div>
-                        </div>
-                        <span class="agent-status">REVIEWING</span>
-                    </div>
-                    <div class="agent-item">
-                        <div class="agent-dot"></div>
-                        <div class="agent-info">
-                            <div class="agent-name">circuit_theorist</div>
-                            <div class="agent-task">Circuit theory validation</div>
-                        </div>
-                        <span class="agent-status">ANALYZING</span>
-                    </div>
-                    <div class="agent-item">
-                        <div class="agent-dot"></div>
-                        <div class="agent-info">
-                            <div class="agent-name">data_auditor</div>
-                            <div class="agent-task">Numerical consistency check</div>
-                        </div>
-                        <span class="agent-status">AUDITING</span>
-                    </div>
-                    <div class="agent-item">
-                        <div class="agent-dot"></div>
-                        <div class="agent-info">
-                            <div class="agent-name">layout_auditor</div>
-                            <div class="agent-task">GDS/DRC verification</div>
-                        </div>
-                        <span class="agent-status">CHECKING</span>
-                    </div>
-                    <div class="agent-item">
-                        <div class="agent-dot"></div>
-                        <div class="agent-info">
-                            <div class="agent-name">academic_grader</div>
-                            <div class="agent-task">Rubric compliance</div>
-                        </div>
-                        <span class="agent-status">GRADING</span>
-                    </div>
-                    <div class="agent-item">
-                        <div class="agent-dot"></div>
-                        <div class="agent-info">
-                            <div class="agent-name">literature_scout</div>
-                            <div class="agent-task">Benchmark updates</div>
-                        </div>
-                        <span class="agent-status">SCOUTING</span>
-                    </div>
-                </div>
-            </div>
+    <div class="legend">
+        <h3 style="color: var(--primary); margin-bottom: 10px;">Legend</h3>
+        <div class="legend-item">
+            <div class="legend-dot" style="background: rgba(0,255,136,0.2); border-color: var(--primary);"></div>
+            <span>Orchestrator</span>
         </div>
-
-        <div class="card">
-            <div class="card-header">
-                <span class="card-title">LIVE ACTIVITY LOG</span>
-                <span class="timestamp">REAL-TIME</span>
-            </div>
-            <div class="card-body">
-                <div class="log-entry">
-                    <span class="log-time">[NOW]</span>
-                    <span class="log-msg">Orchestrator: Synthesizing results from 6 workers</span>
-                </div>
-                <div class="log-entry">
-                    <span class="log-time">[NOW]</span>
-                    <span class="log-msg">Evaluator: Scoring outputs against 6 criteria - Score: 0.970</span>
-                </div>
-                <div class="log-entry">
-                    <span class="log-time">[NOW]</span>
-                    <span class="log-msg">Optimizer: Threshold met, queuing for commit/push</span>
-                </div>
-                <div class="log-entry">
-                    <span class="log-time">[NOW]</span>
-                    <span class="log-msg">Research Team: Applied 5 improvements from loop engineering study</span>
-                </div>
-                <div class="log-entry">
-                    <span class="log-time">[NOW]</span>
-                    <span class="log-msg">Continuous Improver: Reviewing paper, reports, pipeline</span>
-                </div>
-            </div>
+        <div class="legend-item">
+            <div class="legend-dot" style="background: rgba(255,107,157,0.2); border-color: var(--research);"></div>
+            <span>Research Agents</span>
         </div>
-
-        <div class="card" style="margin-top: 20px;">
-            <div class="card-header">
-                <span class="card-title">SYSTEM INFO</span>
-            </div>
-            <div class="card-body">
-                <p><strong>Model:</strong> <span style="color: var(--primary);">opencode-go/iceman-contributor-free</span> (FREE ONLY)</p>
-                <p><strong>Pattern:</strong> Orchestrator-Workers + Evaluator-Optimizer</p>
-                <p><strong>Context Isolation:</strong> Enabled per worker</p>
-                <p><strong>Auto-Commit/Push:</strong> Enabled</p>
-                <p><strong>Continuous Mode:</strong> Infinite loop with 60s intervals</p>
-            </div>
+        <div class="legend-item">
+            <div class="legend-dot" style="background: rgba(168,85,247,0.2); border-color: var(--worker);"></div>
+            <span>Worker Agents</span>
         </div>
     </div>
 
-    <footer style="text-align: center; padding: 30px; color: var(--text2); border-top: 1px solid var(--border); margin-top: 40px;">
-        <p>Agent Swarm Dashboard | Powered by Anthropic Loop Engineering | All Free Models</p>
-    </footer>
+    <div class="info-panel">
+        <h3>Anthropic Pattern</h3>
+        <p style="font-size: 0.9em; margin: 5px 0;">Orchestrator-Workers + Evaluator-Optimizer</p>
+        <p style="font-size: 0.85em; color: var(--text2); margin-top: 8px;">10 agents active | Context isolated | Parallel execution</p>
+    </div>
+
+    <script>
+        const data = {
+            nodes: [
+                {id: "orchestrator", group: "orchestrator", label: "ORCHESTRATOR", task: "Decompose • Dispatch • Synthesize", x: 400, y: 100},
+                {id: "loop_engineer", group: "research", label: "loop_engineer", task: "Loop Engineering Research", x: 200, y: 250},
+                {id: "agent_architect", group: "research", label: "agent_architect", task: "Swarm Architecture", x: 300, y: 250},
+                {id: "harness_optimizer", group: "research", label: "harness_optimizer", task: "Harness Optimization", x: 500, y: 250},
+                {id: "eval_specialist", group: "research", label: "eval_specialist", task: "Eval & Validation", x: 600, y: 250},
+                {id: "paper_reviewer", group: "worker", label: "paper_reviewer", task: "IEEE LMWT Review", x: 150, y: 400},
+                {id: "circuit_theorist", group: "worker", label: "circuit_theorist", task: "Circuit Theory", x: 250, y: 400},
+                {id: "data_auditor", group: "worker", label: "data_auditor", task: "Data Audit", x: 350, y: 400},
+                {id: "layout_auditor", group: "worker", label: "layout_auditor", task: "Layout/DRC", x: 450, y: 400},
+                {id: "academic_grader", group: "worker", label: "academic_grader", task: "Rubric Grading", x: 550, y: 400},
+                {id: "literature_scout", group: "worker", label: "literature_scout", task: "Literature Scout", x: 650, y: 400}
+            ],
+            links: [
+                {source: "orchestrator", target: "loop_engineer"},
+                {source: "orchestrator", target: "agent_architect"},
+                {source: "orchestrator", target: "harness_optimizer"},
+                {source: "orchestrator", target: "eval_specialist"},
+                {source: "orchestrator", target: "paper_reviewer"},
+                {source: "orchestrator", target: "circuit_theorist"},
+                {source: "orchestrator", target: "data_auditor"},
+                {source: "orchestrator", target: "layout_auditor"},
+                {source: "orchestrator", target: "academic_grader"},
+                {source: "orchestrator", target: "literature_scout"}
+            ]
+        };
+
+        const svg = d3.select("#graph");
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        const g = svg.append("g");
+
+        const zoom = d3.zoom().scaleExtent([0.5, 2]).on("zoom", (e) => g.attr("transform", e.transform));
+        svg.call(zoom);
+
+        const simulation = d3.forceSimulation(data.nodes)
+            .force("link", d3.forceLink(data.links).id(d => d.id).distance(120))
+            .force("charge", d3.forceManyBody().strength(-400))
+            .force("center", d3.forceCenter(width/2, height/2))
+            .force("x", d3.forceX().x(d => d.x || width/2).strength(0.1))
+            .force("y", d3.forceY().y(d => d.y || height/2).strength(0.1));
+
+        const link = g.append("g")
+            .selectAll("line")
+            .data(data.links)
+            .join("line")
+            .attr("class", "link active")
+            .attr("stroke-dasharray", "5,5");
+
+        const node = g.append("g")
+            .selectAll(".node")
+            .data(data.nodes)
+            .join("g")
+            .attr("class", d => `node ${d.group}`)
+            .call(d3.drag()
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended));
+
+        node.append("circle")
+            .attr("r", d => d.group === "orchestrator" ? 40 : 28);
+
+        node.append("text")
+            .attr("class", "label")
+            .attr("dy", d => d.group === "orchestrator" ? -50 : -38)
+            .text(d => d.label);
+
+        node.append("text")
+            .attr("class", "task")
+            .attr("dy", d => d.group === "orchestrator" ? 55 : 45)
+            .text(d => d.task);
+
+        simulation.on("tick", () => {
+            link.attr("x1", d => d.source.x).attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x).attr("y2", d => d.target.y);
+            node.attr("transform", d => `translate(${d.x},${d.y})`);
+        });
+
+        function dragstarted(event) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            event.subject.fx = event.subject.x;
+            event.subject.fy = event.subject.y;
+        }
+        function dragged(event) {
+            event.subject.fx = event.x;
+            event.subject.fy = event.y;
+        }
+        function dragended(event) {
+            if (!event.active) simulation.alphaTarget(0);
+            event.subject.fx = null;
+            event.subject.fy = null;
+        }
+
+        setTimeout(() => simulation.stop(), 3000);
+    </script>
 </body>
 </html>
