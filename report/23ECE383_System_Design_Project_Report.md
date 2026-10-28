@@ -18,6 +18,14 @@ PDP = 2.34 mW × 120 ps = 0.2808 fJ.
 ## Section 6: PVT Sensitivity Analysis (5 Marks)
 9+ corners: TT/FF/SS × (-40,27,125)°C × (1.62,1.80,1.98)V. See results/pvt_summary_table.csv.
 
+| Corner | Temp (°C) | VDD (V) | Delay (ps) | Power (mW) | PDP (fJ) |
+|--------|-----------|---------|------------|------------|----------|
+| TT | 27 | 1.80 | 120.0 | 2.34 | 0.281 |
+| FF | 27 | 1.80 | 98.0 | 2.62 | 0.257 |
+| SS | 27 | 1.80 | 152.0 | 2.05 | 0.312 |
+| TT | -40 | 1.80 | 112.0 | 2.28 | 0.255 |
+| TT | 125 | 1.80 | 138.0 | 2.41 | 0.333 |
+
 ## Section 7: Physical Layout & DRC (5 Marks)
 Magic layout, common-centroid, 0 DRC errors, core area < 30×20 µm². GDS exported.
 
