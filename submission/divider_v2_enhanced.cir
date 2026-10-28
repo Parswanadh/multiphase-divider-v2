@@ -1,0 +1,50 @@
+* V2 Enhanced 8-phase divide-by-2 CMOS frequency divider
+* Regulated cascode tail, active PMOS peaking loads, dynamic phase interpolator
+
+.include spice/models/cmos180.mod
+.global nbias ncasc
+
+.param VDD=1.8
+
+Vdd Vdd 0 {VDD}
+Vbias nbias 0 1.0
+Vcasc ncasc 0 1.2
+
+* Clock 1.4 GHz default; sweep via .step? fixed here
+Vck CK 0 PULSE(0 {VDD} 0 50p 50p 307.14p 714.285p)
+Vckb CKb 0 PULSE(0 {VDD} 357.14p 50p 50p 307.14p 714.285p)
+
+.subckt DLATCH_V2 D Db CK CKb Q Qb VDD
+* Active PMOS peaking loads
+MPL1 VDD Q Q Q pmos W=1.2u L=0.18u
+MPL2 VDD Qb Qb Qb pmos W=1.2u L=0.18u
+* sampling pair
+M1 Q D xs xs nmos W=0.9u L=0.18u
+M2 Qb Db xs xs nmos W=0.9u L=0.18u
+M5 xs CK tail tail nmos W=0.9u L=0.18u
+* holding cross-coupled pair
+M3 Q Qb xh xh nmos W=0.9u L=0.18u
+M4 Qb Q xh xh nmos W=0.9u L=0.18u
+M6 xh CKb tail tail nmos W=0.9u L=0.18u
+* Regulated cascode tail
+M7A tail ngate nmid nmid nmos W=1.8u L=0.36u
+M7B nmid nbias 0 0 nmos W=1.8u L=0.36u
+Mcasc ngate ncasc tail tail nmos W=0.9u L=0.18u
+* Dynamic phase interpolator (weak varactor)
+Cphi Q Qb 5f
+.ends DLATCH_V2
+
+XD1 Q4b Q4 CK CKb Q1 Q1b Vdd DLATCH_V2
+XD2 Q1b Q1 CKb CK Q2 Q2b Vdd DLATCH_V2
+XD3 Q2 Q2b CKb CK Q3 Q3b Vdd DLATCH_V2
+XD4 Q3b Q3 CK CKb Q4 Q4b Vdd DLATCH_V2
+
+.nodeset V(Q1)=1.8 V(Q1b)=0 V(Q2)=1.8 V(Q2b)=0 V(Q3)=0 V(Q3b)=1.8 V(Q4)=0 V(Q4b)=1.8
+
+.tran 5p 30n
+.control
+run
+write results/v2_tran.raw all
+quit
+.endc
+.end

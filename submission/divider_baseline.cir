@@ -1,0 +1,55 @@
+* Baseline 8-phase divide-by-2 CMOS frequency divider (Kuo et al. style)
+* 180nm, VDD=1.8V, CK=1.4GHz -> out=700MHz
+
+.include spice/models/cmos180.mod
+.global nbias
+
+.param VDD=1.8
+
+Vdd Vdd 0 {VDD}
+
+* Clock 1.4 GHz, period 714.285ps
+Vck CK 0 PULSE(0 {VDD} 0 50p 50p 307.14p 714.285p)
+Vckb CKb 0 PULSE(0 {VDD} 357.14p 50p 50p 307.14p 714.285p)
+
+Vbias nbias 0 0.9
+
+.subckt DLATCH D Db CK CKb Q Qb VDD
+R1 VDD Q 1.5k
+R2 VDD Qb 1.5k
+* sampling pair
+M1 Q D xs xs nmos W=0.9u L=0.18u
+M2 Qb Db xs xs nmos W=0.9u L=0.18u
+M5 xs CK tail tail nmos W=0.9u L=0.18u
+* holding cross-coupled pair
+M3 Q Qb xh xh nmos W=0.9u L=0.18u
+M4 Qb Q xh xh nmos W=0.9u L=0.18u
+M6 xh CKb tail tail nmos W=0.9u L=0.18u
+* tail current source
+M7 tail nbias 0 0 nmos W=1.8u L=0.36u
+.ends DLATCH
+
+* Four latches
+* Latch1,4 use CK; Latch2,3 use CKb (inverted clock)
+XD1 Q4b Q4 CK CKb Q1 Q1b Vdd DLATCH
+XD2 Q1b Q1 CKb CK Q2 Q2b Vdd DLATCH
+XD3 Q2 Q2b CKb CK Q3 Q3b Vdd DLATCH
+XD4 Q3b Q3 CK CKb Q4 Q4b Vdd DLATCH
+
+
+
+.tran 5p 30n
+
+
+.control
+run
+print v(q1) > results/q1_trace.txt
+print v(q2) > results/q2_trace.txt
+print v(q3) > results/q3_trace.txt
+print v(q4) > results/q4_trace.txt
+print v(ck) > results/ck_trace.txt
+write results/baseline_tran.raw all
+quit
+.endc
+
+.end
