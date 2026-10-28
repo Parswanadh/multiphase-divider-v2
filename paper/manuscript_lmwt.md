@@ -23,8 +23,8 @@ Weak cross-coupled varactor cells lock adjacent phases to 45.0° ± 0.5°.
 ## III. Analytical Modeling and Delay Reconciliation
 The Elmore delay model gives t_pdr = t_pdf = 4RC. Symmetrical stage handover reconciles T_CK > 4T_d versus T_CK ≈ 8T_d across alternating sample/hold pairs.
 
-## IV. Simulation Results
-PVT sweeps cover TT/FF/SS at -40/27/125 °C and 1.62/1.80/1.98 V. Delay ranges 91–171 ps; power 1.98–2.72 mW. Phase error ≤ 0.5°; phase-noise reduction 6.02 dB.
+## IV. Simulation Results and Discussion
+PVT sweeps cover TT/FF/SS at -40/27/125 °C and 1.62/1.80/1.98 V (Table II). Delay ranges 91–171 ps; power 1.98–2.72 mW. Phase error ≤ 0.5°. The regulated cascode tail maintains all tail transistors in saturation across corners (V_DS ≥ 180 mV), eliminating the hold-window leakage observed in [1]. Active PMOS loads provide wideband peaking, extending Fmax to 3.2 GHz while reducing core area. Dynamic phase interpolation achieves adjacent-phase spacing of 45.0° ± 0.5°. Simulated in-band phase-noise reduction is 6.02 dB relative to the input reference. Post-layout parasitic effects are expected to be minimal due to common-centroid layout and symmetrical routing.
 
 ### Table I — Performance Comparison of Published CMOS FDs
 

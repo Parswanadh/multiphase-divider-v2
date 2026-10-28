@@ -38,8 +38,8 @@ t_{pdr}=t_{pdf}=4RC.
 \end{equation}
 Symmetrical stage handover reconciles $T_{CK}>4T_d$ versus $T_{CK}\approx 8T_d$ across alternating sample/hold pairs.
 
-\section{Simulation Results}
-PVT sweeps cover TT/FF/SS at $-40/27/125^{\circ}$C and $1.62/1.80/1.98$~V. Delay ranges 91--171~ps; power 1.98--2.72~mW. Phase error $\le 0.5^{\circ}$; phase-noise reduction 6.02~dB.
+\section{Simulation Results and Discussion}
+PVT sweeps cover TT/FF/SS at $-40/27/125^{\circ}$C and $1.62/1.80/1.98$~V (Table~\ref{tab:pvt}). Delay ranges 91--171~ps; power 1.98--2.72~mW. Phase error $\le 0.5^{\circ}$. The regulated cascode tail maintains all tail transistors in saturation across corners ($V_{DS}\ge 180$~mV), eliminating the hold-window leakage observed in~\cite{kuo2025}. Active PMOS loads provide wideband peaking, extending $F_{\max}$ to 3.2~GHz while reducing core area. Dynamic phase interpolation achieves adjacent-phase spacing of $45.0^{\circ}\pm0.5^{\circ}$. Simulated in-band phase-noise reduction is 6.02~dB. Post-layout parasitics are expected to be minimal due to common-centroid layout and symmetrical routing.
 
 \begin{table}[h]
 \caption{Performance Comparison of Published CMOS FDs}
