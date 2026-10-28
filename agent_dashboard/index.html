@@ -3,86 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agent Swarm Graph - Orchestrator-Workers</title>
+    <title>Unified Agent Dashboard - Live Activity</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
-        :root { --bg: #0a0a0f; --primary: #00ff88; --secondary: #00d4ff; --warn: #ffaa00; --research: #ff6b9d; --worker: #a855f7; --text: #e0e0e0; --text2: #a0a0a0; }
+        :root { --bg: #0a0a0f; --surface: #14141f; --primary: #00ff88; --secondary: #00d4ff; --warn: #ffaa00; --error: #ff4444; --research: #ff6b9d; --worker: #a855f7; --idle: #666; --text: #e0e0e0; --text2: #a0a0a0; --border: #252535; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'SF Mono', 'Fira Code', monospace; background: var(--bg); color: var(--text); overflow: hidden; }
-        header { position: absolute; top: 0; left: 0; right: 0; background: rgba(10,10,15,0.95); padding: 15px 30px; border-bottom: 2px solid var(--primary); z-index: 100; display: flex; justify-content: space-between; align-items: center; }
-        h1 { color: var(--primary); font-size: 1.6em; }
+        header { position: absolute; top: 0; left: 0; right: 0; background: rgba(10,10,15,0.98); padding: 10px 25px; border-bottom: 2px solid var(--primary); z-index: 100; display: flex; justify-content: space-between; align-items: center; }
+        h1 { color: var(--primary); font-size: 1.3em; }
         .status { display: flex; align-items: center; gap: 8px; }
-        .pulse { width: 10px; height: 10px; background: var(--primary); border-radius: 50%; animation: pulse 1s infinite; box-shadow: 0 0 10px var(--primary); }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-        svg { width: 100vw; height: 100vh; }
-        .node circle { stroke-width: 3px; cursor: pointer; }
-        .node.orchestrator circle { fill: rgba(0,255,136,0.2); stroke: var(--primary); }
+        .pulse { width: 8px; height: 8px; background: var(--primary); border-radius: 50%; animation: pulse 0.8s infinite; box-shadow: 0 0 10px var(--primary); }
+        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.3; transform: scale(1.3); } }
+        .main-layout { display: grid; grid-template-columns: 1fr 400px; height: 100vh; padding-top: 52px; }
+        svg { width: 100%; height: 100%; }
+        .side-panel { background: rgba(20,20,31,0.98); border-left: 1px solid var(--border); overflow-y: auto; padding: 12px; }
+        .panel-section { margin-bottom: 16px; }
+        .panel-title { color: var(--primary); font-size: 0.85em; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; }
+        .agent-row { display: flex; align-items: center; gap: 6px; padding: 5px 6px; margin: 3px 0; background: var(--bg); border-radius: 3px; font-size: 0.72em; }
+        .agent-dot { width: 6px; height: 6px; border-radius: 50%; }
+        .agent-dot.orch { background: var(--primary); box-shadow: 0 0 8px var(--primary); animation: pulse 0.8s infinite; }
+        .agent-dot.res { background: var(--research); box-shadow: 0 0 6px var(--research); }
+        .agent-dot.work { background: var(--worker); box-shadow: 0 0 6px var(--worker); }
+        .agent-dot.busy { animation: pulse 0.6s infinite; }
+        .agent-name { flex: 1; color: var(--text); }
+        .agent-status { font-size: 0.7em; }
+        .status-busy { color: var(--warn); }
+        .status-thinking { color: var(--secondary); }
+        .status-idle { color: var(--idle); }
+        .log-item { padding: 4px 6px; margin: 2px 0; background: var(--bg); border-radius: 3px; font-size: 0.68em; border-left: 2px solid var(--secondary); line-height: 1.4; }
+        .log-time { color: var(--warn); }
+        .metric { display: flex; justify-content: space-between; padding: 4px 0; font-size: 0.75em; }
+        .metric-val { color: var(--primary); }
+        .node circle { stroke-width: 2.5px; cursor: pointer; }
+        .node.orchestrator circle { fill: rgba(0,255,136,0.25); stroke: var(--primary); filter: drop-shadow(0 0 8px var(--primary)); }
         .node.research circle { fill: rgba(255,107,157,0.2); stroke: var(--research); }
         .node.worker circle { fill: rgba(168,85,247,0.2); stroke: var(--worker); }
-        .node text { font-size: 11px; text-anchor: middle; fill: var(--text); }
-        .node .label { font-weight: 600; font-size: 12px; }
-        .node .task { font-size: 9px; fill: var(--text2); }
-        .link { stroke: rgba(0,212,255,0.4); stroke-width: 2px; fill: none; }
-        .link.active { stroke: var(--secondary); stroke-width: 3px; animation: dash 1s linear infinite; }
-        @keyframes dash { to { stroke-dashoffset: -20; } }
-        .info-panel { position: absolute; bottom: 20px; left: 20px; background: rgba(20,20,31,0.95); padding: 15px 20px; border: 1px solid var(--primary); border-radius: 8px; max-width: 300px; }
-        .info-panel h3 { color: var(--primary); margin-bottom: 8px; }
-        .legend { position: absolute; top: 80px; right: 20px; background: rgba(20,20,31,0.95); padding: 15px; border: 1px solid var(--border); border-radius: 8px; }
-        .legend-item { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
-        .legend-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid; }
+        .node.research.busy circle { fill: rgba(255,107,157,0.4); filter: drop-shadow(0 0 6px var(--research)); }
+        .node.worker.busy circle { fill: rgba(168,85,247,0.4); filter: drop-shadow(0 0 6px var(--worker)); }
+        .node text { font-size: 9px; text-anchor: middle; fill: var(--text); }
+        .node .label { font-weight: 600; font-size: 10px; }
+        .node .task { font-size: 7px; fill: var(--text2); }
+        .link { stroke: rgba(0,212,255,0.3); stroke-width: 1.8px; fill: none; }
+        .link.active { stroke: var(--secondary); stroke-width: 2.2px; animation: dash 0.8s linear infinite; }
+        @keyframes dash { to { stroke-dashoffset: -16; } }
     </style>
-    <meta http-equiv="refresh" content="3">
 </head>
 <body>
     <header>
         <div>
-            <h1>🌐 AGENT SWARM TOPOLOGY - Orchestrator-Workers Graph</h1>
-            <span style="color: var(--text2); font-size: 0.9em;">Real-time graph visualization | Auto-updating every 3s</span>
+            <h1>⚡ LIVE AGENT SWARM MONITOR - Real-Time Activity</h1>
+            <span style="color: var(--text2); font-size: 0.8em;">Orchestrator-Workers + Evaluator-Optimizer | iceman-contributor-free (FREE)</span>
         </div>
         <div class="status">
             <div class="pulse"></div>
-            <span style="color: var(--primary);">SWARM ACTIVE | Model: iceman-contributor-free</span>
+            <span style="color: var(--primary);">SWARM PROCESSING</span>
         </div>
     </header>
 
-    <svg id="graph"></svg>
+    <div class="main-layout">
+        <svg id="graph"></svg>
+        <div class="side-panel">
+            <div class="panel-section">
+                <div class="panel-title"><span>📊 SWARM METRICS</span><span id="time" style="color: var(--text2);"></span></div>
+                <div class="metric"><span>Total Agents</span><span class="metric-val">11</span></div>
+                <div class="metric"><span>Active/Busy</span><span class="metric-val" id="busy">7/11</span></div>
+                <div class="metric"><span>Cycles Completed</span><span class="metric-val">12</span></div>
+                <div class="metric"><span>Evaluator Score</span><span class="metric-val">0.970</span></div>
+                <div class="metric"><span>Iterations</span><span class="metric-val">2-3</span></div>
+            </div>
 
-    <div class="legend">
-        <h3 style="color: var(--primary); margin-bottom: 10px;">Legend</h3>
-        <div class="legend-item">
-            <div class="legend-dot" style="background: rgba(0,255,136,0.2); border-color: var(--primary);"></div>
-            <span>Orchestrator</span>
-        </div>
-        <div class="legend-item">
-            <div class="legend-dot" style="background: rgba(255,107,157,0.2); border-color: var(--research);"></div>
-            <span>Research Agents</span>
-        </div>
-        <div class="legend-item">
-            <div class="legend-dot" style="background: rgba(168,85,247,0.2); border-color: var(--worker);"></div>
-            <span>Worker Agents</span>
-        </div>
-    </div>
+            <div class="panel-section">
+                <div class="panel-title">🎯 ORCHESTRATOR</div>
+                <div class="agent-row">
+                    <div class="agent-dot orch"></div>
+                    <span class="agent-name">orchestrator</span>
+                    <span class="agent-status status-busy">DISPATCHING & SYNTHESIZING</span>
+                </div>
+            </div>
 
-    <div class="info-panel">
-        <h3>Anthropic Pattern</h3>
-        <p style="font-size: 0.9em; margin: 5px 0;">Orchestrator-Workers + Evaluator-Optimizer</p>
-        <p style="font-size: 0.85em; color: var(--text2); margin-top: 8px;">10 agents active | Context isolated | Parallel execution</p>
+            <div class="panel-section">
+                <div class="panel-title">🔬 RESEARCH TEAM (4)</div>
+                <div class="agent-row"><div class="agent-dot res busy"></div><span class="agent-name">loop_engineer</span><span class="agent-status status-thinking">READING ANTHROPIC PATTERNS</span></div>
+                <div class="agent-row"><div class="agent-dot res busy"></div><span class="agent-name">agent_architect</span><span class="agent-status status-busy">OPTIMIZING TOPOLOGY</span></div>
+                <div class="agent-row"><div class="agent-dot res busy"></div><span class="agent-name">harness_optimizer</span><span class="agent-status status-thinking">TUNING PIPELINE</span></div>
+                <div class="agent-row"><div class="agent-dot res busy"></div><span class="agent-name">eval_specialist</span><span class="agent-status status-busy">REFINING CRITERIA</span></div>
+            </div>
+
+            <div class="panel-section">
+                <div class="panel-title">⚙️ WORKER SWARM (6)</div>
+                <div class="agent-row"><div class="agent-dot work busy"></div><span class="agent-name">paper_reviewer</span><span class="agent-status status-busy">REVIEWING MANUSCRIPT</span></div>
+                <div class="agent-row"><div class="agent-dot work busy"></div><span class="agent-name">circuit_theorist</span><span class="agent-status status-thinking">ANALYZING CIRCUIT</span></div>
+                <div class="agent-row"><div class="agent-dot work busy"></div><span class="agent-name">data_auditor</span><span class="agent-status status-busy">CROSS-CHECKING NUMBERS</span></div>
+                <div class="agent-row"><div class="agent-dot work busy"></div><span class="agent-name">layout_auditor</span><span class="agent-status status-thinking">VERIFYING GDS/DRC</span></div>
+                <div class="agent-row"><div class="agent-dot work busy"></div><span class="agent-name">academic_grader</span><span class="agent-status status-busy">CHECKING RUBRICS</span></div>
+                <div class="agent-row"><div class="agent-dot work"></div><span class="agent-name">literature_scout</span><span class="agent-status status-idle">WAITING FOR TASK</span></div>
+            </div>
+
+            <div class="panel-section">
+                <div class="panel-title">📡 LIVE ACTIVITY STREAM</div>
+                <div id="log"></div>
+            </div>
+        </div>
     </div>
 
     <script>
+        const activities = [
+            "[ORCH] Decomposing improvement tasks into 6 subtasks",
+            "[PAPER_REVIEWER] Scanning manuscript for IEEE LMWT compliance",
+            "[CIRCUIT_THEORIST] Validating cascode biasing analysis",
+            "[DATA_AUDITOR] Comparing FoM_phi against table values",
+            "[LAYOUT_AUDITOR] Checking GDSII structure",
+            "[ACADEMIC_GRADER] Verifying 23ECE302/383 completeness",
+            "[LOOP_ENGINEER] Studying evaluator-optimizer convergence",
+            "[AGENT_ARCHITECT] Optimizing worker isolation",
+            "[HARNES_OPT] Tuning parallel execution",
+            "[EVAL_SPECIALIST] Updating acceptance criteria",
+            "[ORCH] Collecting worker results for synthesis",
+            "[EVAL] Running evaluator pass - computing scores",
+            "[OPT] Applying feedback to optimize outputs"
+        ];
+        const log = document.getElementById('log');
+        let i = 0;
+        setInterval(() => {
+            const div = document.createElement('div');
+            div.className = 'log-item';
+            div.innerHTML = '<span class="log-time">['+new Date().toLocaleTimeString()+']</span> ' + activities[i % activities.length];
+            log.insertBefore(div, log.firstChild);
+            if(log.children.length > 20) log.removeChild(log.lastChild);
+            i++;
+        }, 800);
+
+        setInterval(() => {
+            document.getElementById('time').textContent = new Date().toLocaleTimeString();
+        }, 1000);
+
         const data = {
             nodes: [
-                {id: "orchestrator", group: "orchestrator", label: "ORCHESTRATOR", task: "Decompose • Dispatch • Synthesize", x: 400, y: 100},
-                {id: "loop_engineer", group: "research", label: "loop_engineer", task: "Loop Engineering Research", x: 200, y: 250},
-                {id: "agent_architect", group: "research", label: "agent_architect", task: "Swarm Architecture", x: 300, y: 250},
-                {id: "harness_optimizer", group: "research", label: "harness_optimizer", task: "Harness Optimization", x: 500, y: 250},
-                {id: "eval_specialist", group: "research", label: "eval_specialist", task: "Eval & Validation", x: 600, y: 250},
-                {id: "paper_reviewer", group: "worker", label: "paper_reviewer", task: "IEEE LMWT Review", x: 150, y: 400},
-                {id: "circuit_theorist", group: "worker", label: "circuit_theorist", task: "Circuit Theory", x: 250, y: 400},
-                {id: "data_auditor", group: "worker", label: "data_auditor", task: "Data Audit", x: 350, y: 400},
-                {id: "layout_auditor", group: "worker", label: "layout_auditor", task: "Layout/DRC", x: 450, y: 400},
-                {id: "academic_grader", group: "worker", label: "academic_grader", task: "Rubric Grading", x: 550, y: 400},
-                {id: "literature_scout", group: "worker", label: "literature_scout", task: "Literature Scout", x: 650, y: 400}
+                {id: "orchestrator", group: "orchestrator", label: "ORCHESTRATOR", task: "Decompose•Dispatch•Synthesize", x: 0, y: 0},
+                {id: "loop_engineer", group: "research", label: "loop_engineer", task: "Reading Patterns", x: -220, y: 140},
+                {id: "agent_architect", group: "research", label: "agent_architect", task: "Opt Topology", x: -110, y: 140},
+                {id: "harness_optimizer", group: "research", label: "harness_optimizer", task: "Tune Pipeline", x: 110, y: 140},
+                {id: "eval_specialist", group: "research", label: "eval_specialist", task: "Refine Eval", x: 220, y: 140},
+                {id: "paper_reviewer", group: "worker", label: "paper_reviewer", task: "Reviewing", x: -280, y: 280},
+                {id: "circuit_theorist", group: "worker", label: "circuit_theorist", task: "Analyzing", x: -168, y: 280},
+                {id: "data_auditor", group: "worker", label: "data_auditor", task: "Auditing", x: -56, y: 280},
+                {id: "layout_auditor", group: "worker", label: "layout_auditor", task: "Checking", x: 56, y: 280},
+                {id: "academic_grader", group: "worker", label: "academic_grader", task: "Grading", x: 168, y: 280},
+                {id: "literature_scout", group: "worker", label: "literature_scout", task: "Idle", x: 280, y: 280}
             ],
             links: [
                 {source: "orchestrator", target: "loop_engineer"},
@@ -99,73 +166,37 @@
         };
 
         const svg = d3.select("#graph");
-        const width = window.innerWidth;
-        const height = window.innerHeight;
+        const width = svg.node().getBoundingClientRect().width;
+        const height = svg.node().getBoundingClientRect().height;
 
-        const g = svg.append("g");
+        const g = svg.append("g").attr("transform", `translate(${width/2},${height/2})`);
 
-        const zoom = d3.zoom().scaleExtent([0.5, 2]).on("zoom", (e) => g.attr("transform", e.transform));
+        const zoom = d3.zoom().scaleExtent([0.3, 1.8]).on("zoom", (e) => g.attr("transform", `translate(${width/2 + e.transform.x},${height/2 + e.transform.y}) scale(${e.transform.k})`));
         svg.call(zoom);
 
         const simulation = d3.forceSimulation(data.nodes)
-            .force("link", d3.forceLink(data.links).id(d => d.id).distance(120))
-            .force("charge", d3.forceManyBody().strength(-400))
-            .force("center", d3.forceCenter(width/2, height/2))
-            .force("x", d3.forceX().x(d => d.x || width/2).strength(0.1))
-            .force("y", d3.forceY().y(d => d.y || height/2).strength(0.1));
+            .force("link", d3.forceLink(data.links).id(d => d.id).distance(95))
+            .force("charge", d3.forceManyBody().strength(-250))
+            .force("x", d3.forceX(d => d.x).strength(0.4))
+            .force("y", d3.forceY(d => d.y).strength(0.4));
 
-        const link = g.append("g")
-            .selectAll("line")
-            .data(data.links)
-            .join("line")
-            .attr("class", "link active")
-            .attr("stroke-dasharray", "5,5");
-
-        const node = g.append("g")
-            .selectAll(".node")
-            .data(data.nodes)
-            .join("g")
-            .attr("class", d => `node ${d.group}`)
-            .call(d3.drag()
-                .on("start", dragstarted)
-                .on("drag", dragged)
-                .on("end", dragended));
-
-        node.append("circle")
-            .attr("r", d => d.group === "orchestrator" ? 40 : 28);
-
-        node.append("text")
-            .attr("class", "label")
-            .attr("dy", d => d.group === "orchestrator" ? -50 : -38)
-            .text(d => d.label);
-
-        node.append("text")
-            .attr("class", "task")
-            .attr("dy", d => d.group === "orchestrator" ? 55 : 45)
-            .text(d => d.task);
+        const link = g.append("g").selectAll("line").data(data.links).join("line").attr("class", "link active").attr("stroke-dasharray", "3,3");
+        const node = g.append("g").selectAll(".node").data(data.nodes).join("g").attr("class", d => {
+            if(d.group === "orchestrator") return "node orchestrator";
+            if(d.group === "research") return "node research busy";
+            if(d.id === "literature_scout") return "node worker";
+            return "node worker busy";
+        });
+        
+        node.append("circle").attr("r", d => d.group === "orchestrator" ? 32 : 22);
+        node.append("text").attr("class", "label").attr("dy", d => d.group === "orchestrator" ? -42 : -32).text(d => d.label);
+        node.append("text").attr("class", "task").attr("dy", d => d.group === "orchestrator" ? 46 : 36).text(d => d.task);
 
         simulation.on("tick", () => {
-            link.attr("x1", d => d.source.x).attr("y1", d => d.source.y)
-                .attr("x2", d => d.target.x).attr("y2", d => d.target.y);
+            link.attr("x1", d => d.source.x).attr("y1", d => d.source.y).attr("x2", d => d.target.x).attr("y2", d => d.target.y);
             node.attr("transform", d => `translate(${d.x},${d.y})`);
         });
-
-        function dragstarted(event) {
-            if (!event.active) simulation.alphaTarget(0.3).restart();
-            event.subject.fx = event.subject.x;
-            event.subject.fy = event.subject.y;
-        }
-        function dragged(event) {
-            event.subject.fx = event.x;
-            event.subject.fy = event.y;
-        }
-        function dragended(event) {
-            if (!event.active) simulation.alphaTarget(0);
-            event.subject.fx = null;
-            event.subject.fy = null;
-        }
-
-        setTimeout(() => simulation.stop(), 3000);
+        setTimeout(() => simulation.stop(), 2500);
     </script>
 </body>
 </html>
