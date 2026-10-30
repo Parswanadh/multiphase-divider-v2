@@ -1,0 +1,54 @@
+* Baseline 8-phase divide-by-2 divider, LOCALLY CALIBRATED against spice/models/cmos180.mod
+* (generic LEVEL=1 deck, NOT a foundry model). Differences from spice/divider_baseline.cir:
+*   - R1=R2 1.5k -> 5k, Vbias 0.9 -> 1.2 V, 30 fF load on every output, .ic + uic start-up.
+*   The original did not divide: the hold pair had too little gain and no output load/delay.
+* Run:  ngspice -b spice/divider_baseline_cal.cir      (or scripts/analyze_baseline.py)
+
+.include spice/models/cmos180.mod
+.global nbias
+.param VDD=1.8
+.temp 27
+
+Vdd Vdd 0 {VDD}
+Vck  CK  0 PULSE(0 {VDD} 0       50p 50p 307.14p 714.285p)
+Vckb CKb 0 PULSE(0 {VDD} 357.14p 50p 50p 307.14p 714.285p)
+Vbias nbias 0 1.2
+
+.subckt DLATCH D Db CK CKb Q Qb VDD
+R1 VDD Q  5k
+R2 VDD Qb 5k
+M1 Q  D  xs xs nmos W=0.9u L=0.18u
+M2 Qb Db xs xs nmos W=0.9u L=0.18u
+M5 xs CK tail tail nmos W=0.9u L=0.18u
+M3 Q  Qb xh xh nmos W=0.9u L=0.18u
+M4 Qb Q  xh xh nmos W=0.9u L=0.18u
+M6 xh CKb tail tail nmos W=0.9u L=0.18u
+M7 tail nbias 0 0 nmos W=1.8u L=0.36u
+.ends
+
+* Q1b->D2, Q2->D3, Q3b->D4, Q4->D1b
+XD1 Q4b Q4  CK  CKb Q1 Q1b Vdd DLATCH
+XD2 Q1b Q1  CKb CK  Q2 Q2b Vdd DLATCH
+XD3 Q2  Q2b CKb CK  Q3 Q3b Vdd DLATCH
+XD4 Q3b Q3  CK  CKb Q4 Q4b Vdd DLATCH
+
+Cl1 Q1 0 30f
+Cl1b Q1b 0 30f
+Cl2 Q2 0 30f
+Cl2b Q2b 0 30f
+Cl3 Q3 0 30f
+Cl3b Q3b 0 30f
+Cl4 Q4 0 30f
+Cl4b Q4b 0 30f
+
+.ic V(Q1)=1.8 V(Q1b)=0 V(Q2)=1.8 V(Q2b)=0 V(Q3)=0 V(Q3b)=1.8 V(Q4)=0 V(Q4b)=1.8
+.tran 5p 30n uic
+
+.control
+set wr_vecnames
+set wr_singlescale
+run
+wrdata results/baseline_cal_tran.txt v(ck) v(q1) v(q2) v(q3) v(q4) v(q1b) v(q2b) v(q3b) v(q4b) i(vdd)
+quit
+.endc
+.end

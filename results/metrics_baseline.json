@@ -1,21 +1,68 @@
 {
-  "input_frequency_ghz": 1.4,
-  "output_frequency_mhz": 700.0,
-  "division_ratio": 2,
-  "phases": [
-    "f0",
-    "f45",
-    "f90",
-    "f135",
-    "f180",
-    "f225",
-    "f270",
-    "f315"
-  ],
-  "phase_spacing_deg": 45.0,
-  "max_phase_error_deg": 3.75,
   "vdd_v": 1.8,
-  "power_mw": 2.34,
-  "delay_ps": 120.0,
-  "pdp_fj": 0.2808
+  "f_in_ghz": 1.4000014000014,
+  "swing_v": {
+    "v(q1)": [
+      0.789,
+      1.789
+    ],
+    "v(q2)": [
+      0.769,
+      1.785
+    ],
+    "v(q3)": [
+      0.789,
+      1.789
+    ],
+    "v(q4)": [
+      0.769,
+      1.785
+    ],
+    "v(q1b)": [
+      0.789,
+      1.789
+    ],
+    "v(q2b)": [
+      0.769,
+      1.785
+    ],
+    "v(q3b)": [
+      0.789,
+      1.789
+    ],
+    "v(q4b)": [
+      0.769,
+      1.785
+    ]
+  },
+  "f_out_mhz": 700.0007000006999,
+  "division_ratio": 2.0000000000000004,
+  "divides": true,
+  "phase_deg": {
+    "v(q1)": 0.0,
+    "v(q2)": 62.38,
+    "v(q3b)": 89.98,
+    "v(q4b)": 152.38,
+    "v(q1b)": 180.0,
+    "v(q2b)": 242.38,
+    "v(q3)": 269.98,
+    "v(q4)": 332.38
+  },
+  "phase_steps_deg": [
+    62.38,
+    27.6,
+    62.4,
+    27.62,
+    62.38,
+    27.6,
+    62.4,
+    27.62
+  ],
+  "max_phase_step_error_deg": 17.4,
+  "i_avg_ma": 0.8234425534337049,
+  "power_mw": 1.4821965961806687,
+  "periods_averaged": 11,
+  "ck_to_q_delay_ps": 110.04529838872268,
+  "pdp_fj": 163.1087666974508,
+  "source": "ngspice, spice/divider_baseline_cal.cir, generic LEVEL=1 deck (not a foundry model)"
 }

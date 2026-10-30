@@ -1,18 +1,13 @@
 #!/usr/bin/env python3
-import json, os
-os.makedirs('results/plots', exist_ok=True)
-metrics = {
-  "input_frequency_ghz": 1.4,
-  "output_frequency_mhz": 700.0,
-  "division_ratio": 2,
-  "phases": ["f0","f45","f90","f135","f180","f225","f270","f315"],
-  "phase_spacing_deg": 45.0,
-  "max_phase_error_deg": 3.75,
-  "vdd_v": 1.8,
-  "power_mw": 2.34,
-  "delay_ps": 120.0,
-  "pdp_fj": 0.2808
-}
-with open('results/metrics_baseline.json','w') as f:
-    json.dump(metrics, f, indent=2)
-print("Baseline metrics written.")
+"""Simulate the calibrated baseline at TT/27C/1.8V and write results/metrics_baseline.json
+from the MEASURED waveform (nothing is hardcoded)."""
+import json, sys, pathlib
+sys.path.insert(0, str(pathlib.Path(__file__).parent))
+from divider_sim import run_case, ROOT
+
+r = run_case(1.8, 27, "TT", keep=str(ROOT / "results/baseline_cal_tran.txt"))
+r["source"] = "ngspice, spice/divider_baseline_cal.cir, generic LEVEL=1 deck (not a foundry model)"
+(ROOT / "results").mkdir(exist_ok=True)
+(ROOT / "results/metrics_baseline.json").write_text(json.dumps(r, indent=2))
+print(json.dumps(r, indent=2))
+sys.exit(0 if r.get("divides") else 1)

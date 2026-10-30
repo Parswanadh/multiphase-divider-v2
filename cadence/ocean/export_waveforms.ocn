@@ -1,0 +1,105 @@
+;; export_waveforms.ocn
+;; Cadence OCEAN / SKILL. Reads a finished Spectre tran result and writes waveforms.txt in the
+;; exact format scripts/measure_tran.py expects: a header line, then one row per time step.
+;;
+;; Batch:  ocean -nograph -restore export_waveforms.ocn      ; VERIFY ocean flags on your install
+;; CIW:    load("/abs/path/export_waveforms.ocn")            ; VERIFY
+;;
+;; UNTESTED: written without Cadence access. Every line marked VERIFY is an assumption.
+;; Settings come from environment variables set by run_spectre.sh, with the defaults below.
+
+procedure(envOr(name dflt)
+  let((val)
+    val = getShellEnvVar(name)
+    if(val val dflt)))
+
+;; ---------------- settings (edit here, or set the env var) ----------------
+resultsDir = envOr("RESULTS_DIR" "rawdir")   ; VERIFY: psf dir that contains tran.tran.tran
+outFile    = envOr("OUT_FILE" "waveforms.txt")
+resultName = "tran"                          ; analysis name from "tran tran ..." in the netlist
+tStart     = atof(envOr("T_START" "0"))      ; s
+tStop      = atof(envOr("T_STOP" "40e-9"))   ; s, must not exceed the simulated stop time
+dt         = atof(envOr("DT" "5e-12"))       ; s, uniform output grid step
+
+;; ---------------- signal name candidates (first one that resolves is used) ----------------
+;; Standalone netlist divider_gpdk45.scs: node "ck" and "Q1" ..., current "VDD:p".
+;; Schematic/ADE netlists add hierarchy, e.g. "/I_div/Q1". VERIFY against your netlist.
+nmCK  = list("/ck"  "/CK"  "/I_div/ck")
+nmQ1  = list("/Q1"  "/I_div/Q1")
+nmQ2  = list("/Q2"  "/I_div/Q2")
+nmQ3  = list("/Q3"  "/I_div/Q3")
+nmQ4  = list("/Q4"  "/I_div/Q4")
+nmQ1b = list("/Q1b" "/I_div/Q1b")
+nmQ2b = list("/Q2b" "/I_div/Q2b")
+nmQ3b = list("/Q3b" "/I_div/Q3b")
+nmQ4b = list("/Q4b" "/I_div/Q4b")
+nmI   = list("/VDD:p" "/VDD/p" "/I_div/VDD:p")   ; supply source terminal p, VERIFY
+
+;; Returns the first candidate that resolves to a waveform, or nil.
+;; isCurrent = "i" selects i("name"), anything else selects v("name").
+procedure(getWave(cands kind)
+  let((w)
+    w = nil
+    foreach(c cands
+      unless(w
+        ;; errset: a missing name may throw instead of returning nil. car(errset(...)) gives the
+        ;; wave, or nil, so the next candidate is tried.
+        w = car(errset(if(equal(kind "i") i(c ?result resultName) v(c ?result resultName))))
+        when(w printf("  resolved as %s\n" c))))
+    w))
+
+;; Fixed-width printable value; nil (should not happen inside the window) becomes "nan".
+procedure(fmtv(x)
+  if(x sprintf(nil "%.9e" x) "nan"))
+
+;; ---------------- open results and resolve waveforms ----------------
+openResults(resultsDir)        ; VERIFY: opens the psf directory written by spectre -raw
+selectResult('tran)            ; VERIFY: result name; ?result below also selects it
+
+printf("resolving signals from %s\n" resultsDir)
+wCK  = getWave(nmCK  "v")
+wQ1  = getWave(nmQ1  "v")
+wQ2  = getWave(nmQ2  "v")
+wQ3  = getWave(nmQ3  "v")
+wQ4  = getWave(nmQ4  "v")
+wQ1b = getWave(nmQ1b "v")
+wQ2b = getWave(nmQ2b "v")
+wQ3b = getWave(nmQ3b "v")
+wQ4b = getWave(nmQ4b "v")
+wI   = getWave(nmI   "i")
+unless(and(wCK wQ1 wQ2 wQ3 wQ4 wQ1b wQ2b wQ3b wQ4b wI)
+  error("export_waveforms: a signal did not resolve. Check the nm* lists and dump outputs()."))
+
+;; ---------------- uniform grid ----------------
+;; Integer index k avoids accumulating floating-point error.
+nPts = fix((tStop - tStart) / dt + 0.5) + 1
+
+;; ---------------- supply-current sign ----------------
+;; The file must carry NEGATIVE supply current, as ngspice does. Spectre's VDD:p is expected to
+;; already be negative for a delivering supply (VERIFY). So we negate only if the raw window
+;; mean is POSITIVE. The line printed below says whether a flip was applied.
+sumI = 0.0
+for(k 0 nPts - 1
+  sumI = sumI + value(wI tStart + k * dt))
+meanRaw  = sumI / nPts
+ivddSign = if(meanRaw > 0.0 -1.0 1.0)
+printf("raw mean i(VDD:p) = %g A ; sign factor applied = %g (file wants negative supply current)\n"
+       meanRaw ivddSign)
+
+;; ---------------- write waveforms.txt ----------------
+fp = outfile(outFile "w")
+unless(fp error("export_waveforms: cannot open output file"))
+fprintf(fp "time v(ck) v(q1) v(q2) v(q3) v(q4) v(q1b) v(q2b) v(q3b) v(q4b) i(vdd)\n")
+for(k 0 nPts - 1
+  tNow = tStart + k * dt
+  fprintf(fp "%s %s %s %s %s %s %s %s %s %s\n"
+          fmtv(tNow)
+          fmtv(value(wCK tNow))
+          fmtv(value(wQ1 tNow)) fmtv(value(wQ2 tNow)) fmtv(value(wQ3 tNow)) fmtv(value(wQ4 tNow))
+          fmtv(value(wQ1b tNow)) fmtv(value(wQ2b tNow)) fmtv(value(wQ3b tNow)) fmtv(value(wQ4b tNow))
+          fmtv(ivddSign * value(wI tNow))))
+close(fp)
+printf("wrote %d rows to %s (dt = %g s)\n" nPts outFile dt)
+
+;; Batch only: exit so ocean does not wait at the prompt. Never runs in an interactive CIW.
+when(equal(getShellEnvVar("OCEAN_BATCH") "1") exit())   ; VERIFY exit() ends the ocean process

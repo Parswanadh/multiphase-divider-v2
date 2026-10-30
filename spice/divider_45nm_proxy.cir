@@ -1,0 +1,56 @@
+* 8-phase divide-by-2 divider, 45 nm-CLASS PROXY (generic LEVEL=1 models)
+* PURPOSE: topology / startup / measurement-script check ONLY.
+* NOT gpdk045. Numbers from this file must never appear in the report.
+* Run:  ngspice -b spice/divider_45nm_proxy.cir
+
+.param VDD=1.0 FIN=1G CL=10f
+.param TCK={1/FIN}
+.param TR=20p
+
+.model nproxy NMOS (LEVEL=1 VTO=0.40 KP=350u LAMBDA=0.25 GAMMA=0.3 PHI=0.8
++ TOX=2.0n CGSO=3e-10 CGDO=3e-10 CJ=1e-3 CJSW=2e-10)
+
+Vdd vdd 0 {VDD}
+Vbias nbias 0 0.8
+Vck  ck  0 PULSE(0 {VDD} 0          {TR} {TR} {TCK/2-TR} {TCK})
+Vckb ckb 0 PULSE(0 {VDD} {TCK/2}    {TR} {TR} {TCK/2-TR} {TCK})
+
+.subckt DLATCH D Db CK CKb Q Qb VDD VSS NBIAS
+R1 VDD Q  8k
+R2 VDD Qb 8k
+M1 Q  D  xs   VSS nproxy W=240n L=45n
+M2 Qb Db xs   VSS nproxy W=240n L=45n
+M5 xs CK tail VSS nproxy W=240n L=45n
+M3 Q  Qb xh   VSS nproxy W=240n L=45n
+M4 Qb Q  xh   VSS nproxy W=240n L=45n
+M6 xh CKb tail VSS nproxy W=240n L=45n
+M7 tail NBIAS VSS VSS nproxy W=480n L=90n
+.ends
+
+* Interconnect per Kuo Fig.2 / netlist: Q1b->D2, Q2->D3, Q3b->D4, Q4->D1b
+XD1 Q4b Q4  CK  CKb Q1 Q1b vdd 0 nbias DLATCH
+XD2 Q1b Q1  CKb CK  Q2 Q2b vdd 0 nbias DLATCH
+XD3 Q2  Q2b CKb CK  Q3 Q3b vdd 0 nbias DLATCH
+XD4 Q3b Q3  CK  CKb Q4 Q4b vdd 0 nbias DLATCH
+
+* output load (buffer / probe), affects power and delay
+Cl1 Q1 0 {CL}
+Cl1b Q1b 0 {CL}
+Cl2 Q2 0 {CL}
+Cl2b Q2b 0 {CL}
+Cl3 Q3 0 {CL}
+Cl3b Q3b 0 {CL}
+Cl4 Q4 0 {CL}
+Cl4b Q4b 0 {CL}
+
+.ic V(Q1)=1.0 V(Q1b)=0 V(Q2)=1.0 V(Q2b)=0 V(Q3)=0 V(Q3b)=1.0 V(Q4)=0 V(Q4b)=1.0
+.tran 5p 40n uic
+
+.control
+set wr_vecnames
+set wr_singlescale
+run
+wrdata results/proxy_tran.txt v(ck) v(q1) v(q2) v(q3) v(q4) v(q1b) v(q2b) v(q3b) v(q4b) i(vdd)
+quit
+.endc
+.end

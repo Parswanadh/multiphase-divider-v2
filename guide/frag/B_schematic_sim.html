@@ -1,0 +1,465 @@
+<section id="schematic">
+<h2>Schematic entry: DLATCH cell, symbol and divider_core</h2>
+<p><span class="tag">about 60-90 min</span> This section builds the circuit bottom-up: first the differential D-latch (<code>DLATCH</code>), then its symbol, then the four-instance ring (<code>divider_core</code>). Keep every net name identical to the reference netlists <code>spectre/divider_gpdk45.scs</code> and <code>spice/divider_45nm_proxy.cir</code> in the repository, so you can diff your extracted netlist against them later. Note that the SPICE proxy uses generic models and is only a topology cross-check, not gpdk045 data.</p>
+
+<div class="callout note"><strong>Library and device names</strong>
+Create (or reuse) a design library attached to the <code>gpdk045</code> technology library: <kbd>File &gt; New &gt; Library</kbd>, then attach to the existing technology library when prompted. In the component browser (<kbd>i</kbd> in the schematic editor) the core 1.0 V NMOS is normally <code>nmos1v</code> (cell in library <code>gpdk045</code>, view <code>symbol</code>). Verify the exact cell name and the names of its instance parameters (typically width, length and number of fingers) in the Property editor (<kbd>q</kbd>) of the placed instance. Do not type parameter names from memory; use the ones your CDF shows. Thick-oxide devices (<code>nmos2v</code>) are not wanted here.</div>
+
+<h3>1. The DLATCH schematic</h3>
+<ol class="steps">
+<li>In the Library Manager select your library, then <kbd>File &gt; New &gt; Cellview</kbd>. Cell name <code>DLATCH</code>, view <code>schematic</code>, type <code>Schematic</code> (Virtuoso Schematic Editor L or XL, verify in your version).</li>
+<li>Place seven <code>nmos1v</code> instances with <kbd>i</kbd> and name them exactly <code>M1</code> to <code>M7</code> (property <code>Instance Name</code>, shortcut <kbd>q</kbd>). Use consistent orientation: sample pair left, hold pair right, tail at the bottom.</li>
+<li>Set sizes on each instance (starting values, to be tuned later):
+<table>
+<tr><th>Device</th><th>Role</th><th>W</th><th>L</th><th>Fingers</th></tr>
+<tr><td>M1, M2</td><td>sample (input) pair</td><td>240n</td><td>45n</td><td>verify (start with 1 or 2)</td></tr>
+<tr><td>M3, M4</td><td>hold (cross-coupled) pair</td><td>240n</td><td>45n</td><td>same as M1/M2</td></tr>
+<tr><td>M5</td><td>sample switch (gate CK)</td><td>240n</td><td>45n</td><td>same</td></tr>
+<tr><td>M6</td><td>hold switch (gate CKb)</td><td>240n</td><td>45n</td><td>same</td></tr>
+<tr><td>M7</td><td>tail current source (gate nbias)</td><td>480n</td><td>90n</td><td>verify</td></tr>
+</table>
+Match M1/M2 and M3/M4 exactly (same W, L and fingers); the 8-phase accuracy depends on this symmetry.</li>
+<li>Place two resistors R1 and R2 (<code>VDD</code> to <code>Q</code>, <code>VDD</code> to <code>Qb</code>), 8 kOhm each as a starting value (a generic-model pre-check failed to divide at 1.5 kOhm because the hold pair needs gm x R above 1; tune from here). For the first functional simulation use the ideal <code>res</code> from <code>analogLib</code>. When you move to layout, replace them by a PDK resistor (a poly or well resistor from gpdk045; verify which one is available and its sheet resistance) and recompute W/L for your final R. Parasitic capacitance of that resistor then appears in post-layout results.</li>
+<li>Wire the netlist exactly as in the table below. Use <kbd>w</kbd> for wires and <kbd>l</kbd> (wire name) to label every net. Do not rely on touching wire ends; always label the internal nodes <code>xs</code>, <code>xh</code> and <code>tail</code>.</li>
+<li>Add pins with <kbd>p</kbd>: inputs <code>D</code>, <code>Db</code>, <code>CK</code>, <code>CKb</code>; outputs <code>Q</code>, <code>Qb</code>; inouts <code>VDD</code>, <code>VSS</code>; and a bias input (see the warning below).</li>
+<li>Run <kbd>Check and Save</kbd> (<kbd>Shift</kbd>+<kbd>X</kbd>). Fix every warning; a floating bulk or an unconnected pin is a real error here.</li>
+</ol>
+
+<div class="callout warn"><strong>The bias pin</strong>
+The pin list in the paper-based description is D, Db, CK, CKb, Q, Qb, VDD, VSS, but M7 has its gate on <code>nbias</code>. Either add a ninth pin (recommended name <code>VB</code>, tied to <code>nbias</code> inside DLATCH) or declare a global net. A dedicated pin is better: it appears in the symbol, you can drive it from <code>vdc</code> in the testbench, and the LVS interface stays explicit. If you use a different name from the reference netlist, note the mapping in your report.</div>
+
+<h3>DLATCH internal connection table</h3>
+<p>Every MOS terminal order is drain, gate, source, bulk (verify the pin order on the <code>nmos1v</code> symbol; a swapped drain and source is electrically symmetric in simulation but not for clean layout). All bulks go to <code>VSS</code>.</p>
+<table>
+<tr><th>Instance</th><th>Drain</th><th>Gate</th><th>Source</th><th>Bulk</th><th>Function</th></tr>
+<tr><td>M1</td><td>Q</td><td>D</td><td>xs</td><td>VSS</td><td>sample, pulls Q low when D high</td></tr>
+<tr><td>M2</td><td>Qb</td><td>Db</td><td>xs</td><td>VSS</td><td>sample, pulls Qb low when Db high</td></tr>
+<tr><td>M5</td><td>xs</td><td>CK</td><td>tail</td><td>VSS</td><td>enables the sample pair</td></tr>
+<tr><td>M3</td><td>Q</td><td>Qb</td><td>xh</td><td>VSS</td><td>hold, cross-coupled</td></tr>
+<tr><td>M4</td><td>Qb</td><td>Q</td><td>xh</td><td>VSS</td><td>hold, cross-coupled</td></tr>
+<tr><td>M6</td><td>xh</td><td>CKb</td><td>tail</td><td>VSS</td><td>enables the hold pair</td></tr>
+<tr><td>M7</td><td>tail</td><td>VB (nbias)</td><td>VSS</td><td>VSS</td><td>tail current source</td></tr>
+<tr><td>R1</td><td colspan="2">VDD</td><td colspan="2">Q</td><td>load</td></tr>
+<tr><td>R2</td><td colspan="2">VDD</td><td colspan="2">Qb</td><td>load</td></tr>
+</table>
+
+<div class="callout tip"><strong>Sanity check before the symbol</strong>
+Q and Qb each have three connections: one resistor, one sample drain and one hold drain; plus gates of the opposite hold transistor. Select a net (click on a wire) and use <kbd>Edit &gt; Select &gt; Net</kbd> (verify) to highlight it. xs must touch exactly M1, M2 and M5; xh exactly M3, M4 and M6; tail exactly M5, M6 and M7.</div>
+
+<h3>2. The DLATCH symbol</h3>
+<ol class="steps">
+<li>With <code>DLATCH</code> schematic open: <kbd>Create &gt; Cellview &gt; From Cellview</kbd>. Accept the default view name <code>symbol</code> and the pin placement dialog.</li>
+<li>Place inputs on the left (D, Db, CK, CKb, VB), outputs on the right (Q, Qb), VDD on top and VSS at the bottom. Click OK; the symbol editor opens.</li>
+<li>Replace the default rectangle if you like (a box is fine), add the text <code>DLATCH</code>, then <kbd>Check and Save</kbd>.</li>
+<li>Reopen the schematic and confirm that the symbol pins and the schematic pins match one-to-one (a mismatch gives an error when you place the symbol).</li>
+</ol>
+
+<h3>3. The divider_core schematic</h3>
+<ol class="steps">
+<li>New cellview <code>divider_core</code>, view <code>schematic</code>.</li>
+<li>Place four <code>DLATCH</code> symbols (<kbd>i</kbd>, Library = yours, Cell = DLATCH, View = symbol). Name them <code>XD1</code>, <code>XD2</code>, <code>XD3</code>, <code>XD4</code>.</li>
+<li>Wire per the table below. Label every connection with a wire name, including short stubs. In particular write <code>Q1b</code>, <code>Q2b</code> and so on as proper names; do not use special characters.</li>
+<li>Add top-level pins: <code>CK</code>, <code>CKb</code>, <code>VB</code> (inputs), <code>VDD</code>, <code>VSS</code> (inouts), and <code>Q1</code>, <code>Q1b</code>, <code>Q2</code>, <code>Q2b</code>, <code>Q3</code>, <code>Q3b</code>, <code>Q4</code>, <code>Q4b</code> (outputs).</li>
+<li><kbd>Check and Save</kbd>, then create a symbol for <code>divider_core</code> with <kbd>Create &gt; Cellview &gt; From Cellview</kbd> (needed for the testbench).</li>
+</ol>
+
+<h3>Wiring table (instance pin to net)</h3>
+<table>
+<tr><th>Instance</th><th>D</th><th>Db</th><th>CK</th><th>CKb</th><th>Q</th><th>Qb</th><th>VB</th><th>VDD</th><th>VSS</th></tr>
+<tr><td>XD1</td><td>Q4b</td><td>Q4</td><td>CK</td><td>CKb</td><td>Q1</td><td>Q1b</td><td>VB</td><td>VDD</td><td>VSS</td></tr>
+<tr><td>XD2</td><td>Q1b</td><td>Q1</td><td>CKb</td><td>CK</td><td>Q2</td><td>Q2b</td><td>VB</td><td>VDD</td><td>VSS</td></tr>
+<tr><td>XD3</td><td>Q2</td><td>Q2b</td><td>CKb</td><td>CK</td><td>Q3</td><td>Q3b</td><td>VB</td><td>VDD</td><td>VSS</td></tr>
+<tr><td>XD4</td><td>Q3b</td><td>Q3</td><td>CK</td><td>CKb</td><td>Q4</td><td>Q4b</td><td>VB</td><td>VDD</td><td>VSS</td></tr>
+</table>
+
+<h3>Net connection summary</h3>
+<table>
+<tr><th>Net</th><th>Connected pins</th><th>Notes</th></tr>
+<tr><td>CK</td><td>XD1.CK, XD4.CK, XD2.CKb, XD3.CKb</td><td>drives M5 of XD1/XD4 and M6 of XD2/XD3 (fan-out of four gates)</td></tr>
+<tr><td>CKb</td><td>XD1.CKb, XD4.CKb, XD2.CK, XD3.CK</td><td>complement; must be the exact inverse of CK</td></tr>
+<tr><td>Q1</td><td>XD1.Q, XD2.Db</td><td>output 1</td></tr>
+<tr><td>Q1b</td><td>XD1.Qb, XD2.D</td><td>output 1 complement</td></tr>
+<tr><td>Q2</td><td>XD2.Q, XD3.D</td><td>no inversion between latch 2 and 3</td></tr>
+<tr><td>Q2b</td><td>XD2.Qb, XD3.Db</td><td></td></tr>
+<tr><td>Q3</td><td>XD3.Q, XD4.Db</td><td></td></tr>
+<tr><td>Q3b</td><td>XD3.Qb, XD4.D</td><td></td></tr>
+<tr><td>Q4</td><td>XD4.Q, XD1.Db</td><td>feedback to latch 1 (inverting)</td></tr>
+<tr><td>Q4b</td><td>XD4.Qb, XD1.D</td><td></td></tr>
+<tr><td>VB</td><td>XD1..XD4.VB</td><td>bias for all four tail sources</td></tr>
+<tr><td>VDD, VSS</td><td>all instances</td><td>VSS is also the bulk of every NMOS</td></tr>
+</table>
+
+<div class="callout warn"><strong>Easy mistakes in this wiring</strong>
+XD2 and XD3 receive the clocks swapped (pin CK gets net CKb). XD1 and XD4 receive them straight. The data crossing is also asymmetric: XD2 takes (Q1b, Q1) while XD3 takes (Q2, Q2b). A single swapped pair breaks the divide-by-two behaviour without any warning from the tools, so compare against the reference netlist before simulating.</div>
+
+<h3>Wire naming, bulk connections and LVS</h3>
+<ul>
+<li><strong>Name every net</strong> in both the cell and the parent. Spectre netlists use these names, so your waveform viewer shows <code>/Q1</code> rather than <code>net012</code>, and the OCEAN/Calculator expressions in the next sections stay stable between edits.</li>
+<li><strong>Bulk connections</strong>: connect every NMOS bulk to <code>VSS</code> explicitly with a wire (not by a global such as <code>gnd!</code>). Implicit bulks lead to a floating or wrongly tied well and to LVS mismatches at the substrate.</li>
+<li><strong>Pins as the LVS interface</strong>: LVS compares the pin names of the schematic with the text labels (pin shapes) in the layout. Names such as <code>VDD</code>, <code>VSS</code>, <code>CK</code>, <code>CKb</code>, <code>Q1</code> must be written identically (case sensitive) on a metal label in the layout. A mismatch shows up as "pin not found" or as a merged net.</li>
+<li><strong>Dummy devices</strong>: if you later add dummy gates or dummy fingers for matching or density, either also place them in the schematic (gate, source and drain tied to VSS) or confirm that your LVS deck ignores them. Decide this now; retrofitting a schematic after layout is slow.</li>
+<li><strong>Do not use the same name for two things</strong>: an internal node called <code>Q</code> in DLATCH is local; at top level the hierarchy separates it. Never connect two different pins with the same label by accident (for example <code>CK</code> and <code>CKb</code> typed with different case on a net).</li>
+</ul>
+</section>
+
+<section id="testbench">
+<h2>Testbench tb_divider and simulation setup</h2>
+<p><span class="tag">about 45 min</span> The testbench is a separate cell. It contains the supply, bias, a complementary clock pair, load capacitors and nothing of the DUT internals. Keep all numbers as <em>design variables</em> so that the frequency sweep and corner runs need no schematic edits.</p>
+
+<h3>1. Build the schematic</h3>
+<ol class="steps">
+<li>New cellview <code>tb_divider</code> (view <code>schematic</code>). Place the <code>divider_core</code> symbol as <code>DUT</code>.</li>
+<li>From <code>analogLib</code> place: <code>vdc</code> (named <code>V0</code>) between <code>VDD</code> and <code>gnd</code>; a second <code>vdc</code> (<code>V1</code>) for the bias <code>VB</code>; two <code>vpulse</code> sources (<code>VCK</code> and <code>VCKB</code>); eight <code>cap</code> instances (<code>CL1</code> to <code>CL8</code>); and one <code>gnd</code>. Connect <code>VSS</code> of the DUT to <code>gnd</code> (node 0).</li>
+<li>Name the supply source exactly <code>V0</code>; the power expression in the next section assumes <code>/V0/PLUS</code>.</li>
+<li>Label nets: <code>VDD</code>, <code>VB</code>, <code>CK</code>, <code>CKb</code> and the eight outputs <code>Q1</code> ... <code>Q4b</code>.</li>
+<li><kbd>Check and Save</kbd>.</li>
+</ol>
+
+<h3>2. Source parameters</h3>
+<p>Define ADE design variables (see below) <code>fin</code>, <code>T</code>, <code>tr</code>, <code>vdd</code> and <code>vb</code>, and enter them in the CDF fields. If your CDF field does not accept expressions such as <code>T/2-tr</code>, define <code>pw</code> and <code>tdel</code> as separate variables (verify in your version).</p>
+<table>
+<tr><th>Source</th><th>Parameter</th><th>Value (1 GHz start)</th><th>Variable form</th></tr>
+<tr><td>V0 (vdc)</td><td>DC voltage</td><td>1.0 V</td><td><code>vdd</code></td></tr>
+<tr><td>V1 (vdc)</td><td>DC voltage</td><td>0.8 V (tune; start 0.7 to 0.9)</td><td><code>vb</code></td></tr>
+<tr><td>VCK (vpulse)</td><td>Voltage 1 (v1)</td><td>0 V</td><td>0</td></tr>
+<tr><td></td><td>Voltage 2 (v2)</td><td>1.0 V</td><td><code>vdd</code></td></tr>
+<tr><td></td><td>Delay time (td)</td><td>0</td><td>0</td></tr>
+<tr><td></td><td>Rise time</td><td>20 ps</td><td><code>tr</code></td></tr>
+<tr><td></td><td>Fall time</td><td>20 ps</td><td><code>tr</code></td></tr>
+<tr><td></td><td>Pulse width</td><td>480 ps</td><td><code>T/2-tr</code></td></tr>
+<tr><td></td><td>Period</td><td>1 ns</td><td><code>T</code> (= <code>1/fin</code>)</td></tr>
+<tr><td>VCKB (vpulse)</td><td>Voltage 1 / Voltage 2</td><td>0 V / 1.0 V</td><td>0 / <code>vdd</code></td></tr>
+<tr><td></td><td>Delay time (td)</td><td>500 ps</td><td><code>T/2</code></td></tr>
+<tr><td></td><td>Rise / Fall time</td><td>20 ps / 20 ps</td><td><code>tr</code></td></tr>
+<tr><td></td><td>Pulse width</td><td>480 ps</td><td><code>T/2-tr</code></td></tr>
+<tr><td></td><td>Period</td><td>1 ns</td><td><code>T</code></td></tr>
+</table>
+<p>The pulse width is the time at the high level; with equal rise and fall times a 50 % duty cycle needs <code>T/2 - tr</code>. When the clock period shrinks during the frequency sweep, keep <code>tr</code> at most <code>T/10</code> (for example <code>tr = min(20p, T/10)</code>) so the pulse width stays positive.</p>
+
+<div class="callout tip"><strong>Cleaner complement</strong>
+A delayed copy is complementary only if the edges are symmetric. An alternative that gives an exact complement is to set the CKb source to v1 = 1.0 V, v2 = 0 V, td = 0 and all other fields equal to the CK source. Then the two edges cross at the same instant at VDD/2. Choose one approach and state it in the report; the delay version matches the "half period" wording of the task.</div>
+
+<h3>3. Loads and bias</h3>
+<ul>
+<li>Place 5 fF to 10 fF capacitors from each of the eight output nodes to ground. They represent the following buffer, probing pads and routing. Start with 10 fF (the value used in the pre-check netlist); use 5 fF as a sensitivity case. A larger load raises dynamic power, increases CK-to-Q delay (so PDP gets worse), and lowers the maximum input frequency. Always report the load value with your numbers.</li>
+<li>The bias <code>vb</code> sets the tail current. A first guess is 0.8 V (0.55 V gave only tens of microamps in a generic-model pre-check, so check your own tail current); tune it so the output swing is about 300 to 400 mV (check the DC operating point) and so that M7 stays in saturation (see troubleshooting).</li>
+<li>Edge rates are part of the stimulus: with <code>tr = 20 ps</code> the clock is a trapezoid, increasingly so as you raise fin. Do not use the ideal pulse with zero rise time; it breaks timing and causes convergence trouble.</li>
+</ul>
+
+<h3>4. ADE setup</h3>
+<ol class="steps">
+<li>Open <kbd>Launch &gt; ADE Explorer</kbd> (or ADE Assembler for the corner work in a later section). Choose the simulator Spectre.</li>
+<li>Verify the model file: <kbd>Setup &gt; Model Libraries</kbd> must list the gpdk045 model file with a valid section. Use the section names your PDK provides (look in the model file and also see the corner section below).</li>
+<li>Add global variables (<kbd>Variables &gt; Copy From Cellview</kbd>, then edit values):
+<table>
+<tr><th>Variable</th><th>Value</th></tr>
+<tr><td><code>vdd</code></td><td>1.0</td></tr>
+<tr><td><code>vb</code></td><td>0.8</td></tr>
+<tr><td><code>fin</code></td><td>1G</td></tr>
+<tr><td><code>T</code></td><td>1/1G (or 1n)</td></tr>
+<tr><td><code>tr</code></td><td>20p</td></tr>
+</table>
+If <code>T</code> cannot be an expression of <code>fin</code> in your ADE version, set both values by hand and update them together (verify).</li>
+<li><kbd>Analyses &gt; Choose</kbd>, select <code>tran</code>:
+<table>
+<tr><th>Field</th><th>Value</th><th>Reason</th></tr>
+<tr><td>Stop time</td><td>40/fin = 40 ns at 1 GHz (20 to 50 input periods)</td><td>skip the first 10 to 20 periods for start-up</td></tr>
+<tr><td>Accuracy (errpreset)</td><td>moderate for exploration; conservative for final numbers</td><td>conservative tightens tolerances and reduces timing errors in phase and delay</td></tr>
+<tr><td>Maximum time step (maxstep)</td><td>5 ps (never above tr/4; T/100 = 10 ps at 1 GHz is too coarse)</td><td>forces resolution of the 20 ps edges</td></tr>
+<tr><td>Skip DC / initial conditions</td><td>see next subsection</td><td>needed to start division</td></tr>
+</table>
+In the Spectre netlist this becomes approximately <code>tran tran stop=40n errpreset=moderate maxstep=5p</code>.</li>
+<li>Save options (<kbd>Outputs &gt; Save All</kbd> or <kbd>Setup &gt; Save Options</kbd>, verify): save all node voltages of the top level, and make sure the supply current is saved, for example by selecting <code>/V0/PLUS</code> via <kbd>Outputs &gt; To Be Saved &gt; Select On Design</kbd>. If the current is not saved, the power calculation returns an empty result. Also enable <kbd>Outputs &gt; Save DC Operating Point</kbd>; you need it to check M7 saturation.</li>
+</ol>
+
+<h3>5. Initial conditions: why and how</h3>
+<p>This divider is a regenerative ring. With all nodes starting from the DC operating point and with a perfectly symmetric netlist, Spectre can find a symmetric, metastable solution (Q equal to Qb in every latch) and stay there: the clock toggles but the outputs never split. Real circuits start because of noise; a noise-free simulation does not. Two remedies exist:</p>
+<ol class="steps">
+<li><strong>Initial conditions (ic)</strong>, preferred. They force the node voltages at time zero. In ADE: <kbd>Simulation &gt; Convergence Aids &gt; Initial Condition</kbd> (some versions use <kbd>Setup &gt; Initial Condition</kbd>; verify in your version) and add the nodes listed below. The equivalent Spectre statement is <pre><code>ic Q1=1.0 Q1b=0.7 Q2=1.0 Q2b=0.7 Q3=0.7 Q3b=1.0 Q4=0.7 Q4b=1.0</code></pre></li>
+<li><strong>Node set (nodeset)</strong>, only a hint for the DC solver (<kbd>Simulation &gt; Convergence Aids &gt; Node Set</kbd>, verify). It helps convergence but does not remove the metastable solution if that is also a valid DC point, so use ic for forcing.</li>
+</ol>
+<p>The logic values in the task statement (Q1 = 1, Q2 = 1, Q3 = 0, Q4 = 0, each with its complement inverted) map to voltages as follows. A CML-style latch is not rail to rail: the high level is VDD, the low level is VDD minus the swing (approximately Iss times R). Use your own DC value after the first run.</p>
+<table>
+<tr><th>Net</th><th>Logic</th><th>Voltage (estimate)</th></tr>
+<tr><td>Q1</td><td>1</td><td>vdd = 1.0 V</td></tr>
+<tr><td>Q1b</td><td>0</td><td>vdd - swing, about 0.7 V</td></tr>
+<tr><td>Q2</td><td>1</td><td>1.0 V</td></tr>
+<tr><td>Q2b</td><td>0</td><td>about 0.7 V</td></tr>
+<tr><td>Q3</td><td>0</td><td>about 0.7 V</td></tr>
+<tr><td>Q3b</td><td>1</td><td>1.0 V</td></tr>
+<tr><td>Q4</td><td>0</td><td>about 0.7 V</td></tr>
+<tr><td>Q4b</td><td>1</td><td>1.0 V</td></tr>
+</table>
+
+<div class="callout note"><strong>How to choose the initial state</strong>
+Pick a state that is one of the valid states of the divider's counting sequence, not an arbitrary pattern. Latches which are in "hold" during the first clock phase keep their ic value; latches in "sample" are overwritten within a gate delay. Take the pattern from the ic or nodeset lines of <code>spectre/divider_gpdk45.scs</code> if present (verify), because it was chosen for that exact clock assignment. If the pattern you try does not start division, rotate it: try each of the other cyclic states (1100, 0110, 0011, 1001 for Q1..Q4, and also the inverted set). Exactly which one is legal depends on the clock polarity of each latch, so test them one by one rather than by theory.</div>
+
+<div class="callout tip"><strong>Using ic from the netlist directly</strong>
+An advanced alternative is the Spectre tran option <code>skipdc=yes</code> (verify in your version), which starts the transient directly from the ic values without a DC solve. Use this only if the normal run still lands on the symmetric solution.</div>
+
+<h3>6. Run and first checks</h3>
+<ol class="steps">
+<li>Press <kbd>Netlist and Run</kbd> (green play). Open <kbd>Results &gt; Direct Plot &gt; Main Form</kbd> or the waveform viewer. Plot <code>/CK</code>, <code>/Q1</code>, <code>/Q1b</code>.</li>
+<li>Confirm that Q1 toggles once per two clock periods (frequency fin/2).</li>
+<li>Then plot all four Q and Qb to see the 8 phases. Detailed measurements follow in the next section.</li>
+</ol>
+
+<h3>If the circuit does not divide</h3>
+<table>
+<tr><th>Step</th><th>Action</th></tr>
+<tr><td>1</td><td>Check the ic statements actually reached the netlist: <kbd>Simulation &gt; Netlist &gt; Display</kbd> and search for <code>ic</code> (verify the menu). A typed node name that does not exist is silently dropped in some flows.</td></tr>
+<tr><td>2</td><td>Kick the clock: delay CK start by 100 to 200 ps (td of VCK) with VCKB following, so the circuit settles from the ic state before the first edge. Alternatively add a short extra pulse on one data node (a current pulse or a brief voltage ramp of 50 mV on Q1 for 20 ps) to break symmetry.</td></tr>
+<tr><td>3</td><td>Check clock polarity in XD2 and XD3 (swap of CK and CKb pins, see wiring table). A global polarity error produces constant outputs or an output at fin instead of fin/2.</td></tr>
+<tr><td>4</td><td>Check that CK and CKb are truly complementary and cross near VDD/2.</td></tr>
+<tr><td>5</td><td>Try a lower frequency (1 GHz) first. If it divides at 1 GHz but not at a higher target such as 3 GHz, you have a speed or swing problem, not a start-up problem.</td></tr>
+<tr><td>6</td><td>Try one of the other legal ic patterns.</td></tr>
+</table>
+</section>
+
+<section id="measure">
+<h2>Measurements in ADE and OCEAN</h2>
+<p><span class="tag">about 60 min</span> All expressions below are entered in the ADE Explorer/Assembler output table (<kbd>Outputs &gt; Setup</kbd>, then <kbd>Open Calculator</kbd> and <kbd>Send To</kbd> the table, or type directly into the Expression column). Use <em>differential</em> voltages for timing: the low level of a CML latch is not 0 V, so a fixed threshold such as 0.5 V may never be crossed. The differential zero crossing is independent of the common-mode level.</p>
+
+<div class="callout note"><strong>Window times</strong>
+Let <code>T = 1/fin = 1 ns</code> and <code>Tout = 2T = 2 ns</code> at 1 GHz. With a stop time of 40 T = 40 ns, measure between <code>t1 = 20 T = 20 ns</code> and <code>t2 = 40 T = 40 ns</code>. This window contains exactly ten output periods, which matters for averages. The numbers change when fin changes; define <code>t1</code> and <code>t2</code> as variables.</div>
+
+<h3>1. Output frequency</h3>
+<p>Define the differential signal first (or use <kbd>VT("/Q1") - VT("/Q1b")</kbd> inline), for example output name <code>dQ1</code>:</p>
+<pre><code>dQ1 = VT("/Q1") - VT("/Q1b")
+
+;; period from two consecutive rising zero crossings (late in the run)
+Tmeas = cross(dQ1 0 12 "rising") - cross(dQ1 0 11 "rising")
+fout  = 1 / Tmeas
+ratio = fout / fin                  ; expect 0.500</code></pre>
+<p>The Calculator also has <code>frequency(wave)</code> (verify in your version), which can be applied to <code>clip(dQ1 t1 t2)</code>. A cross-based average is more robust: <code>fout_avg = (N-1) / (cross(dQ1 0 N "rising") - cross(dQ1 0 1 "rising"))</code> for a window clipped to the settled part. For a sanity check also measure the clock: <code>fclk = 1 / (cross(VT("/CK") - VT("/CKb") 0 12 "rising") - cross(VT("/CK") - VT("/CKb") 0 11 "rising"))</code>.</p>
+
+<h3>2. Eight-phase delays and phase error</h3>
+<p>Take Q1 as the reference. For each stage k define <code>dQk</code> likewise and find the first crossing inside one output period after the reference edge:</p>
+<pre><code>tref = cross(dQ1 0 12 "rising")
+t_k  = cross(clip(dQk tref (tref + Tout)) 0 1 "rising") - tref      ; k = 2, 3, 4
+t_kf = cross(clip(dQk tref (tref + Tout)) 0 1 "falling") - tref     ; complement phases</code></pre>
+<p>The ideal phases are multiples of 45 degrees. With <code>Tout = 2/fin</code> one phase step is <code>Tout/8</code> in time. The phase error of phase index <code>k</code> (k = 0 for Q1, 1 for Q2, 2 for Q3, 3 for Q4; k + 4 for the complement edges):</p>
+<div class="eq">phase_err(k) [deg] = ( t_meas(k) - k * Tout / 8 ) / Tout * 360</div>
+<p>In the calculator this is for example <code>phErr2 = (t_2 - 1*Tout/8)/Tout*360</code>. Expected nominal table:</p>
+<table>
+<tr><th>Signal edge</th><th>k</th><th>Ideal delay vs Q1 rising</th><th>Ideal phase</th></tr>
+<tr><td>dQ1 rising</td><td>0</td><td>0</td><td>0 deg</td></tr>
+<tr><td>dQ2 rising</td><td>1</td><td>Tout/8</td><td>45 deg</td></tr>
+<tr><td>dQ3 rising</td><td>2</td><td>Tout/4</td><td>90 deg</td></tr>
+<tr><td>dQ4 rising</td><td>3</td><td>3 Tout/8</td><td>135 deg</td></tr>
+<tr><td>dQ1 falling (Q1b rising)</td><td>4</td><td>Tout/2</td><td>180 deg</td></tr>
+<tr><td>dQ2 falling</td><td>5</td><td>5 Tout/8</td><td>225 deg</td></tr>
+<tr><td>dQ3 falling</td><td>6</td><td>3 Tout/4</td><td>270 deg</td></tr>
+<tr><td>dQ4 falling</td><td>7</td><td>7 Tout/8</td><td>315 deg</td></tr>
+</table>
+<div class="callout warn"><strong>Do not assume the edge order is Q1, Q2, Q3, Q4</strong>
+In a generic-model pre-check at 1 GHz the edges, sorted by time, came out as Q1, Q2, Q3b, Q4b, Q1b, and so on, in pairs of the form (a, 90 - a) degrees apart where a = 360 x Td x fin. The table above is the <em>ideal</em> target, not a prediction of which output lands on which slot. First sort the eight edge times, then compare consecutive differences with 45 degrees; <code>scripts/measure_tran.py</code> does exactly this for an exported waveform. The reason the steps are only 45 degrees when Tck is about 8 Td is explained in the pre-check findings section.</div>
+<div class="callout warn"><strong>Direction of the sequence</strong>
+Whether Q2 lags Q1 by +45 deg or leads it by 45 deg (that is, appears at k = 7) depends on the circuit. If your measured pattern is reversed, use the mirrored index (k' = 8 - k) and say so in the report, or the "error" will show up as a false 90 deg. Look at the waveforms first, then fix the formula.</div>
+<p>Report the maximum absolute phase error over the eight values and the RMS error.</p>
+
+<h3>3. Average power</h3>
+<p>The supply source <code>V0</code> delivers current; Spectre defines the current into the positive terminal, so it is negative when the source supplies power. The average power over an integer number of output periods is:</p>
+<pre><code>P = average(clip(-i("/V0/PLUS" ?result "tran") * vdd  t1 t2))
+;; equivalent: vdd * average(clip(-IT("/V0/PLUS") t1 t2))</code></pre>
+<p>Notes: (a) make sure <code>t2 - t1</code> is a multiple of <code>Tout</code> (here ten output periods), otherwise the average has a ripple error of a few percent; (b) this is the core power only: the clock sources are ideal and not counted, and the bias source delivers almost no current; (c) quote the load capacitance used.</p>
+
+<h3>4. CK to Q delay</h3>
+<p>Use 50 % to 50 % thresholds. The clock threshold is vdd/2 (or the zero crossing of CK - CKb); the output threshold is the differential zero or the mid-swing level. A robust formulation is the difference of two crossings:</p>
+<pre><code>tCK = cross(VT("/CK") - VT("/CKb") 0 25 "rising")
+tQ  = cross(clip(dQ1 tCK (tCK + T)) 0 1 "either")
+Td  = tQ - tCK</code></pre>
+<p>The Calculator <code>delay()</code> form is (verify argument names in your version):</p>
+<pre><code>Td = delay(?wf1 VT("/CK") ?value1 vdd/2 ?edge1 "rising" ?nth1 25
+           ?wf2 dQ1       ?value2 0       ?edge2 "either" ?nth2 1
+           ?td2 tCK)</code></pre>
+<p>Which clock edge triggers the Q edge depends on the latch phase; the "either" edge picks the first output transition after the clock edge, and you should check by plotting once. If the delay is negative or larger than T, the search window is wrong.</p>
+
+<h3>5. Power-delay product with units</h3>
+<div class="eq">PDP = P x Td</div>
+<p>Example: P = 2.34 mW and Td = 120 ps give PDP = 2.34 mW x 120 ps = 280.8 fJ. Since 1 mW x 1 ps = 10<sup>-3</sup> W x 10<sup>-12</sup> s = 10<sup>-15</sup> J = 1 fJ, a number of mW multiplied by a number of ps gives fJ directly. (The numbers here only show the arithmetic; your own results will differ.) In the Calculator, work in SI units and convert at the end: <code>PDP_fJ = P * Td * 1e15</code>. Energy per divided cycle (<code>P/fin</code>) is a useful second figure.</p>
+
+<h3>6. fmax search</h3>
+<ol class="steps">
+<li>Create a parametric sweep of <code>fin</code>. In ADE Explorer: <kbd>Tools &gt; Parametric Analysis</kbd> (verify), variable <code>fin</code>, values such as <code>0.5G 1G 2G 3G 4G 5G 6G</code> (start low and raise it; the maximum frequency in gpdk045 will differ from any generic-model estimate). In ADE Assembler: type the list in the Global Variables sweep field (<code>1G 2G 3G ...</code>) or add a parameter set.</li>
+<li>Make everything else scale with <code>fin</code>: <code>T = 1/fin</code>, stop time <code>40/fin</code>, <code>maxstep = T/100</code>, <code>tr = min(20p, T/10)</code>, and the measurement window <code>t1 = 20 T</code>, <code>t2 = 40 T</code>.</li>
+<li>Define "still divides" in terms of your measurements:
+<ul>
+<li><code>fout/fin</code> within 0.5 +/- 1 % in the whole window (no skipped or extra transitions).</li>
+<li>Differential output swing at least 50 % of its low-frequency value (or at least 100 mV peak differential).</li>
+<li>Maximum phase error below a limit you state, for example 10 degrees (a second, looser limit for "divides but poor phases" is useful).</li>
+<li>Outputs stay periodic over the last ten output periods (no slow amplitude decay).</li>
+</ul></li>
+<li>fmax is the highest fin that meets all criteria. Refine by bisection between the last good and the first failing frequency (e.g., 7 GHz and 8 GHz, then 7.5 GHz). Repeat for the minimum frequency; very low fin may fail because of the leaky or too slow hold phase, or may cause self-oscillation (verify).</li>
+</ol>
+
+<h3>7. OCEAN script</h3>
+<p>The simplest way to a working run section is <kbd>Session &gt; Save Script</kbd> in ADE L (or the equivalent in Assembler; verify in your version), which writes the design, model files and variables. Append or replace the measurement part with:</p>
+<pre><code>simulator('spectre)
+;; ... design(), modelFile(), desVar() and analysis lines from the saved script ...
+analysis('tran ?stop "40n" ?errpreset "moderate" ?maxstep "5p")
+desVar("fin" 1e9)  desVar("vdd" 1.0)  desVar("vb" 0.8)
+temp(27)
+run()
+
+selectResults('tran)
+fin  = 3e9
+T    = 1.0 / fin
+Tout = 2.0 * T
+vdd  = 1.0
+t1   = 20.0 * T
+t2   = 40.0 * T
+
+dQ1 = v("/Q1") - v("/Q1b")
+dQ2 = v("/Q2") - v("/Q2b")
+dQ3 = v("/Q3") - v("/Q3b")
+dQ4 = v("/Q4") - v("/Q4b")
+
+;; frequency
+Tmeas = cross(dQ1 0 12 "rising") - cross(dQ1 0 11 "rising")
+fout  = 1.0 / Tmeas
+
+;; phase errors (degrees), assuming Q1->Q2->Q3->Q4 lag by 45 deg each
+tref = cross(dQ1 0 12 "rising")
+sigs = list(dQ1 dQ2 dQ3 dQ4)
+phErr = nil
+for(k 0 3
+  tk = cross(clip(nth(k sigs) tref tref+Tout) 0 1 "rising") - tref
+  phErr = append(phErr list((tk - k*Tout/8.0)/Tout*360.0))
+)
+
+;; power
+P = vdd * average(clip(-i("/V0/PLUS") t1 t2))
+
+;; delay and PDP
+tCK = cross(v("/CK") - v("/CKb") 0 25 "rising")
+tQ  = cross(clip(dQ1 tCK tCK+T) 0 1 "either")
+Td  = tQ - tCK
+PDPfJ = P * Td * 1e15
+
+printf("fout = %g Hz  ratio = %g\n" fout fout/fin)
+printf("phase errors (deg) = %L\n" phErr)
+printf("P = %g W   Td = %g s   PDP = %g fJ\n" P Td PDPfJ)</code></pre>
+<p>Syntax such as <code>nth</code>, <code>append</code> and the exact name of the current function (<code>i("/V0/PLUS")</code> versus <code>iTime</code>) must be checked against your OCEAN version; run the script in <code>ocean -nograph -replay script.ocn</code> after testing each expression once in the Calculator.</p>
+
+<h3>8. Sanity checks</h3>
+<ul>
+<li>Output frequency is fin/2 (ratio 0.500) and stays so for the whole window.</li>
+<li>Each output swings between a low level and VDD with a differential peak of the order of 0.3 V (not 0 mV and not a full 1.0 V swing). A rail-to-rail swing means the resistive load is too large or the tail current too high.</li>
+<li>Eight phases spaced by 45 degrees (Tout/8 apart); the sum of the eight consecutive spacings is 360 degrees.</li>
+<li>Q and Qb are complementary and cross each other at the same instant (common mode stays near the mid-level).</li>
+<li>Supply current is a repetitive wave with dc average of about P / VDD. A current of several mA at 45 nm points to a bias or biasing mistake.</li>
+<li>Delay Td is smaller than a quarter of T (250 ps at 1 GHz, about 83 ps at 3 GHz); otherwise the latch is too slow for the target.</li>
+<li>Results converge when errpreset is changed from moderate to conservative and when maxstep is halved; if not, the measurement is dominated by numerical error.</li>
+</ul>
+
+<h3>Screenshots to collect for the report</h3>
+<table>
+<tr><th>Item</th><th>What to capture</th></tr>
+<tr><td>DLATCH schematic</td><td>full cell with names M1-M7, R1-R2, labelled nets xs, xh, tail</td></tr>
+<tr><td>divider_core schematic</td><td>four instances with all net names, pins visible</td></tr>
+<tr><td>tb_divider schematic</td><td>sources, loads, DUT</td></tr>
+<tr><td>ADE setup window</td><td>variables, model files, tran settings, ic list</td></tr>
+<tr><td>CK, CKb and Q1</td><td>2 to 3 output periods, showing fin/2</td></tr>
+<tr><td>Eight phases</td><td>all of Q1..Q4b on stacked strips with the cursor spacing you measured (ideal Tout/8)</td></tr>
+<tr><td>Output swing / DC point</td><td>annotated DC operating point (M7 vds above vdsat)</td></tr>
+<tr><td>Supply current</td><td>-i(V0) with the window and the average value</td></tr>
+<tr><td>Calculator outputs table</td><td>f_out, phase errors, P, Td, PDP</td></tr>
+<tr><td>fmax sweep plot</td><td>f_out/fin and max phase error versus fin</td></tr>
+<tr><td>Corner summary</td><td>table or CSV view from Assembler</td></tr>
+</table>
+</section>
+
+<section id="corners">
+<h2>PVT corners and Monte Carlo</h2>
+<p><span class="tag">about 45 min</span> Process, voltage and temperature changes the tail current, the load resistance and the switch resistance. A divider that works at TT/27 degrees C/1.0 V can fail at slow/hot/low-VDD. Run the corners in ADE Assembler, because it handles the model sections, variables and temperature in a single table.</p>
+
+<h3>1. Process sections</h3>
+<p>Use the section names your PDK provides. Inspect the model file to see them (command line, adjust the path from <kbd>Setup &gt; Model Libraries</kbd>):</p>
+<pre><code>grep -n "^[[:space:]]*section" /path/to/gpdk045/models/spectre/gpdk045.scs</code></pre>
+<p>Typical names are typical, fast and slow sections, possibly with separate MOS and resistor/capacitor sections (verify). Resistor and capacitor corners matter here because R1 and R2 set the swing. If the PDK offers combined skew corners (slow NMOS fast PMOS) they have little meaning for an NMOS-only circuit, but keep the global corners.</p>
+
+<h3>2. Build the ADE Assembler setup</h3>
+<ol class="steps">
+<li>In the testbench library: <kbd>Launch &gt; ADE Assembler</kbd> and create a new view (for example <code>maestro</code>). Add the design <code>tb_divider</code> (the Assembler "Design" field).</li>
+<li>Copy the global variables from the cellview and add the analysis: <code>tran</code> with the same settings as in the testbench section.</li>
+<li>Copy your output expressions into the <em>Outputs</em> table: fout, ratio, phase errors, maximum phase error, P, Td, PDP. Give each a name and set a Spec (for example <code>ratio</code> from 0.495 to 0.505; maximum phase error below 10).</li>
+<li>Open the <em>Corners</em> setup (<kbd>Setup &gt; Corners</kbd> or the Corners tab; verify in your version). Click "Click to add corner" and create one corner per row, or use the multi-value form for a full grid:
+<table>
+<tr><th>Corner field</th><th>Values</th></tr>
+<tr><td>Temperature</td><td>-40, 27, 125</td></tr>
+<tr><td>Variable <code>vdd</code></td><td>0.9, 1.0, 1.1 (that is, +/-10 %)</td></tr>
+<tr><td>Model file section (process)</td><td>typical, fast, slow (names from your PDK)</td></tr>
+</table>
+Set the model file to the PDK file and select the section per corner in the "Model Files" cell of each corner.</li>
+<li>Reduce a full grid (3 x 3 x 3 = 27 runs) to the physically meaningful extremes if time is limited, then run the whole grid for the final report.</li>
+<li>Run: <kbd>Run &gt; Single Run, Sweeps and Corners</kbd> (verify), or the green play button. Check the "Corners" box in the run mode.</li>
+</ol>
+
+<h3>Suggested corner list</h3>
+<table>
+<tr><th>Name</th><th>Process</th><th>VDD</th><th>Temp</th><th>Expected character</th></tr>
+<tr><td>C1 nominal</td><td>typical</td><td>1.0 V</td><td>27</td><td>reference</td></tr>
+<tr><td>C2 worst speed</td><td>slow</td><td>0.9 V</td><td>125</td><td>lowest fmax, smallest swing</td></tr>
+<tr><td>C3 best speed</td><td>fast</td><td>1.1 V</td><td>-40</td><td>highest fmax, highest power</td></tr>
+<tr><td>C4 slow cold</td><td>slow</td><td>0.9 V</td><td>-40</td><td>higher Vth at low temperature</td></tr>
+<tr><td>C5 fast hot</td><td>fast</td><td>1.1 V</td><td>125</td><td>leakage and power highest</td></tr>
+<tr><td>C6 to C9</td><td>typical</td><td>0.9 / 1.1 V</td><td>-40 / 125</td><td>voltage and temperature alone</td></tr>
+</table>
+<div class="callout note"><strong>Scale the stimulus with VDD</strong>
+The clock vpulse amplitude must follow <code>vdd</code> (set v2 = <code>vdd</code>), and the bias <code>vb</code> should track it if it is generated by a divider or mirror on chip. A fixed bias (for example 0.8 V) at 0.9 V VDD changes the headroom of M7; decide whether the bias is a fixed external source or derived, and say so in the report. Also keep the ic values valid: the high level is <code>vdd</code>, so use expressions where possible.</div>
+
+<h3>3. Export results</h3>
+<ol class="steps">
+<li>Open the Results tab in Assembler after the run. Each corner is one column or row.</li>
+<li>Export with <kbd>Results &gt; Export</kbd> (or the table's right-click menu or the export icon; verify in your version). Choose CSV, include all outputs and corner conditions.</li>
+<li>To make a plot of fmax vs corner, open the CSV in a spreadsheet or Python. Save the CSV in the project repository under a results directory.</li>
+<li>Capture the Assembler result summary screenshot with pass/fail colours for the report.</li>
+</ol>
+
+<h3>Report table template</h3>
+<table>
+<tr><th>Corner</th><th>Process</th><th>VDD (V)</th><th>T (C)</th><th>f_out (GHz)</th><th>f_out/fin</th><th>Max phase err (deg)</th><th>P (mW)</th><th>Td (ps)</th><th>PDP (fJ)</th><th>Swing (mV)</th><th>fmax (GHz)</th></tr>
+<tr><td>C1</td><td>typ</td><td>1.0</td><td>27</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>C2</td><td>slow</td><td>0.9</td><td>125</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>C3</td><td>fast</td><td>1.1</td><td>-40</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>...</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+</table>
+<p>Include a one-paragraph interpretation: which corner limits fmax, which sets the power maximum, and whether the divider keeps 8 phases within the specified error everywhere.</p>
+
+<h3>Optional: Monte Carlo mismatch</h3>
+<ul>
+<li>In Assembler: switch the run mode to <kbd>Monte Carlo Sampling</kbd> (verify the name in your version). Number of points N = 100 to 200, sampling random or low-discrepancy.</li>
+<li>Select <em>mismatch only</em> (local variation) first. This is what degrades the phase error through M1/M2 and M3/M4 differences. Add <em>process and mismatch</em> as a second run if the PDK statistical models support it (verify that the model file has statistical or Monte Carlo sections).</li>
+<li>Run at the nominal corner. The simulations take N times longer, so use <code>errpreset = moderate</code> and shorter windows (about 25 input periods).</li>
+<li>Plot a histogram of the max phase error and of fout/fin (<kbd>Results &gt; Histogram</kbd>, verify). Report mean, standard deviation and the fraction of runs that still divide. Larger device area (W and L, or more fingers) reduces mismatch; use this as a design trade-off argument.</li>
+</ul>
+</section>
+
+<section id="troubleshoot">
+<h2>Troubleshooting</h2>
+<p>Work through the table from the top; the symptoms are ordered from most to least frequent in this design.</p>
+<table>
+<tr><th>Symptom</th><th>Likely cause</th><th>Fix</th></tr>
+<tr><td>Outputs stay constant (or Q equals Qb), CK toggles</td><td>Symmetric metastable DC state; no initial condition</td><td>Add ic on Q1..Q4b (see testbench section), delay the clock by 100 to 200 ps, or use skipdc; test other ic patterns</td></tr>
+<tr><td>Output frequency equals fin, not fin/2</td><td>Latches transparent together; swapped clock on XD2/XD3; CK and CKb not complementary</td><td>Check the wiring table for CK/CKb on every instance; plot CK - CKb and verify symmetric crossing</td></tr>
+<tr><td>Divides at 1 GHz, not at 3 GHz</td><td>Latch too slow; swing too low; load capacitance too large</td><td>Increase tail current (higher vb or wider M7), lower R, reduce CL, widen switches; compare with fmax sweep</td></tr>
+<tr><td>Spectre error: no convergence in DC analysis, or "timestep too small"</td><td>Ideal edges, floating nodes, bad ic, too loose tolerances</td><td>Use finite rise time (20 ps), add the ic, set errpreset=conservative, reduce maxstep, add gmin or a convergence aid (verify option names), check for missing bulk or ground connection</td></tr>
+<tr><td>Error: "floating node" or "singular matrix"</td><td>Pin left open, wrong net name, VSS not tied to node 0</td><td>Connect VSS to <code>gnd</code> in tb_divider; check the netlist for single-connection nets</td></tr>
+<tr><td>Power much higher than expected (several mW or more)</td><td>Tail current too high, supply current includes the bias branch or the clock buffers, window is not an integer number of periods</td><td>Measure only <code>/V0</code>; lower vb or M7 width; check DC current in the operating point; re-clip the average to an integer multiple of Tout</td></tr>
+<tr><td>Power too low, outputs tiny</td><td>M7 is off (vb below threshold) or in the wrong saturation region</td><td>Raise vb, check Vth of nmos1v at the temperature in use</td></tr>
+<tr><td>Outputs swing rail to rail (0 to VDD)</td><td>Load resistance too large; the transistors pull a node down to ground, which pushes M7 into triode</td><td>Reduce R1/R2 or tail current until the swing is about Iss times R of 300 to 400 mV</td></tr>
+<tr><td>Very small swing (below 100 mV), phases noisy</td><td>R too small or tail current too low</td><td>Increase R or Iss; remember that gain falls at higher frequencies</td></tr>
+<tr><td>Tail node out of saturation (M7 in triode)</td><td>Tail voltage too small: M5/M6 and the input pair take too much headroom; vb too high</td><td>Print the DC operating point of M7 (region and vds above vdsat); lower vb, widen M5/M6, or lengthen M7</td></tr>
+<tr><td>Large phase error (above 10 degrees)</td><td>Mismatch between latches, asymmetry in wiring, unequal output loads, frequency near fmax</td><td>Ensure identical loads on all 8 nodes, identical sizes in all latches, check reversed order mapping (k and 8 - k), reduce fin and compare</td></tr>
+<tr><td>Phases are 90 degrees apart instead of 45 degrees</td><td>Wrong phase indexing, or two latches are transparent at the same time</td><td>Re-index with the mirrored order; check clock polarity at XD2 and XD3; measure with differential crossings</td></tr>
+<tr><td>Measurements give "nil" or empty values</td><td>Cross count too high for the run length, thresholds never reached, current not saved</td><td>Lengthen the stop time or lower the crossing index; use differential zero crossings; save <code>/V0/PLUS</code> explicitly</td></tr>
+<tr><td>Result depends strongly on maxstep or errpreset</td><td>Numerical error larger than the effect measured</td><td>Use conservative, maxstep of T/100 or finer, and keep clip windows on whole periods</td></tr>
+<tr><td>Corner run fails at only one corner</td><td>Fixed bias at low VDD, ic invalid after VDD change, section names missing</td><td>Make ic and vb functions of vdd; check the model section name in the Assembler corner definition</td></tr>
+<tr><td>Corner results all identical</td><td>The corner changed the variable but the model section was not applied</td><td>Verify the model file section per corner; compare the netlist <code>include ... section=...</code> lines</td></tr>
+<tr><td>LVS later reports pin mismatch</td><td>Pin names in the schematic differ from the layout text labels</td><td>Fix names now; keep VDD, VSS, CK, CKb, VB and Q1..Q4b identical in schematic and layout</td></tr>
+</table>
+
+<div class="callout tip"><strong>A working order when everything seems broken</strong>
+First simulate a single DLATCH with a static D and a clock (verify that it follows D when CK is high and holds when CK is low). Then close the ring. Then add ic. Then lower fin to 1 GHz and increase step by step. This isolates schematic errors from start-up and speed limits, and it is much faster than debugging the four-latch loop directly.</div>
+</section>

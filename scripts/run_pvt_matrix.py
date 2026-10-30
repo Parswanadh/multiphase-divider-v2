@@ -1,20 +1,29 @@
 #!/usr/bin/env python3
-import csv
-rows = [
- ["TT",27,1.80,120.0,2.34,0.281],
- ["TT",-40,1.80,112.0,2.28,0.255],
- ["TT",125,1.80,138.0,2.41,0.333],
- ["FF",27,1.80,98.0,2.62,0.257],
- ["FF",-40,1.80,91.0,2.55,0.232],
- ["FF",125,1.80,115.0,2.71,0.312],
- ["SS",27,1.80,152.0,2.05,0.312],
- ["SS",-40,1.80,145.0,1.98,0.287],
- ["SS",125,1.80,171.0,2.12,0.363],
- ["TT",27,1.62,132.0,2.01,0.266],
- ["TT",27,1.98,108.0,2.72,0.294],
-]
-with open('results/pvt_summary_table.csv','w',newline='') as f:
-    w=csv.writer(f)
-    w.writerow(["Corner","Temp_C","VDD_V","Delay_ps","Power_mW","PDP_fJ"])
+"""PVT sweep of the calibrated baseline: synthetic corners x temperature x VDD (27 runs).
+Every row is a simulation; rows that fail to divide are recorded as FAIL, not dropped."""
+import csv, sys, pathlib
+sys.path.insert(0, str(pathlib.Path(__file__).parent))
+from divider_sim import run_case, ROOT
+
+rows = []
+for corner in ("TT", "FF", "SS"):
+    for temp in (-40, 27, 125):
+        for vdd in (1.62, 1.80, 1.98):
+            try:
+                r = run_case(vdd, temp, corner)
+            except Exception as e:
+                r = {"divides": False, "reason": str(e)[:80]}
+            ok = r.get("divides")
+            rows.append([corner, temp, vdd, "PASS" if ok else "FAIL",
+                         round(r.get("f_out_mhz", 0), 1),
+                         round(r["ck_to_q_delay_ps"], 1) if ok else "",
+                         round(r["power_mw"], 3) if ok else "",
+                         round(r["pdp_fj"], 1) if ok else "",
+                         r.get("max_phase_step_error_deg", "") if ok else r.get("reason", "")])
+            print(rows[-1], flush=True)
+(ROOT / "results").mkdir(exist_ok=True)
+with open(ROOT / "results/pvt_summary_table.csv", "w", newline="") as f:
+    w = csv.writer(f)
+    w.writerow(["Corner(synthetic)", "Temp_C", "VDD_V", "Divides", "f_out_MHz", "Delay_ps", "Power_mW", "PDP_fJ", "MaxPhaseStepErr_deg_or_reason"])
     w.writerows(rows)
-print("PVT matrix written.")
+print("wrote results/pvt_summary_table.csv")

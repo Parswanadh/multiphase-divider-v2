@@ -1,0 +1,316 @@
+<section id="layout">
+<h2>Layout in Virtuoso (gpdk045)</h2>
+<p>The layout is worth 5 of the 40 lab marks, but it also feeds the PVT/post-layout story, so build it carefully and keep it simple. The goal is a compact, symmetric, DRC-clean, LVS-clean four-latch core that you can extract and re-simulate. This section follows the layout decisions described for the paper (two-finger unit nMOS, M7 adjacent to the clock block, symmetric clock routing) but every dimension below is your own to choose and measure.</p>
+
+<div class="callout warn"><strong>Menu names vary</strong>Cadence menu paths differ between IC6.1.x and IC23.x and between Layout XL, GXL and the Layout Suite. Anything written as <kbd>Menu &gt; Item</kbd> below is the common form; verify in your version. Layer names and rule decks are PDK specific, so look them up in your own tech file and do not copy layer names from another PDK.</div>
+
+<h3>1. Prepare the schematic before touching layout</h3>
+<ul>
+<li>Run <kbd>Check and Save</kbd> on the latch schematic and on the top-level divider schematic with zero errors and zero warnings you cannot explain.</li>
+<li>Decide the finger and multiplier policy now. For the paper-style unit device, set each nMOS to <strong>fingers = 2</strong> and halve the per-finger width so that total width is unchanged (for example, W_total = 240n becomes 2 fingers of 120n each). Record the choice in your report.</li>
+<li>Make sure the schematic has real pins: CK, CKb, VDD, VSS, nbias (if you bias M7 from a pin), and the output pins for all four latches (8 outputs: Q and Qb for each of the four phases).</li>
+<li>Resistor loads R1 and R2 should be the PDK resistor cell you will actually use in layout (verify in your PDK which resistor type matches your target sheet resistance and whether it has a model for the library you simulate with). A mismatched resistor view is the most common reason LVS fails late.</li>
+</ul>
+
+<h3>2. Generate from source</h3>
+<ol class="steps">
+<li>Open the latch (or divider) schematic, then <kbd>Launch &gt; Layout XL</kbd> (or Layout GXL). Choose <em>Create New</em> and accept the layout view name <code>layout</code>.</li>
+<li>In Layout XL choose <kbd>Connectivity &gt; Generate &gt; All From Source</kbd>. In the dialog confirm that pins, instances and IO pins are all selected. Set a reasonable pin layer and pin label option. Verify in your version whether pin type and layer are picked from the schematic or set here.</li>
+<li>Click OK. All devices appear stacked or scattered in the layout window with rubber-band connectivity (airwires). If devices are missing, the schematic was not saved or the source library is wrong.</li>
+<li>Use <kbd>Connectivity &gt; Update &gt; Components and Nets</kbd> every time you change the schematic after this point, so the layout stays tied to the source. Do not edit the schematic and layout independently.</li>
+<li>Turn on <em>Connectivity &gt; Check &gt; Against Source</em> (verify in your version) and keep the Design Checks / connectivity panel open to see shorts and opens while routing.</li>
+</ol>
+
+<h3>3. Floorplan and placement strategy</h3>
+<p>Build and verify <strong>one latch</strong> first, then instantiate it four times. A hierarchical divider (latch layout cell placed four times) is much easier to get symmetric than one flat sea of devices, and LVS is faster to debug.</p>
+<table>
+<tr><th>Decision</th><th>Recommendation</th><th>Reason</th></tr>
+<tr><td>Differential pairs (M1/M2, M3/M4, M5/M6)</td><td>Interdigitate or place common-centroid (A B B A) where practical; at minimum mirror each pair about a vertical axis.</td><td>Matches the two branches against gradients and keeps Q and Qb loading equal, which protects phase accuracy.</td></tr>
+<tr><td>Fingers</td><td>Two fingers per unit nMOS (paper style), with the shared source/drain diffusion between fingers.</td><td>Shared diffusion lowers drain/source junction area and perimeter, so lower parasitic capacitance at the output nodes.</td></tr>
+<tr><td>Tail M7</td><td>Place it directly adjacent to the M5/M6 clock-switch block with a short, wide source/drain connection.</td><td>Shorter wire on the tail node means smaller RC on that node and faster transitions (paper intent).</td></tr>
+<tr><td>Resistors R1, R2</td><td>Place them symmetrically, same orientation, same length of connecting wire to each output node, outside or on the edge of the transistor block.</td><td>Equal loads on both branches; resistors are large, so keeping them at the edge simplifies routing.</td></tr>
+<tr><td>Guard ring / well taps</td><td>Surround the nMOS block with a p-substrate tap ring tied to VSS; add n-well taps to VDD only if you use PMOS or an n-well resistor.</td><td>Provides bulk connection (LVS needs bulk nets) and reduces latch-up and substrate coupling.</td></tr>
+<tr><td>Dummy devices</td><td>Add one dummy finger (gate tied off to VSS through the PDK-allowed method) at each end of an interdigitated row.</td><td>Edge devices see different etch and stress; dummies keep the real devices uniform. Verify your PDK/DRC rules for dummy gate tie-off.</td></tr>
+<tr><td>Orientation</td><td>Keep all gates the same direction (the PDK may require a fixed poly direction).</td><td>Avoids DRC and matching problems.</td></tr>
+</table>
+
+<h3>4. Suggested four-latch floorplan</h3>
+<p>The paper shows four cascaded latches in a 2x2 arrangement (its Fig. 2). The placement below is a <strong>suggestion</strong>, not a copy of the paper: confirm which latch sits where against the paper figure and your own schematic connectivity, and renumber if you prefer. The only firm rule is that the clock distribution is symmetric and the wires between consecutive latches are as equal in length as you can make them.</p>
+<pre><code>        +-------------------------+-------------------------+
+        |  Latch 1                |  Latch 2                |
+        |  (0 deg tap)            |  (next in loop)         |
+        |  [M5 M6][M7] near CK    |  [M5 M6][M7] near CK    |
+        |  M1 M2 | M3 M4          |  M1 M2 | M3 M4          |
+        |  R1 R2                  |  R1 R2                  |
+        +------------+------------+------------+------------+
+                     |   CK / CKb trunk (symmetric)  |
+        +------------+------------+------------+------------+
+        |  Latch 4                |  Latch 3                |
+        |  (closes the loop)      |                         |
+        |  M1 M2 | M3 M4          |  M1 M2 | M3 M4          |
+        |  R1 R2                  |  R1 R2                  |
+        +-------------------------+-------------------------+
+  VSS ring around the whole block;  VDD rail along top/bottom edges
+
+  Data path:  L1 -> L2 -> L3 -> L4 -> back to L1 (inverted, as in your schematic)
+  Check that wire lengths L1-L2, L2-L3, L3-L4, L4-L1 are equal where possible.</code></pre>
+<p>A ring (loop) placement makes all four inter-latch connections similar in length, and the feedback from Latch 4 to Latch 1 does not have to cross the whole cell. If your schematic uses a different feedback polarity (cross-coupled swap), keep the layout topology consistent with it and let LVS confirm.</p>
+
+<h3>5. Routing and metal usage</h3>
+<ul>
+<li><strong>Layer names:</strong> check the layer list in your tech file (Layer Selection Window, LSW) for the poly, contact, metal1, via1, metal2, and so on. Do not assume names from other PDKs.</li>
+<li><strong>Local connections</strong> inside a latch (drain/source straps, gate connections) on the lowest metal. Use the next metal up for vertical signal tracks and the upper metals for clock and power trunks.</li>
+<li><strong>Clock (CK, CKb):</strong> route as a symmetric pair with the same width, same layers, same number of vias, and same length to every clock switch. Keep them away from the output nodes and from each other only as far as needed; unequal coupling to Q/Qb contributes to phase error.</li>
+<li><strong>Output nodes (Q, Qb of each latch):</strong> keep short and balanced; they carry the dominant capacitance in the delay model, so every extra wire length costs speed and adds mismatch.</li>
+<li><strong>Power:</strong> wide VDD and VSS straps with multiple vias. IR drop is small at this current level, but narrow rails do matter for resistor load connections.</li>
+<li><strong>Vias:</strong> use via arrays where the width allows; keep both branches of a differential pair identical.</li>
+<li><strong>Do not</strong> run a long signal wire over the clock switches or tail node; stray capacitance on the tail node slows transitions.</li>
+</ul>
+
+<h3>6. Pins and labels</h3>
+<ol>
+<li>Create pins with <kbd>Create &gt; Pin</kbd> (or use pins generated by Generate from Source) on a metal layer that has a pin purpose in your tech file.</li>
+<li>Pin names must exactly match schematic pin names (case sensitive). Eight output pins (for example <code>Q1, Q1b, Q2, Q2b, Q3, Q3b, Q4, Q4b</code>, or whatever names your schematic uses), plus <code>CK</code>, <code>CKb</code>, <code>VDD</code>, <code>VSS</code>, and <code>nbias</code> if used.</li>
+<li>Place CK/CKb on one edge (symmetric), outputs on the opposite or adjacent edges in phase order, and VDD/VSS on the outer ring so that a testbench can connect cleanly.</li>
+<li>Attach text labels on the same layer as the metal (many LVS decks need label text on a text layer matching the metal). Verify the label/text layer rule for your PDK; this is the source of the "pin text mismatch" error in the table in the next section.</li>
+</ol>
+
+<h3>7. Reporting layout area</h3>
+<ol class="steps">
+<li>Select the whole core cell (outline the cell without the surrounding test structures) and use <kbd>Edit &gt; Properties</kbd> or <kbd>Window &gt; Utilities &gt; Bounding box</kbd> (verify in your version). Alternatively draw a rectangle on the boundary layer and read its width and height with the ruler (<kbd>K</kbd> to place, <kbd>Shift+K</kbd> to clear rulers).</li>
+<li>Record width x height in micrometres and compute the area in square micrometres. State clearly whether the number includes the guard ring and pins.</li>
+<li>Report two numbers if useful: the tight bounding box of the devices and the full cell including the ring.</li>
+<li>Compare with the paper's reported core latch area (given for its 180 nm process). Do not claim a similar or smaller value without a measured number of your own; a different process node means the comparison is a rough indicator, not a like-for-like benchmark. If you mention scaling, state the assumption explicitly.</li>
+</ol>
+
+<div class="callout tip"><strong>Layout screenshots</strong>Take one screenshot of the full divider layout and one close-up of a single latch with the layer legend visible. Mark M1-M7, R1/R2, the CK/CKb trunk and the pins with text boxes (add them afterwards on the image).</div>
+</section>
+
+<section id="verify">
+<h2>DRC, LVS and parasitic extraction</h2>
+<p>This flow is the same for any PDK, but the rule files and menu names differ. Assura, PVS (Pegasus) and Calibre decks each have their own setup; use whichever tool your lab installation provides for gpdk045. If your environment offers both Assura and PVS, pick one and use it for all three steps.</p>
+
+<div class="callout warn"><strong>An empty cell passes DRC</strong>A cell with no geometry reports zero DRC errors. "Zero DRC errors" in your report must be a real screenshot of the checker summary or log run on the finished four-latch layout cell, with the cell name and top-level library visible. The instructor can ask you to re-run it live.</div>
+
+<h3>1. DRC</h3>
+<ol class="steps">
+<li>Open the layout view. Save it (<kbd>File &gt; Save</kbd>).</li>
+<li><strong>Assura:</strong> <kbd>Assura &gt; Run DRC</kbd>. Select the rule set and technology from the drop-down. The rule files live in the verify directory of your PDK installation (look for a folder named something like <code>verify</code> or <code>assura</code> next to the tech library; verify the exact path in your PDK). Leave the switches at their defaults unless your course notes say otherwise, then press OK.</li>
+<li><strong>PVS / Pegasus:</strong> the equivalent is the <kbd>PVS &gt; Run DRC</kbd> menu (verify in your version) with the PVS DRC rule file from the same PDK verify directory.</li>
+<li>When the run completes, open the log, then <kbd>Assura &gt; Show Summary</kbd> and <kbd>Assura &gt; View Errors</kbd> (verify in your version). The error browser (ERC/DRC viewer) lists each rule and highlights it in the layout.</li>
+<li>Fix the first error first; many later errors disappear once the first is solved. Re-run until the summary reads zero errors.</li>
+<li>Screenshot the summary window and keep the log file (<code>*.err</code> or the run directory) as supporting evidence.</li>
+</ol>
+
+<h3>2. LVS</h3>
+<ol class="steps">
+<li>Make sure the schematic is checked and saved and that the layout has all pins and labels.</li>
+<li><kbd>Assura &gt; Run LVS</kbd> (PVS: <kbd>PVS &gt; Run LVS</kbd>). Set the schematic view (<code>schematic</code>) and the layout view (<code>layout</code>) and the rule set from the PDK verify directory. Choose to run extraction as part of LVS (the default flow).</li>
+<li>Run. Then open <kbd>Assura &gt; Analyze Errors</kbd> or the LVS debug window (verify in your version), which shows mismatches by device, net and pin.</li>
+<li>The goal is "Schematic and Layout match" (or the equivalent clean message). Screenshot it.</li>
+<li>If you extract hierarchically, run LVS on the latch cell first, then on the divider.</li>
+</ol>
+
+<h3>3. Reading reports</h3>
+<ul>
+<li><strong>DRC summary:</strong> a table of rule name, count. Zero rows means clean. Rule names are described in the PDK design-rule manual; look up the name there.</li>
+<li><strong>LVS report:</strong> check counts of nets, devices and instances for both sides first; if counts differ, the problem is a missing or extra device, not wiring.</li>
+<li><strong>Parasitic/netlist output:</strong> look at the extracted netlist for the device widths and the number of fingers; compare them to the schematic parameters.</li>
+</ul>
+
+<h3>4. Common errors and fixes</h3>
+<table>
+<tr><th>Symptom</th><th>Likely cause</th><th>Fix</th></tr>
+<tr><td>Density violation (metal or poly density too low or too high)</td><td>Cell is small and sparse; the foundry requires a minimum fill.</td><td>Add dummy fill on the flagged layer outside the signal routes, or check whether your lab deck excludes density rules for small cells (ask your lab instructor). Fill must be tied or floating per the rule.</td></tr>
+<tr><td>Well spacing or enclosure</td><td>n-well or p-well too close or insufficient enclosure of active.</td><td>Move devices apart or enlarge the well rectangle to the dimension in the rule manual.</td></tr>
+<tr><td>Minimum spacing / width on metal</td><td>Wires drawn too close or narrow after routing.</td><td>Use the rule value; widen or reroute; avoid tiny jogs.</td></tr>
+<tr><td>Antenna violation</td><td>Long metal connected to a gate without a diode or higher-level jumper.</td><td>Break the wire with a jumper on an upper metal near the gate, or add the PDK-approved protection diode. Verify in your PDK.</td></tr>
+<tr><td>Missing bulk / substrate connection</td><td>No tap for the nMOS bulk or nets floating; LVS reports an extra net.</td><td>Add p-substrate taps tied to VSS; ensure schematic bulk terminals go to VSS (or the net you intend).</td></tr>
+<tr><td>Pin text mismatch (pin not found or net name differs)</td><td>Label missing, wrong layer, or different spelling or case from the schematic.</td><td>Place a label of the right text layer on top of the metal and match the exact name; re-run.</td></tr>
+<tr><td>Device size mismatch (W or L differ)</td><td>Fingers and multiplier: schematic has W = 240n, layout is 2 x 120n (or vice versa); LVS compares per-finger width differently.</td><td>Make the schematic use the same parameters (width per finger, fingers, multiplier) as the layout, or use the LVS device-merging option that sums fingers (verify in your deck). Keep a consistent policy and document it.</td></tr>
+<tr><td>Extra or missing device</td><td>Dummy devices, resistor model mismatch, or parasitic devices not in the schematic.</td><td>Either add the dummy to the schematic (tied off the same way) or use the PDK-approved dummy device the LVS ignores.</td></tr>
+<tr><td>Short or open on a net</td><td>Two shapes touching on the same layer, a missing via, or a metal gap.</td><td>Use the net highlight in the LVS debugger, then check the airwires in Layout XL.</td></tr>
+<tr><td>Resistor does not match</td><td>Wrong resistor type or length/width mismatched to the schematic R value.</td><td>Use the same PDK resistor cell in both views and ensure the parameters match.</td></tr>
+</table>
+
+<h3>5. Parasitic extraction (PEX)</h3>
+<ol class="steps">
+<li>After a clean LVS, run <kbd>Assura &gt; Run RCX</kbd> (or <kbd>Quantus QRC &gt; Extract</kbd>; verify in your version). Select the extraction type (RC extraction, typically with coupling capacitors for a first pass) and the output type as <em>av_extracted</em> view (or the spectre netlist with parasitics).</li>
+<li>Choose the extraction rule file from the PDK verify/QRC folder. Decide which nets to extract: extract all nets, then simulate with whatever you extract so there is no mismatch.</li>
+<li>The run produces a view named <code>av_extracted</code> in the same cell. Open it and confirm that device instances and parasitic R/C elements are present. Some flows write a netlist (<code>.spectre</code>) instead of a view; either is acceptable if your simulation uses it.</li>
+<li>Check the extraction log for warnings about unlabelled nets or missing substrate connection.</li>
+</ol>
+
+<h3>6. Post-layout simulation</h3>
+<ol class="steps">
+<li>Open the test-bench cell and launch ADE (ADE L or ADE Explorer/Assembler).</li>
+<li>Open the Hierarchy Editor (<kbd>Setup &gt; Environment</kbd> in ADE L, or the config view for the testbench) and set the view list for the divider cell to <code>av_extracted</code> (before <code>schematic</code>). If you are using a <code>config</code> view, open it with <kbd>Tools &gt; Hierarchy Editor</kbd> and bind the divider to <code>av_extracted</code>.</li>
+<li>Keep everything else identical: same supply, same clock input, same temperature, same models, same save list, same measurement expressions.</li>
+<li>Run the same transient analysis and the same calculator expressions you used pre-layout. Do not retune sizes between the two runs; that would invalidate the comparison.</li>
+<li>Save the setup state with a name such as <code>postlayout_nom</code> so it is reproducible.</li>
+</ol>
+
+<h3>7. What to compare, pre-layout versus post-layout</h3>
+<table>
+<tr><th>Metric</th><th>Pre-layout</th><th>Post-layout (av_extracted)</th><th>Comment</th></tr>
+<tr><td>Maximum input frequency (fmax), same criterion</td><td>___</td><td>___</td><td>Expect lower after parasitics; say how you defined fmax.</td></tr>
+<tr><td>Average supply power at stated f_in</td><td>___</td><td>___</td><td>Same measurement window and clock amplitude.</td></tr>
+<tr><td>Phase error between adjacent outputs</td><td>___</td><td>___</td><td>State the reference output and how the phase is measured.</td></tr>
+<tr><td>Output swing</td><td>___</td><td>___</td><td>Optional but quick to report.</td></tr>
+<tr><td>Core area (um^2)</td><td>n/a</td><td>___</td><td>From the layout bounding box.</td></tr>
+</table>
+<div class="callout note"><strong>Why the numbers move</strong>Extracted routing adds capacitance to the Q/Qb nodes, which moves the RC time constant and therefore fmax and phase. A short explanation tied to the Elmore model in your theory assignment is worth including.</div>
+<div class="callout tip"><strong>Be able to reproduce it live</strong>Practice the sequence on a clean session: open library, run DRC, run LVS, run extraction, swap the view, run the simulation. The instructor may ask you to repeat any step.</div>
+</section>
+
+<section id="theory">
+<h2>Theory assignment (23ECE302) worked template</h2>
+<p>The theory assignment carries 15 marks: about 7 for the implementation and schematic, and about 8 for the sizing concept, including the Elmore derivation. The template below tells you what to draw, what to argue and which tables to fill. Use your own values; the only numbers given are the starting 45 nm values.</p>
+
+<h3>Part A. Implementation and schematic (7 marks)</h3>
+<ol>
+<li><strong>Block diagram:</strong> four cascaded differential D-latches in a ring with the feedback connection, clock CK and CKb distribution, and the eight outputs labelled with their phase.</li>
+<li><strong>Latch schematic:</strong> draw one latch transistor-level, with M1/M2 (sample pair), M3/M4 (hold pair, cross-coupled), M5/M6 (clock switches), M7 (tail current source), and resistors R1/R2 (loads). Label drain, gate, source nodes; mark VDD, VSS and the nbias input.</li>
+<li><strong>Operation:</strong> in one clock phase the sample pair follows the input and the hold pair is disabled; in the opposite phase the hold pair regenerates and holds the state. State which phase does what with the clock switches ON/OFF.</li>
+<li><strong>Divide-by-two argument:</strong> a loop of latches clocked on alternate phases changes state once every half input period, producing an output at half the input frequency; each stage supplies a fixed delay or phase step (describe the phase sequence you obtain).</li>
+<li><strong>Waveform sketch:</strong> input clock, two or more output phases, with the quarter-period relationship indicated.</li>
+<li><strong>Simulation evidence:</strong> a screenshot of the schematic in Virtuoso and a transient plot from your own run (not a figure from the paper).</li>
+<li><strong>Reference:</strong> cite Kuo et al. for the topology.</li>
+</ol>
+
+<h3>Part B. Sizing concept (8 marks)</h3>
+
+<h3>B1. Equal rise and fall argument</h3>
+<p>The differential output nodes should have matching rise and fall times so that the output is symmetric and the phases are evenly spaced. In a resistor-loaded current-steering stage:</p>
+<ul>
+<li>Following Kuo et al. (Sec. II and Fig. 5): the output falls through the ON transistor path and rises through the load resistor R1.</li>
+<li>The paper designs the <strong>nMOS turn-on resistance R to be twice the load resistance R1</strong>, i.e. R1 = R/2. M7 is always on, so node b is treated as ground.</li>
+<li>With that choice the falling and rising transitions see the same effective resistance (R/2) and the same lumped capacitance, so the rise and fall times match (t<sub>pdr</sub> = t<sub>pdf</sub>). Cite the paper for this sizing rule and state that it is a first-order argument.</li>
+<li>State that this is a first-order, hand-calculation argument; the tuned values come from simulation, and it is acceptable that they differ from hand values if you explain why.</li>
+</ul>
+
+<h3>B2. Tail device M7</h3>
+<ul>
+<li>Use a <strong>longer channel</strong> for M7 (starting point L = 90n versus 45n for the others) so that it behaves like a current source in saturation, with higher output resistance (less channel-length modulation), and so that its current changes little with the voltage on the tail node.</li>
+<li>M7 must stay in saturation: V_DS(M7) must exceed V_dsat = V_GS - V_t. Write the headroom inequality: VDD - I_tail*R - V_DS(M1,M5 stack) must leave room for V_DS(M7) > V_dsat. If the tail is pushed into triode, the current drops and the speed and swing fall.</li>
+<li>The swing is set by I_tail*R. Specify the target swing as ___ mV and show the resulting I_tail = swing / R.</li>
+</ul>
+
+<h3>B3. Elmore delay derivation, step by step</h3>
+<p>The Elmore delay of an RC network from a source to node n is the sum, over every capacitor k, of C_k multiplied by the resistance that is common to the path from the source to node k and the path from the source to node n:</p>
+<div class="eq">t_D(n) = &#931;<sub>k</sub> C<sub>k</sub> &middot; R<sub>nk</sub></div>
+<ol class="steps">
+<li><strong>Draw the RC model</strong> of the D-latch for the falling output, as in the paper's Fig. 5(a)-(b): assume the gate capacitance C equals the diffusion capacitance of one unit; node a has already discharged to ground through capacitance 2C and resistance R/2.</li>
+<li><strong>Count the capacitance in units of C</strong>, as the paper does: node Q1 carries (6+2)C = <strong>8C</strong>. Show your own count of which devices contribute how many units (fill in the table below). If your count differs from the paper's, show it and derive with your count.</li>
+<li><strong>Take the resistance in the discharge path:</strong> the paper gives R/2 from node Q1 to ground (from the design choice R1 = R/2 above). Reproduce Fig. 5(b) in your own drawing.</li>
+<li><strong>Apply the Elmore formula:</strong>
+<div class="eq">t<sub>pdf</sub> = (8C) &middot; (R/2) = 4RC</div></li>
+<li><strong>Repeat for the rising edge.</strong> By the symmetry of the differential pair and the equal-resistance sizing, the rising transition sees the same effective resistance and capacitance, so
+<div class="eq">t<sub>pdr</sub> = (8C) &middot; (R/2) = 4RC = t<sub>pdf</sub></div></li>
+<li><strong>Conclude:</strong> equal rise and fall delays follow from R = 2*R1, and the delay scales with R and C; reducing parasitic capacitance (for example by two-finger layout and sharing diffusion) reduces delay directly.</li>
+<li><strong>Convert 0.69 factor if asked:</strong> the Elmore delay is the first moment; the 50 percent propagation delay of a single-pole RC is about 0.69 RC. Say which you are reporting.</li>
+</ol>
+<div class="callout warn"><strong>Follow your course notes</strong>The derivation above reproduces the form t = (8C)(R/2) = 4RC used by the course rubric. This follows Kuo et al. Eqs. (1)-(2) and Fig. 5. Check the node-by-node grouping that gives 8C and R/2 against the paper and your lecture notes, and state your assumptions (which capacitances you lump, which resistances you ignore) so the marker can follow the logic.</div>
+
+<h3>B4. Sizing table skeleton (45 nm)</h3>
+<table>
+<tr><th>Device</th><th>Role</th><th>Starting W / L</th><th>Tuned W / L (yours)</th><th>Fingers</th><th>Reason for change</th></tr>
+<tr><td>M1, M2</td><td>Sample pair</td><td>240n / 45n</td><td>___ / ___</td><td>___</td><td>___</td></tr>
+<tr><td>M3, M4</td><td>Hold pair</td><td>240n / 45n</td><td>___ / ___</td><td>___</td><td>___</td></tr>
+<tr><td>M5, M6</td><td>Clock switches</td><td>240n / 45n</td><td>___ / ___</td><td>___</td><td>___</td></tr>
+<tr><td>M7</td><td>Tail current source</td><td>480n / 90n</td><td>___ / ___</td><td>___</td><td>___</td></tr>
+<tr><td>R1, R2</td><td>Loads</td><td>___ (from R = 2*R1 estimate)</td><td>___</td><td>n/a</td><td>___</td></tr>
+<tr><td>VDD</td><td>Supply</td><td>1.0 V</td><td>___</td><td>n/a</td><td>___</td></tr>
+<tr><td>nbias / I_tail</td><td>Bias</td><td>___</td><td>___</td><td>n/a</td><td>___</td></tr>
+</table>
+<table>
+<tr><th>Capacitance contribution (for the 8C count)</th><th>Units of C</th></tr>
+<tr><td>___</td><td>___</td></tr>
+<tr><td>___</td><td>___</td></tr>
+<tr><td>___</td><td>___</td></tr>
+<tr><td>Total</td><td>8 (or your own count: ___)</td></tr>
+</table>
+
+<h3>Viva: what examiners probably ask</h3>
+<ol>
+<li><strong>Why does the circuit divide by two?</strong> Latches clocked on opposite phases form a loop with an inversion; the state flips once per half input period, so the output toggles at half the input frequency.</li>
+<li><strong>Why four latches rather than two?</strong> Four latches give multiple equally spaced phase outputs from one divider (eight outputs with complements); two latches give only quadrature. State the phases you observe.</li>
+<li><strong>What does M7 do?</strong> It sets the tail current; it is longer so it behaves as a current source in saturation.</li>
+<li><strong>What does R = 2*R1 achieve?</strong> It balances the charging and discharging resistances, so t_pdr = t_pdf.</li>
+<li><strong>What limits maximum frequency?</strong> The RC time constant at the output nodes (about 4RC to first order) and the clock-switch drive; below the lower limit the circuit may fail to regenerate, above the upper limit it stops dividing correctly.</li>
+<li><strong>Why two fingers?</strong> Shared diffusion lowers drain/source junction capacitance, so smaller C, faster nodes.</li>
+<li><strong>Why symmetric clock routing?</strong> Unequal wire length gives unequal delay and skews the phases, increasing phase error.</li>
+<li><strong>What if the supply drops?</strong> Smaller overdrive means higher on-resistance and lower fmax; headroom for M7 shrinks. Support your answer with your PVT run.</li>
+<li><strong>How did you pick R?</strong> From the swing target and the tail current (R = swing / I_tail), then checked R against 2*R1; tuned by simulation.</li>
+<li><strong>What changes after layout?</strong> Extra parasitic capacitance and resistance on the nodes lowers fmax and shifts phase; show your own pre versus post-layout comparison.</li>
+</ol>
+</section>
+
+<section id="report">
+<h2>Lab report (23ECE383) template</h2>
+<p>The lab project is worth 40 marks: functionality 10, power 5, delay 5, power-delay product (PDP) 5, PVT 5, layout 5, report 5. The instructor evaluates live, so every figure in the report must be something you can regenerate in front of them.</p>
+
+<h3>Section-by-section skeleton</h3>
+<table>
+<tr><th>Section</th><th>Content</th><th>Figure / table / screenshot</th><th>Rubric item</th></tr>
+<tr><td>1. Title, abstract</td><td>Project goal, process (gpdk045), supply, key measured results in two or three sentences.</td><td>None</td><td>Report (5)</td></tr>
+<tr><td>2. Circuit description</td><td>Topology of the divider, latch operation, the role of M1-M7, R1/R2. Cite Kuo et al.</td><td>Divider block diagram; latch schematic screenshot with devices labelled.</td><td>Functionality (10)</td></tr>
+<tr><td>3. Sizing</td><td>Starting sizes, tuned sizes, justification (R = 2*R1, M7 long channel).</td><td>Sizing table with your tuned values.</td><td>Functionality, report</td></tr>
+<tr><td>4. Testbench</td><td>Supply, clock source, loads, analysis settings, temperature, corner.</td><td>Testbench schematic; ADE setup window showing models, analysis and outputs.</td><td>Functionality</td></tr>
+<tr><td>5. Functional results</td><td>Division by two demonstrated, phases of the four latches.</td><td>Transient plot with input and the eight outputs; zoomed plot with cursors showing the period ratio.</td><td>Functionality (10)</td></tr>
+<tr><td>6. Power</td><td>Average supply power at the stated frequency, measurement window.</td><td>Calculator expression and result, plus the current waveform.</td><td>Power (5)</td></tr>
+<tr><td>7. Delay</td><td>Propagation delay definition (50 percent points), measurement method.</td><td>Zoomed plot with delay marked; result table.</td><td>Delay (5)</td></tr>
+<tr><td>8. PDP</td><td>PDP = power x delay, units shown, calculation steps.</td><td>One-line calculation with each number traceable.</td><td>PDP (5)</td></tr>
+<tr><td>9. PVT</td><td>Corners, supply and temperature variations, pass/fail for division.</td><td>PVT table; one overlay plot if useful.</td><td>PVT (5)</td></tr>
+<tr><td>10. Layout</td><td>Floorplan, placement choices, area, DRC and LVS status, extraction.</td><td>Layout screenshots; DRC summary; LVS match screenshot; pre versus post-layout table.</td><td>Layout (5)</td></tr>
+<tr><td>11. Discussion and limitations</td><td>Comparison with the paper, what was and was not simulated.</td><td>None</td><td>Report (5)</td></tr>
+<tr><td>12. References, appendix</td><td>Kuo et al.; PDK documentation; setup files.</td><td>Netlist or setup screenshots as appendix.</td><td>Report</td></tr>
+</table>
+
+<h3>Results table skeleton</h3>
+<p>Leave cells empty until each number comes from a Spectre run you can reproduce. Do not copy values from the paper.</p>
+<table>
+<tr><th>Condition</th><th>f_in</th><th>Divides by 2 (Y/N)</th><th>Power</th><th>Delay</th><th>PDP</th><th>Phase error</th><th>Notes</th></tr>
+<tr><td>Nominal (TT, 27 C, 1.0 V)</td><td>___</td><td>___</td><td>___</td><td>___</td><td>___</td><td>___</td><td>___</td></tr>
+<tr><td>Fast corner</td><td>___</td><td>___</td><td>___</td><td>___</td><td>___</td><td>___</td><td>___</td></tr>
+<tr><td>Slow corner</td><td>___</td><td>___</td><td>___</td><td>___</td><td>___</td><td>___</td><td>___</td></tr>
+<tr><td>VDD low</td><td>___</td><td>___</td><td>___</td><td>___</td><td>___</td><td>___</td><td>___</td></tr>
+<tr><td>VDD high</td><td>___</td><td>___</td><td>___</td><td>___</td><td>___</td><td>___</td><td>___</td></tr>
+<tr><td>Temperature low</td><td>___</td><td>___</td><td>___</td><td>___</td><td>___</td><td>___</td><td>___</td></tr>
+<tr><td>Temperature high</td><td>___</td><td>___</td><td>___</td><td>___</td><td>___</td><td>___</td><td>___</td></tr>
+<tr><td>Post-layout nominal</td><td>___</td><td>___</td><td>___</td><td>___</td><td>___</td><td>___</td><td>___</td></tr>
+</table>
+
+<h3>Rubric self-check</h3>
+<ul>
+<li>Functionality: plot shows output frequency equal to half the input over several periods, with all four latch phases visible and the cursors showing the measured period ratio.</li>
+<li>Power: calculator expression is visible and the averaging window is stated and excludes start-up.</li>
+<li>Delay: definition (which edge, which threshold) is stated and consistent.</li>
+<li>PDP: units are consistent (watts x seconds = joules) and the value follows from your power and delay numbers.</li>
+<li>PVT: corners, voltage and temperature points are listed and a clear statement says where division fails, if it does.</li>
+<li>Layout: full layout, DRC clean, LVS match, area stated, extracted simulation shown.</li>
+<li>Report: all sections present, figures captioned, references included.</li>
+</ul>
+
+<h3>Integrity checklist</h3>
+<ul>
+<li>Every number in the report traces to a Spectre run that you can reopen. Keep the results directory and saved ADE states.</li>
+<li>Units are correct and consistent (uW versus mW, ps versus ns).</li>
+<li>Screenshots show the ADE setup (analysis, corner, temperature, model files) so the conditions are verifiable.</li>
+<li>No numbers copied from the paper are presented as your results; quote the paper only as a clearly labelled reference value.</li>
+<li>Limitations are stated: process differs from the paper (45 nm versus 180 nm), model assumptions, ideal sources, corner coverage, extraction type.</li>
+<li>Any enhancement you mention was actually simulated; otherwise describe it as future work.</li>
+</ul>
+
+<div class="callout note"><strong>Citing Kuo et al.</strong>Cite the paper in the form your department requires, using the full author list, title, journal (IEEE Microwave and Wireless Technology Letters, May 2025), volume, pages and DOI from the published version; verify the details against the paper itself. When you adopt a design idea from it (two-finger devices, M7 adjacent to the clock block, symmetric clock routing), say so. Do not claim improvements, area savings or frequency gains over the paper unless you simulated and measured them yourself, and state the process difference when you compare.</div>
+
+<h3>Last 5 minutes before submission</h3>
+<ol class="steps">
+<li>Open the final schematic and layout once more; confirm they are the versions that produced the numbers in the report.</li>
+<li>Check that the results table has no blank or placeholder cell and no number you cannot reproduce.</li>
+<li>Check that the DRC and LVS screenshots show the final cell name, and that the extracted simulation uses the final layout.</li>
+<li>Check the figure captions, the units on all axes and the legends on plots.</li>
+<li>Spell-check, verify the reference, and export to PDF; open the PDF and look at every page.</li>
+<li>Back up the library, the ADE states and the report in one folder, and note the cell and view names so you can open them quickly in the live evaluation.</li>
+</ol>
+</section>

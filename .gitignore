@@ -16,3 +16,6 @@ __pycache__/
 .DS_Store
 *.swp
 *~
+
+# generated proxy waveform (reproducible with spice/divider_45nm_proxy.cir)
+results/proxy_tran.txt

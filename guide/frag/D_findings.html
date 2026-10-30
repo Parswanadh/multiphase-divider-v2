@@ -1,0 +1,40 @@
+<section id="findings">
+<h2>What the pre-check simulation showed</h2>
+<p>Before writing this guide I ran the topology in <strong>ngspice with generic LEVEL=1 models</strong> (<code>spice/divider_45nm_proxy.cir</code>). This is a topology and startup check only. It is <strong>not gpdk045</strong>, none of its numbers belong in your report, and the sizes below will move on the real BSIM models. What carries over is the behaviour, because it comes from the circuit and not from the model card.</p>
+
+<div class="callout warn"><strong>Read this before tuning in Cadence</strong>
+The three behaviours below each cost time if you meet them cold. All three were observed in the proxy runs listed here. Expect the same shapes in Spectre, at different values.</div>
+
+<h3>1. The load must give the hold pair gain above 1</h3>
+<p>With the original-ratio loads (R = 1.5 kΩ, M1–M6 = 240n/45n) the loop never started dividing at any tail bias from 0.7 to 1.0 V (R = 1.5k and 3k). Inspecting one run (V<sub>bias</sub> = 1.0 V) showed Q and Qb of each latch sitting at the same voltage, about 0.92 V. The cross-coupled pair needs <code>gm·R &gt; 1</code> to regenerate, and my hand estimate for these devices was just under 1 (an estimate, not a measurement). Raising R fixed it:</p>
+<table>
+<tr><th>f<sub>in</sub></th><th>V<sub>bias</sub></th><th>R = 4k</th><th>R = 8k</th><th>R = 15k</th></tr>
+<tr><td>1 GHz</td><td>0.6 V</td><td>no division</td><td>no division</td><td>divides (500 MHz)</td></tr>
+<tr><td>1 GHz</td><td>0.8 V</td><td>no division</td><td>divides (500 MHz)</td><td>divides (500 MHz)</td></tr>
+</table>
+<p>Takeaway for Spectre: if the outputs sit at one voltage and never separate, increase R or the tail current before suspecting the wiring. In the schematic, check the DC operating point of Q and Qb of one latch.</p>
+
+<h3>2. Phase spacing depends on latch delay, not only on the clock</h3>
+<p>The outputs came out as four <em>pairs</em>, not eight evenly spaced edges. The adjacent steps alternate between <code>a</code> and <code>90° − a</code> with <code>a = 360 · T<sub>d</sub> · f<sub>in</sub></code>. Measured at R = 8k, V<sub>bias</sub> = 0.8 V, C<sub>L</sub> = 5 fF:</p>
+<table>
+<tr><th>f<sub>in</sub></th><th>Measured step pair (deg)</th><th>Implied T<sub>d</sub></th></tr>
+<tr><td>1 GHz</td><td>86.0 / 4.0</td><td>about 11 ps</td></tr>
+<tr><td>2 GHz</td><td>82.0 / 8.0</td><td>about 11 ps</td></tr>
+<tr><td>3 GHz</td><td>77.9 / 12.1</td><td>about 11 ps</td></tr>
+<tr><td>4 GHz</td><td>73.6 / 16.4</td><td>about 11 ps</td></tr>
+</table>
+<div class="eq">a = 360° · T<sub>d</sub> · f<sub>in</sub> &nbsp;&nbsp;⇒&nbsp;&nbsp; uniform 45° steps need &nbsp; T<sub>CK</sub> = 8 · T<sub>d</sub></div>
+<p>This is exactly the "T<sub>CK</sub> ≈ 8T<sub>d</sub>" condition from the paper's discussion, and it ties into the sizing marks. The 8 phases are equally spaced only at the operating point where the latch delay is one eighth of the clock period. At 180 nm with T<sub>d</sub> near 90 ps and f<sub>in</sub> = 1.4 GHz that point sits inside the paper's range. A 45 nm latch is much faster, so at the same frequency the steps bunch up.</p>
+<p>I tried to slow the proxy latch with output capacitance to reach 45°. At 2 GHz and C<sub>L</sub> = 14 fF the pair moved to 68.1 / 21.9, but 10 fF at 2 GHz failed to divide (ratio 0.99), and C<sub>L</sub> of 20 fF or more failed to divide cleanly at 2–3 GHz. The window between "too fast, uneven" and "too slow, no division" is narrow, and <strong>I did not reach uniform 45° in the proxy</strong>. Treat this as the main design question to answer in gpdk045: pick f<sub>in</sub>, then tune R, load and tail current until the measured steps approach 45°, and report the phase error you actually get.</p>
+
+<div class="callout tip"><strong>Use this in the report</strong>
+Plot measured phase step versus f<sub>in</sub> from your own sweep and overlay <code>360·T<sub>d</sub>·f<sub>in</sub></code> using your measured T<sub>d</sub>. A curve that follows the formula is strong evidence for the sizing and delay sections.</div>
+
+<h3>3. The measurement script</h3>
+<p><code>scripts/measure_tran.py</code> computes f<sub>out</sub>, the division ratio, the phase of every output relative to Q1, the adjacent steps, supply power over an integer number of output periods and the output swing. It reads the waveform file and prints only what it measures. For a Spectre run, export the waveforms (including the supply current) to a whitespace-separated file with a header row using the same names (<code>time v(ck) v(q1) … i(vdd)</code>), then run it. If the current sign in your export is opposite to ngspice, flip it in the script. The calculator expressions in the measurement section give the same quantities inside ADE.</p>
+<pre><code>ngspice -b spice/divider_45nm_proxy.cir          # proxy run, writes results/proxy_tran.txt
+python3 scripts/measure_tran.py results/proxy_tran.txt 1.0 10   # file, VDD, settle time in ns</code></pre>
+
+<div class="callout warn"><strong>Replace the earlier baseline numbers</strong>
+The repository's older <code>metrics_baseline.json</code>, <code>pvt_summary_table.csv</code> and layout files were written by scripts that contain literal values or by an empty placeholder. Do not carry them into the new report. Every figure in yours should come from a Spectre run you can reproduce, and the PDP unit is fJ for mW × ps (2.34 mW × 120 ps = 280.8 fJ).</div>
+</section>

@@ -1,0 +1,184 @@
+;; measure_divider.ocn
+;; Cadence OCEAN / SKILL calculator-style measurements on a finished Spectre tran result.
+;; Prints results to the CIW / log. Same definitions as scripts/measure_tran.py where stated.
+;;
+;; Batch:  ocean -nograph -restore measure_divider.ocn       ; VERIFY ocean flags on your install
+;; CIW:    load("/abs/path/measure_divider.ocn")             ; VERIFY
+;;
+;; UNTESTED: written without Cadence access. Every line marked VERIFY is an assumption.
+
+procedure(envOr(name dflt)
+  let((val)
+    val = getShellEnvVar(name)
+    if(val val dflt)))
+
+;; ---------------- settings ----------------
+resultsDir = envOr("RESULTS_DIR" "rawdir")     ; VERIFY: psf dir with tran.tran.tran
+fin        = atof(envOr("FIN" "1e9"))          ; Hz, must equal the netlist fin
+VDD        = atof(envOr("VDD" "1.0"))          ; V
+winStart   = atof(envOr("WIN_START" "10e-9"))  ; s, start of settled window
+winStop    = atof(envOr("WIN_STOP" "40e-9"))   ; s, end of settled window
+resultName = "tran"
+
+;; ---------------- signal name candidates (keep in sync with export_waveforms.ocn) ----------------
+nmCK  = list("/ck"  "/CK"  "/I_div/ck")
+nmQ1  = list("/Q1"  "/I_div/Q1")
+nmQ2  = list("/Q2"  "/I_div/Q2")
+nmQ3  = list("/Q3"  "/I_div/Q3")
+nmQ4  = list("/Q4"  "/I_div/Q4")
+nmQ1b = list("/Q1b" "/I_div/Q1b")
+nmQ2b = list("/Q2b" "/I_div/Q2b")
+nmQ3b = list("/Q3b" "/I_div/Q3b")
+nmQ4b = list("/Q4b" "/I_div/Q4b")
+nmI   = list("/VDD:p" "/VDD/p" "/I_div/VDD:p")
+
+procedure(getWave(cands kind)
+  let((w)
+    w = nil
+    foreach(c cands
+      unless(w
+        ;; errset: a missing name may throw instead of returning nil. car(errset(...)) gives the
+        ;; wave, or nil, so the next candidate is tried.
+        w = car(errset(if(equal(kind "i") i(c ?result resultName) v(c ?result resultName))))
+        when(w printf("  resolved as %s\n" c))))
+    w))
+
+;; Mid-swing threshold of a single-ended CML output: the outputs have resistive loads and do not
+;; swing rail to rail, so VDD/2 may never be crossed. Same idea as measure_tran.py's per-signal mid.
+procedure(midSwing(w)
+  let((wc)
+    wc = clip(w winStart winStop)              ; VERIFY clip(wave start stop)
+    (ymax(wc) + ymin(wc)) / 2.0))              ; VERIFY ymax / ymin on a wave
+
+;; All rising crossings of w at thr that fall inside the window, ascending.
+;; cross(w thr n "rising") returns the n-th rising crossing, or nil when there are no more.
+procedure(risingIn(w thr)
+  let((res n x)
+    res = nil
+    n = 1
+    ;; cross(w thr n "rising") returns the n-th rising crossing, or nil. It may also throw past
+    ;; the last edge, so errset is used. VERIFY the cross() signature and edge string.
+    x = car(errset(cross(w thr n "rising")))
+    while(x && n < 10000
+      when(x >= winStart && x <= winStop res = cons(x res))
+      n = n + 1
+      x = car(errset(cross(w thr n "rising"))))
+    reverse(res)))
+
+;; Mean period from an ascending list of edges: (last - first) / (N - 1).
+;; This equals the mean of consecutive differences, the same as measure_tran.py.
+procedure(meanPeriod(l)
+  (car(last(l)) - car(l)) / (length(l) - 1))
+
+;; First element of ascending edges that is strictly after x, or nil.
+procedure(nextEdgeAfter(edges x)
+  let((c)
+    c = setof(e edges e > x)
+    if(c car(c) nil)))
+
+;; Mean of (edge after each CK rising edge) - CK edge. nil if no pairs.
+procedure(meanDelay(cks edges)
+  let((acc cnt e)
+    acc = 0.0
+    cnt = 0
+    foreach(c cks
+      e = nextEdgeAfter(edges c)
+      when(e
+        acc = acc + (e - c)
+        cnt = cnt + 1))
+    if(cnt > 0 acc / cnt nil)))
+
+;; ---------------- waveforms ----------------
+openResults(resultsDir)                        ; VERIFY
+selectResult('tran)                            ; VERIFY
+
+printf("resolving signals from %s\n" resultsDir)
+wCK  = getWave(nmCK  "v")
+wQ1  = getWave(nmQ1  "v")
+wQ2  = getWave(nmQ2  "v")
+wQ3  = getWave(nmQ3  "v")
+wQ4  = getWave(nmQ4  "v")
+wQ1b = getWave(nmQ1b "v")
+wQ2b = getWave(nmQ2b "v")
+wQ3b = getWave(nmQ3b "v")
+wQ4b = getWave(nmQ4b "v")
+wI   = getWave(nmI   "i")
+unless(and(wCK wQ1 wQ2 wQ3 wQ4 wQ1b wQ2b wQ3b wQ4b wI)
+  error("measure_divider: a signal did not resolve. Check the nm* lists."))
+
+;; ---------------- edges ----------------
+ckR = risingIn(wCK midSwing(wCK))
+qD  = wQ1 - wQ1b                               ; differential output
+qDR = risingIn(qD 0.0)                         ; differential crosses 0 V
+unless(and(length(ckR) >= 4 length(qDR) >= 4)
+  error("measure_divider: fewer than 4 edges in window. No division, or window too short."))
+
+Tin   = meanPeriod(ckR)
+Tout  = meanPeriod(qDR)
+fMeas = 1.0 / Tin
+fOut  = 1.0 / Tout
+ratio = Tout / Tin                             ; fin / fout
+
+;; ---------------- supply power over an integer number of output periods ----------------
+;; Sign: the convention is negative supply current (ngspice). Negate only if the raw window mean
+;; is positive, the same rule as export_waveforms.ocn.
+;; integ(wave from to) is taken as the DEFINITE integral over [from, to] (VERIFY; if your version
+;; differs, this is the one line to change). average(clip(...)) = integral / range (VERIFY), and is
+;; printed as a cross-check.
+meanRaw  = integ(wI winStart winStop) / (winStop - winStart)
+ivddSign = if(meanRaw > 0.0 -1.0 1.0)
+wIng     = ivddSign * wI
+tA       = car(qDR)                            ; first output rising edge in the window
+nPer     = fix((winStop - tA) / Tout)
+tB       = tA + nPer * Tout
+iAvg     = integ(wIng tA tB) / (tB - tA)       ; time average over whole periods, as in Python
+iAvgChk  = car(errset(average(clip(wIng tA tB))))   ; cross-check only
+pW       = -VDD * iAvg                         ; ngspice sign: supply current negative
+pMW      = pW * 1e3
+
+;; ---------------- CK -> output delay ----------------
+;; (a) Matches measure_tran.py: each CK rising edge to the NEXT rising edge on ANY of the 8 outputs.
+;; (b) CK -> Q1 only, reported as a separate line. The calc delay() signature is not verified
+;;     here, so both are computed from cross() edge lists instead.
+qR1 = risingIn(wQ1  midSwing(wQ1))
+qR2 = risingIn(wQ2  midSwing(wQ2))
+qR3 = risingIn(wQ3  midSwing(wQ3))
+qR4 = risingIn(wQ4  midSwing(wQ4))
+qR1b = risingIn(wQ1b midSwing(wQ1b))
+qR2b = risingIn(wQ2b midSwing(wQ2b))
+qR3b = risingIn(wQ3b midSwing(wQ3b))
+qR4b = risingIn(wQ4b midSwing(wQ4b))
+allOutEdges = sort(apply('append list(qR1 qR2 qR3 qR4 qR1b qR2b qR3b qR4b)) 'lessp)
+delayAny = meanDelay(ckR allOutEdges)          ; s
+delayQ1  = meanDelay(ckR qR1)                  ; s
+unless(delayAny && delayQ1
+  error("measure_divider: could not pair CK edges with output edges."))
+
+;; delay() calculator cross-check. Single sample: the FIRST CK rising edge to the first Q1 rising
+;; edge after it. Compared with the cross-list value for that same edge. VERIFY the delay() form.
+dlyCalc  = car(errset(delay(?wf1 wCK ?value1 midSwing(wCK) ?edge1 "rising" ?nth1 1
+                            ?wf2 wQ1 ?value2 midSwing(wQ1) ?edge2 "rising" ?nth2 1)))
+dlyFirst = nextEdgeAfter(qR1 car(ckR)) - car(ckR)
+
+;; ---------------- report ----------------
+printf("\n==== divider measurement (OCEAN) ====\n")
+printf("window          [%g, %g] s\n" winStart winStop)
+printf("f_in measured   %.5g GHz   (netlist fin %.5g GHz)\n" fMeas/1e9 fin/1e9)
+printf("f_out measured  %.5g MHz   (Q1-Q1b rising at 0 V)\n" fOut/1e6)
+printf("division ratio  %.5f       (%s)\n" ratio
+       if(abs(ratio - 2.0) < 0.01 "divides by 2" "NOT divide by 2"))
+printf("sign factor     %g         (applied to i(VDD:p) if raw mean was positive)\n" ivddSign)
+printf("periods averaged %d       over [%g, %g] s\n" nPer tA tB)
+printf("i_avg           %.5g mA   (ngspice sign: negative = delivering)\n" iAvg * 1e3)
+printf("P_avg           %.5g mW   (= -VDD * i_avg)\n" pMW)
+printf("CK->any-output delay  %.5g ps   (matches measure_tran.py ck_to_q_delay_ps)\n" delayAny * 1e12)
+printf("CK->Q1 delay          %.5g ps   (Q1 only; not in measure_tran.py)\n" delayQ1 * 1e12)
+printf("PDP (any-output)  = P * delay  %.5g fJ   (mW * ps = fJ)\n" pMW * delayAny * 1e12)
+printf("PDP (CK->Q1)      = P * delay  %.5g fJ\n" pMW * delayQ1 * 1e12)
+printf("--- cross-checks (VERIFY) ---\n")
+printf("i_avg via average(clip)  %s A   (should match i_avg above)\n" iAvgChk)
+printf("first CK->Q1 edge, cross-list  %.5g ps\n" dlyFirst * 1e12)
+printf("first CK->Q1 edge, delay()     %s   (seconds; nil = delay() form not accepted)\n" dlyCalc)
+
+;; Batch only: exit so ocean does not wait at the prompt.
+when(equal(getShellEnvVar("OCEAN_BATCH") "1") exit())   ; VERIFY exit() ends the ocean process
