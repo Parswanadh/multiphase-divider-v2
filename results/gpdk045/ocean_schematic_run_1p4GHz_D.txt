@@ -1,0 +1,24 @@
+# OCEAN run of divider_lib/tb_divider/schematic, design D (R=3k, m=4, vb=tbVbias 1.0 V, VDD 1.0 V, tbPeriod 714.2857 ps = 1.4 GHz, tt, 27 C)
+# Script: cadence/ocean/run_schematic_tb_param.ocn (guest: ocean -nograph < run_schematic_tb_param.ocn). Raw log lines below (prompt prefix '> ' removed).
+# Netlist: Virtuoso netlister output with layout-dependent params (as/ad/ps/pd/nrd/nrs/sa/sb/sd/sca/scb/scc); m=(4) present on every device.
+# Standalone comparison (results/gpdk045/final/D_1p4.tsv): 700 MHz, ratio 2.0, power 0.541337 mW, delay 25.99 ps, periods_averaged 18.
+OC params fin=1.4e+09 tbPeriod=7.142857e-10 tbVbias=1.0 VDD=1.0
+OC netlist: "/data/work/simulation/tb_divider/spectre/schematic/netlist/input.scs"
+	Time taken to compare the design with netlist:   0.0s
+OC run: "/data/work/gpdk_run/ocean_D_1p4"
+OC CK edges=42 fin_meas=1.4e+09 fin_nominal=1.4e+09
+OC DIV /Q1 edges=21 fout_MHz=700.0 ratio=2.0
+OC DIV /Q2 edges=21 fout_MHz=700.0 ratio=2.0
+OC DIV /Q3 edges=21 fout_MHz=700.0 ratio=2.0
+OC DIV /Q4 edges=21 fout_MHz=700.0 ratio=2.0
+OC DIV /Q1b edges=21 fout_MHz=700.0 ratio=2.0
+OC DIV /Q2b edges=21 fout_MHz=700.0 ratio=2.0
+OC DIV /Q3b edges=21 fout_MHz=700.0 ratio=2.0
+OC DIV /Q4b edges=21 fout_MHz=700.0 ratio=2.0
+OC WINDOW ref=1.363628e-08 periods=18 t1=3.935057e-08
+OC POWER iavg_mA=0.4554862 power_mW=0.4554862
+OC DELAY ck_to_q_ps=26.66216 over_edges=42
+OC DONE
+# Plot-only run: the same script with tranStartStr="30n", tranStopStr="35.714n" and outDir=.../ocean_D_1p4_plot (Spectre saves only 30 to 35.714 ns,
+# so the ViVA x-axis shows 8 CK cycles). Its measurement lines are not used; the numbers above come from the 0 to 40 ns run.
+# ViVA plot (report/gpdk045/screens/viva_tran_D_1p4GHz_full.png): strip layout, 9 signals, maximised.

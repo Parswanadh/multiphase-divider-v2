@@ -1,0 +1,104 @@
+; run_schematic_tb_param.ocn
+; Parametrised OCEAN run of divider_lib/tb_divider/schematic (Virtuoso netlister + Spectre, gpdk045 tt, 27 C).
+; The tb_divider CDF already reads tbPeriod (VCK/VCKB per, pw = tbPeriod/2-20p, VCKB td = tbPeriod/2),
+; tbVbias (VB vdc) and VDD (VDD vdc), so the operating point is set here with desVar.
+; Run in the guest:  cd ~/cds_work && ocean -nograph < ~/gpdk_run/skill/run_schematic_tb_param.ocn
+;
+; Design D (report main design): R=3k, m=4 (literal in the schematic), bias 1.0 V, clock 1.4 GHz, VDD 1.0 V.
+; Measurement definitions copied from scripts/measure_tran.py:
+;   edges      : rising crossings of the midpoint of each signal's own swing, after settle (10 ns)
+;   f_in       : 1 / mean CK period;  f_out = 1 / mean Q1 period;  ratio = f_in / f_out
+;   power      : -average(i(VDD/PLUS)) * VDD over an integer number of output periods, starting at the
+;                3rd Q1 rising edge after settle
+;   delay      : mean over CK rising edges of (next rising edge on any of the 8 outputs - CK edge)
+
+fin   = 1.4e9      ; clock frequency [Hz]
+vbias = 1.0        ; tbVbias [V]
+vdd   = 1.0        ; VDD [V]
+settle = 10e-9    ; start of the measurement window [s]
+tstop  = 40e-9    ; end of the transient [s]
+tranStartStr = "0"      ; tran ?start (saved from this time); the plot-only copy uses "30n"
+tranStopStr  = "40n"    ; tran ?stop; the plot-only copy uses "35.714n"
+outDir = "/home/buet/gpdk_run/ocean_D_1p4"   ; results directory
+
+simulator('spectre)
+design("divider_lib" "tb_divider" "schematic")
+resultsDir(outDir)
+modelFile('("/home/buet/pdk/gpdk045_v_6_0/models/spectre/gpdk045.scs" "tt"))
+analysis('tran ?stop tranStopStr ?start tranStartStr ?errpreset "conservative" ?maxstep "5p")
+temp(27)
+desVar("tbPeriod" 1.0/fin)
+desVar("tbVbias" vbias)
+desVar("VDD" vdd)
+ic("/Q1" "1.0" "/Q1b" "0" "/Q2" "1.0" "/Q2b" "0" "/Q3" "0" "/Q3b" "1.0" "/Q4" "0" "/Q4b" "1.0")
+save('all)
+printf("OC params fin=%L tbPeriod=%L tbVbias=%L VDD=%L\n" fin 1.0/fin vbias vdd)
+; the cell was re-saved after the last netlisting (CDF parametrisation), so force a full netlist
+printf("OC netlist: %L\n" createNetlist(?recreateAll t))
+printf("OC run: %L\n" run())
+selectResult('tran)
+
+; rising edges of a signal after settle, at its own swing midpoint (errset guards an out-of-range index)
+procedure(edgesOf(sig)
+  let((lo hi mid res c cw k)
+    lo = ymin(clip(v(sig) settle tstop))
+    hi = ymax(clip(v(sig) settle tstop))
+    mid = (lo + hi) / 2.0
+    res = nil
+    for(k 1 80
+      cw = errset(cross(v(sig) mid k "rising") t)
+      c = car(cw)
+      when(c
+        when(greaterp(c settle) res = cons(c res)))
+    )
+    reverse(res)))
+
+procedure(meanPeriod(lst)
+  (car(reverse(lst)) - car(lst)) / (length(lst) - 1))
+
+; smallest element of lst greater than tt, or nil
+procedure(nextAfter(lst tt)
+  let((r)
+    r = nil
+    foreach(x lst
+      when(greaterp(x tt)
+        when(or(null(r) lessp(x r)) r = x)))
+    r))
+
+ckL = edgesOf("/CK")
+fin_m = 1.0 / meanPeriod(ckL)
+printf("OC CK edges=%L fin_meas=%L fin_nominal=%L\n" length(ckL) fin_m fin)
+
+outs = list("/Q1" "/Q2" "/Q3" "/Q4" "/Q1b" "/Q2b" "/Q3b" "/Q4b")
+allE = nil
+foreach(o outs
+  eL = edgesOf(o)
+  allE = append(allE eL)
+  fo = 1.0 / meanPeriod(eL)
+  fomhz = fo * 1e-6
+  ratio = fin_m / fo
+  printf("OC DIV %s edges=%L fout_MHz=%L ratio=%L\n" o length(eL) fomhz ratio)
+)
+
+q1L = edgesOf("/Q1")
+Tout = meanPeriod(q1L)
+ref = nth(2 q1L)
+nper = fix((tstop - ref) / Tout)
+t1 = ref + nper * Tout
+iavg = average(clip(i("/VDD/PLUS") ref t1))
+printf("OC WINDOW ref=%L periods=%L t1=%L\n" ref nper t1)
+imA = (0.0 - iavg) * 1e3
+pmW = imA * vdd
+printf("OC POWER iavg_mA=%L power_mW=%L\n" imA pmW)
+
+sumd = 0.0
+nd = 0
+foreach(c ckL
+  nx = nextAfter(allE c)
+  when(nx
+    sumd = sumd + (nx - c)
+    nd = nd + 1))
+dps = sumd / nd * 1e12
+printf("OC DELAY ck_to_q_ps=%L over_edges=%L\n" dps nd)
+printf("OC DONE\n")
+exit()
