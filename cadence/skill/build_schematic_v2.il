@@ -42,9 +42,9 @@ defvar(tbVdd     1.0)              ; VDD voltage
 defvar(tbVbias   0.8)              ; NBIAS voltage (tail current, tune it)
 defvar(tbPeriod  1e-9)             ; CK period, seconds
 defvar(tbRise    20e-12)           ; CK rise and fall time, seconds
-defvar(stubLen   0.25)             ; stub wire length from each terminal (schematic units)
+defvar(stubLen   0.5)             ; stub wire length from each terminal (schematic units)
 defvar(wireW     0.0625)           ; wire width
-defvar(labelFont 0.0625)           ; net label font height
+defvar(labelFont 0.25)           ; net label font height
 defvar(v2LabelForm nil)            ; filled at run time: which schCreateWireLabel form worked
 
 

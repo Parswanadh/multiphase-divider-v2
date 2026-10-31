@@ -1,0 +1,9 @@
+R2 res w="" l="" m="" r="3K"
+R1 res w="" l="" m="" r="3K"
+M7 nmos1v w="480n" l="90n" m="4" r=nil
+M6 nmos1v w="240n" l="45n" m="4" r=nil
+M4 nmos1v w="240n" l="45n" m="4" r=nil
+M3 nmos1v w="240n" l="45n" m="4" r=nil
+M5 nmos1v w="240n" l="45n" m="4" r=nil
+M2 nmos1v w="240n" l="45n" m="4" r=nil
+M1 nmos1v w="240n" l="45n" m="4" r=nil
