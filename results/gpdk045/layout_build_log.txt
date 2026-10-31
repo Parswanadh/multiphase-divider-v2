@@ -1,0 +1,24 @@
+# Verbatim excerpt of the batch Virtuoso 6.1.5 log of cadence/skill/build_layout_v2.il (buildLayoutDLATCH, buildDividerCore),
+# run in the Cadence VM on 2026-10-31 (driver: virtuoso -nograph -replay drv_lay.il). Placement only; no routing.
+== units probe: raw MOS bBox width = 0.595 -> divScale = 1 (user units, um)
+  placed M1 (nmos1v) at (1, 1) um
+  placed M5 (nmos1v) at (1.755, 1) um
+  placed M7 (nmos1v) at (2.51, 1) um
+  placed M6 (nmos1v) at (3.265, 1) um
+  placed M2 (nmos1v) at (4.02, 1) um
+  placed M3 (nmos1v) at (1, 1.77) um
+  placed M4 (nmos1v) at (4.02, 1.77) um
+  R len = 7.855 um (W 0.8 um, rsh 200, target 2000 ohm)
+  placed R1 (resnsnpoly) at (1, 2.54) um
+  placed R2 (resnsnpoly) at (1, 11.21) um
+== DLATCH pins (placed, NOT routed to devices yet)
+== DLATCH box (um): 0 0 4.875 20.28
+== DLATCH saved
+  DLATCH box 4.875 x 20.28 um, gap 1 um, divScale 1
+  XD1 R0 at origin (0, 0) um
+  XD2 MY at origin (10.75, 0) um
+  XD3 MX at origin (0, 41.56) um
+  XD4 R180 at origin (10.75, 41.56) um
+== clock star length (um): ck=98.62 ckb=98.62 diff=1.42109e-14
+== clock TRUNKS NOT DRAWN in this version (see LAYOUT_NOTES.md)
+== divider_core saved
