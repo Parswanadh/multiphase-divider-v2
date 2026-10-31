@@ -1,0 +1,272 @@
+{
+  "settle_ns": 10.0,
+  "vdd_v": 1.0,
+  "vdsat_v": 0.358,
+  "current_sign": "drawn = -V(VDD:p); positive = current drawn from the supply",
+  "plot_window_rule": "start = max(settle, 15 output periods); 3 output periods",
+  "current_window_rule": "2 output periods starting at the plot window start",
+  "designs": {
+    "unsized": {
+      "tag": "g_1.4G_1.15k_1.0_10f_m1",
+      "tsv": {
+        "tag": "g_1.4G_1.15k_1.0_10f_m1",
+        "divides": false,
+        "reason": "ratio 0.5000 not 2 (Q1 2799.839 MHz); q1 swing 0.015 V < 0.1 V (not toggling); q1 period 357.16 ps vs 2/f_in 1428.57 ps; q2 swing 0.013 V < 0.1 V (not toggling); q2 period 357.14 ps vs 2/f_in 1428.57 ps; q3 swing 0.015 V < 0.1 V (not toggling); q3 period 357.12 ps vs 2/f_in 1428.57 ps; q4 swing 0.013 V < 0.1 V (not toggling); q4 period 357.14 ps vs 2/f_in 1428.57 ps; q1b swing 0.015 V < 0.1 V (not toggling); q1b period 357.16 ps vs 2/f_in 1428.57 ps; q2b swing 0.013 V < 0.1 V (not toggling); q2b period 357.14 ps vs 2/f_in 1428.57 ps; q3b swing 0.015 V < 0.1 V (not toggling); q3b period 357.12 ps vs 2/f_in 1428.57 ps; q4b swing 0.013 V < 0.1 V (not toggling); q4b period 357.14 ps vs 2/f_in 1428.57 ps",
+        "f_in_GHz": 1.4,
+        "f_out_MHz": 2799.839,
+        "ratio": 0.5,
+        "power_mW": "n/a",
+        "delay_ps": "n/a",
+        "pdp_fJ": "n/a",
+        "max_phase_step_err_deg": "n/a",
+        "swing_lo": 0.9754,
+        "swing_hi": 0.9907,
+        "i_avg_mA": "n/a",
+        "periods_averaged": "n/a",
+        "phase_steps_deg": "n/a",
+        "phases_deg": "n/a"
+      },
+      "window_start_ns": 10.0,
+      "plot_window_ns": [
+        10.0,
+        11.07149037082273
+      ],
+      "steady_state_window_ns": [
+        10.0,
+        40.0
+      ],
+      "q1_min_v": 0.975415615811683,
+      "q1_max_v": 0.990748395430175,
+      "xd1_tail_min_v": 0.00887282499530912,
+      "xd1_tail_max_v": 0.0763117521627846,
+      "xd2_tail_min_v": 0.00887294631779696,
+      "xd2_tail_max_v": 0.0762885849654242,
+      "supply_peak_ma_steady": 0.170485609932713,
+      "supply_peak_ma_all_time_incl_startup": 3.4752389226938103,
+      "supply_avg_ma_steady": 0.16517044293972802,
+      "supply_avg_ma_2_periods": 0.16517072040117947,
+      "f_out_measured_mhz": "n/a",
+      "phase_deg_measured": "n/a",
+      "phase_order_matches_tsv": "n/a",
+      "phase_max_dev_from_tsv_deg": "n/a",
+      "ck_to_q1_first_edge_delay_ps": "n/a",
+      "ck_to_q1_mean_delay_ps": "n/a",
+      "ck_to_any_output_mean_delay_ps": "n/a",
+      "q1_rise_10_90_ps": "n/a",
+      "q1_fall_10_90_ps": "n/a",
+      "q1_rise_fall_edges": "n/a"
+    },
+    "D_1p4": {
+      "tag": "g_1.4G_3k_1.0_10f_m4",
+      "tsv": {
+        "tag": "g_1.4G_3k_1.0_10f_m4",
+        "divides": true,
+        "reason": "ok",
+        "f_in_GHz": 1.4,
+        "f_out_MHz": 700.0,
+        "ratio": 2.0,
+        "power_mW": 0.541337,
+        "delay_ps": 25.99,
+        "pdp_fJ": 14.067,
+        "max_phase_step_err_deg": 38.461,
+        "swing_lo": 0.5827,
+        "swing_hi": 1.0172,
+        "i_avg_mA": 0.541337,
+        "periods_averaged": 18.0,
+        "phase_steps_deg": [
+          83.46,
+          6.54,
+          83.46,
+          6.54,
+          83.46,
+          6.54,
+          83.46,
+          6.54
+        ],
+        "phases_deg": [
+          [
+            "q1",
+            0.0
+          ],
+          [
+            "q2",
+            83.46
+          ],
+          [
+            "q3b",
+            90.0
+          ],
+          [
+            "q4b",
+            173.46
+          ],
+          [
+            "q1b",
+            180.0
+          ],
+          [
+            "q2b",
+            263.46
+          ],
+          [
+            "q3",
+            270.0
+          ],
+          [
+            "q4",
+            353.46
+          ]
+        ]
+      },
+      "window_start_ns": 21.42857142857151,
+      "plot_window_ns": [
+        21.42857142857151,
+        25.71428571428581
+      ],
+      "steady_state_window_ns": [
+        10.0,
+        40.0
+      ],
+      "q1_min_v": 0.582733061595167,
+      "q1_max_v": 1.01716773968796,
+      "xd1_tail_min_v": 0.00806790581810121,
+      "xd1_tail_max_v": 0.0669313659007892,
+      "xd2_tail_min_v": 0.00808483600480654,
+      "xd2_tail_max_v": 0.0681862640605344,
+      "supply_peak_ma_steady": 0.560261685050123,
+      "supply_peak_ma_all_time_incl_startup": 1.33288903700346,
+      "supply_avg_ma_steady": 0.5414364086702278,
+      "supply_avg_ma_2_periods": 0.5414364086702284,
+      "f_out_measured_mhz": 699.9999999999974,
+      "phase_deg_measured": {
+        "q1": 0.0,
+        "q2": 83.459,
+        "q3b": 89.997,
+        "q4b": 173.458,
+        "q1b": 180.0,
+        "q2b": 263.459,
+        "q3": 269.997,
+        "q4": 353.458
+      },
+      "phase_order_matches_tsv": true,
+      "phase_max_dev_from_tsv_deg": 0.002760069926267761,
+      "ck_to_q1_first_edge_delay_ps": 51.94671187930352,
+      "ck_to_q1_mean_delay_ps": 51.946711879380565,
+      "ck_to_any_output_mean_delay_ps": 25.985126744166788,
+      "q1_rise_10_90_ps": 134.58183258510286,
+      "q1_fall_10_90_ps": 102.60110272053073,
+      "q1_rise_fall_edges": [
+        21,
+        21
+      ],
+      "supply_avg_vs_tsv_rel_err_steady": 0.0001836354622496536,
+      "supply_avg_vs_tsv_rel_err_2_periods": 0.00018363546225067906
+    },
+    "B_6g": {
+      "tag": "g_6G_2k_1.0_10f_m4",
+      "tsv": {
+        "tag": "g_6G_2k_1.0_10f_m4",
+        "divides": true,
+        "reason": "ok",
+        "f_in_GHz": 6.0,
+        "f_out_MHz": 3000.0,
+        "ratio": 2.0,
+        "power_mW": 0.492869,
+        "delay_ps": 27.94,
+        "pdp_fJ": 13.768,
+        "max_phase_step_err_deg": 3.784,
+        "swing_lo": 0.8184,
+        "swing_hi": 0.9533,
+        "i_avg_mA": 0.492869,
+        "periods_averaged": 87.0,
+        "phase_steps_deg": [
+          48.78,
+          41.22,
+          48.78,
+          41.22,
+          48.78,
+          41.22,
+          48.78,
+          41.22
+        ],
+        "phases_deg": [
+          [
+            "q1",
+            0.0
+          ],
+          [
+            "q2",
+            48.78
+          ],
+          [
+            "q3b",
+            90.0
+          ],
+          [
+            "q4b",
+            138.78
+          ],
+          [
+            "q1b",
+            180.0
+          ],
+          [
+            "q2b",
+            228.78
+          ],
+          [
+            "q3",
+            270.0
+          ],
+          [
+            "q4",
+            318.78
+          ]
+        ]
+      },
+      "window_start_ns": 10.0,
+      "plot_window_ns": [
+        10.0,
+        11.000000000000002
+      ],
+      "steady_state_window_ns": [
+        10.0,
+        40.0
+      ],
+      "q1_min_v": 0.818426012799479,
+      "q1_max_v": 0.953304908934418,
+      "xd1_tail_min_v": 0.00773290051971277,
+      "xd1_tail_max_v": 0.0661989361440858,
+      "xd2_tail_min_v": 0.00774434532962182,
+      "xd2_tail_max_v": 0.0658752627652396,
+      "supply_peak_ma_steady": 0.543017247374091,
+      "supply_peak_ma_all_time_incl_startup": 1.9990004997739699,
+      "supply_avg_ma_steady": 0.49294025750242204,
+      "supply_avg_ma_2_periods": 0.4929402575024556,
+      "f_out_measured_mhz": 2999.9999999999977,
+      "phase_deg_measured": {
+        "q1": 0.0,
+        "q2": 48.784,
+        "q3b": 90.002,
+        "q4b": 138.782,
+        "q1b": 180.0,
+        "q2b": 228.784,
+        "q3": 270.002,
+        "q4": 318.782
+      },
+      "phase_order_matches_tsv": true,
+      "phase_max_dev_from_tsv_deg": 0.00427685361663066,
+      "ck_to_q1_first_edge_delay_ps": 66.10030713749097,
+      "ck_to_q1_mean_delay_ps": 66.10030713764154,
+      "ck_to_any_output_mean_delay_ps": 27.93523043277179,
+      "q1_rise_10_90_ps": 171.69884564325,
+      "q1_fall_10_90_ps": 109.16098690221673,
+      "q1_rise_fall_edges": [
+        89,
+        90
+      ],
+      "supply_avg_vs_tsv_rel_err_steady": 0.0001445769614685437,
+      "supply_avg_vs_tsv_rel_err_2_periods": 0.00014457696153668398
+    }
+  }
+}

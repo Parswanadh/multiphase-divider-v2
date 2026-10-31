@@ -20,7 +20,15 @@ All numbers below come from Cadence Spectre 12.1 (MMSIM121) runs inside the Cent
 ## Tasks
 - T1 VM environment (perl/gcc 32-bit fixes, disk, serial channel): complete
 - T2 design exploration + PVT matrices: complete
-- T3 final nominal runs with raw waveforms, op-point (M7 saturation): pending
-- T4 schematic in Virtuoso (SKILL, screenshots): pending
+- T3 final nominal runs with raw waveforms, op-point (M7 saturation): complete (M7 is in triode: V(tail) 8-67 mV vs Vdsat 358 mV)
+- T4 schematic in Virtuoso: built in batch Virtuoso 6.1.5 (DLATCH, divider_core, tb_divider; schCheck 0/0, 0/0, 0/1); core connectivity diffed against the Spectre netlist: 0 mismatches; GUI screenshots pending
 - T5 layout + DRC in Virtuoso/Assura: pending
 - T6 report data assembly + docx: pending
+
+## SKILL debugging findings (Virtuoso 6.1.5, 32-bit, batch)
+- Lisp-style cond clauses `((null(x)) ...)` parse as calls of x: write `(null(x) ...)`.
+- Variables are dynamically scoped: the PDK's libInit.il assigns a global `y` on first use (it overwrote a local named y): locals renamed v2y and the PDK is warmed up first.
+- schCreateWireLabel 9-arg form must end with nil (t left the wire unnamed).
+- Set CDF parameters before wiring (nmos1v symbol is rebuilt by the PDK callback).
+- Ground net must be gnd! (analogLib gnd symbol), not 0.
+- dbOpenCellViewByType for symbols needs viewType schematicSymbol.

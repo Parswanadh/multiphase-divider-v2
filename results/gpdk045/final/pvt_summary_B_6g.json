@@ -1,0 +1,253 @@
+{
+  "label": "B_6g",
+  "source_tsv": "pvt_B6.tsv",
+  "f_in_GHz": 6.0,
+  "pass_count": 21,
+  "total": 45,
+  "pass_by_temp_C": {
+    "-40": {
+      "pass": 13,
+      "total": 15
+    },
+    "27": {
+      "pass": 8,
+      "total": 15
+    },
+    "125": {
+      "pass": 0,
+      "total": 15
+    }
+  },
+  "pass_by_vdd_V": {
+    "0.9": {
+      "pass": 3,
+      "total": 15
+    },
+    "1.0": {
+      "pass": 8,
+      "total": 15
+    },
+    "1.1": {
+      "pass": 10,
+      "total": 15
+    }
+  },
+  "pass_by_corner": {
+    "tt": {
+      "pass": 5,
+      "total": 9
+    },
+    "ff": {
+      "pass": 5,
+      "total": 9
+    },
+    "ss": {
+      "pass": 3,
+      "total": 9
+    },
+    "fs": {
+      "pass": 5,
+      "total": 9
+    },
+    "sf": {
+      "pass": 3,
+      "total": 9
+    }
+  },
+  "passing_metrics": {
+    "power_mW": {
+      "min": 0.388096,
+      "min_at": "tt_-40_0.9",
+      "max": 1.123076,
+      "max_at": "ff_-40_1.1",
+      "typical": 0.492869
+    },
+    "delay_ps": {
+      "min": 15.73,
+      "min_at": "fs_-40_1.1",
+      "max": 27.94,
+      "max_at": "tt_27_1.0",
+      "typical": 27.94
+    },
+    "pdp_fJ": {
+      "min": 7.407,
+      "min_at": "tt_-40_0.9",
+      "max": 18.035,
+      "max_at": "ff_-40_1.1",
+      "typical": 13.768
+    }
+  },
+  "typical_point": "tt_27_1.0",
+  "typical_status": "pass",
+  "failing": [
+    {
+      "tag": "tt_27_0.9",
+      "corner": "tt",
+      "temp_C": 27,
+      "vdd_V": 0.9,
+      "reason": "ratio 0.5000 not 2"
+    },
+    {
+      "tag": "tt_125_0.9",
+      "corner": "tt",
+      "temp_C": 125,
+      "vdd_V": 0.9,
+      "reason": "ratio 0.5000 not 2"
+    },
+    {
+      "tag": "tt_125_1.0",
+      "corner": "tt",
+      "temp_C": 125,
+      "vdd_V": 1.0,
+      "reason": "ratio 0.5000 not 2"
+    },
+    {
+      "tag": "tt_125_1.1",
+      "corner": "tt",
+      "temp_C": 125,
+      "vdd_V": 1.1,
+      "reason": "ratio 0.5000 not 2"
+    },
+    {
+      "tag": "ff_27_0.9",
+      "corner": "ff",
+      "temp_C": 27,
+      "vdd_V": 0.9,
+      "reason": "ratio 0.5000 not 2"
+    },
+    {
+      "tag": "ff_125_0.9",
+      "corner": "ff",
+      "temp_C": 125,
+      "vdd_V": 0.9,
+      "reason": "ratio 0.5000 not 2"
+    },
+    {
+      "tag": "ff_125_1.0",
+      "corner": "ff",
+      "temp_C": 125,
+      "vdd_V": 1.0,
+      "reason": "ratio 0.5000 not 2"
+    },
+    {
+      "tag": "ff_125_1.1",
+      "corner": "ff",
+      "temp_C": 125,
+      "vdd_V": 1.1,
+      "reason": "ratio 0.5000 not 2"
+    },
+    {
+      "tag": "ss_-40_0.9",
+      "corner": "ss",
+      "temp_C": -40,
+      "vdd_V": 0.9,
+      "reason": "ratio 0.5000 not 2"
+    },
+    {
+      "tag": "ss_27_0.9",
+      "corner": "ss",
+      "temp_C": 27,
+      "vdd_V": 0.9,
+      "reason": "ratio 0.5000 not 2"
+    },
+    {
+      "tag": "ss_27_1.0",
+      "corner": "ss",
+      "temp_C": 27,
+      "vdd_V": 1.0,
+      "reason": "ratio 0.5000 not 2"
+    },
+    {
+      "tag": "ss_125_0.9",
+      "corner": "ss",
+      "temp_C": 125,
+      "vdd_V": 0.9,
+      "reason": "ratio 0.5000 not 2"
+    },
+    {
+      "tag": "ss_125_1.0",
+      "corner": "ss",
+      "temp_C": 125,
+      "vdd_V": 1.0,
+      "reason": "ratio 0.5000 not 2"
+    },
+    {
+      "tag": "ss_125_1.1",
+      "corner": "ss",
+      "temp_C": 125,
+      "vdd_V": 1.1,
+      "reason": "ratio 0.5000 not 2"
+    },
+    {
+      "tag": "fs_27_0.9",
+      "corner": "fs",
+      "temp_C": 27,
+      "vdd_V": 0.9,
+      "reason": "ratio 0.5000 not 2"
+    },
+    {
+      "tag": "fs_125_0.9",
+      "corner": "fs",
+      "temp_C": 125,
+      "vdd_V": 0.9,
+      "reason": "ratio 0.5000 not 2"
+    },
+    {
+      "tag": "fs_125_1.0",
+      "corner": "fs",
+      "temp_C": 125,
+      "vdd_V": 1.0,
+      "reason": "ratio 0.5000 not 2"
+    },
+    {
+      "tag": "fs_125_1.1",
+      "corner": "fs",
+      "temp_C": 125,
+      "vdd_V": 1.1,
+      "reason": "ratio 0.5000 not 2"
+    },
+    {
+      "tag": "sf_-40_0.9",
+      "corner": "sf",
+      "temp_C": -40,
+      "vdd_V": 0.9,
+      "reason": "ratio 0.9967 not 2"
+    },
+    {
+      "tag": "sf_27_0.9",
+      "corner": "sf",
+      "temp_C": 27,
+      "vdd_V": 0.9,
+      "reason": "ratio 0.5000 not 2"
+    },
+    {
+      "tag": "sf_27_1.0",
+      "corner": "sf",
+      "temp_C": 27,
+      "vdd_V": 1.0,
+      "reason": "ratio 0.5000 not 2"
+    },
+    {
+      "tag": "sf_125_0.9",
+      "corner": "sf",
+      "temp_C": 125,
+      "vdd_V": 0.9,
+      "reason": "ratio 0.5000 not 2"
+    },
+    {
+      "tag": "sf_125_1.0",
+      "corner": "sf",
+      "temp_C": 125,
+      "vdd_V": 1.0,
+      "reason": "ratio 0.5000 not 2"
+    },
+    {
+      "tag": "sf_125_1.1",
+      "corner": "sf",
+      "temp_C": 125,
+      "vdd_V": 1.1,
+      "reason": "ratio 0.5000 not 2"
+    }
+  ],
+  "unparsed_tags": []
+}

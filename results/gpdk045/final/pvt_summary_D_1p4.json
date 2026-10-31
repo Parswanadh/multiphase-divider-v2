@@ -1,0 +1,113 @@
+{
+  "label": "D_1p4",
+  "source_tsv": "pvt_D.tsv",
+  "f_in_GHz": 1.4,
+  "pass_count": 41,
+  "total": 45,
+  "pass_by_temp_C": {
+    "-40": {
+      "pass": 15,
+      "total": 15
+    },
+    "27": {
+      "pass": 15,
+      "total": 15
+    },
+    "125": {
+      "pass": 11,
+      "total": 15
+    }
+  },
+  "pass_by_vdd_V": {
+    "0.9": {
+      "pass": 11,
+      "total": 15
+    },
+    "1.0": {
+      "pass": 15,
+      "total": 15
+    },
+    "1.1": {
+      "pass": 15,
+      "total": 15
+    }
+  },
+  "pass_by_corner": {
+    "tt": {
+      "pass": 8,
+      "total": 9
+    },
+    "ff": {
+      "pass": 9,
+      "total": 9
+    },
+    "ss": {
+      "pass": 8,
+      "total": 9
+    },
+    "fs": {
+      "pass": 8,
+      "total": 9
+    },
+    "sf": {
+      "pass": 8,
+      "total": 9
+    }
+  },
+  "passing_metrics": {
+    "power_mW": {
+      "min": 0.246275,
+      "min_at": "ss_27_0.9",
+      "max": 1.078411,
+      "max_at": "ff_-40_1.1",
+      "typical": 0.541337
+    },
+    "delay_ps": {
+      "min": 23.54,
+      "min_at": "ss_-40_1.1",
+      "max": 31.05,
+      "max_at": "ff_125_0.9",
+      "typical": 25.99
+    },
+    "pdp_fJ": {
+      "min": 7.316,
+      "min_at": "ss_27_0.9",
+      "max": 27.173,
+      "max_at": "ff_-40_1.1",
+      "typical": 14.067
+    }
+  },
+  "typical_point": "tt_27_1.0",
+  "typical_status": "pass",
+  "failing": [
+    {
+      "tag": "tt_125_0.9",
+      "corner": "tt",
+      "temp_C": 125,
+      "vdd_V": 0.9,
+      "reason": "ratio 0.5001 not 2"
+    },
+    {
+      "tag": "ss_125_0.9",
+      "corner": "ss",
+      "temp_C": 125,
+      "vdd_V": 0.9,
+      "reason": "ratio 0.5001 not 2"
+    },
+    {
+      "tag": "fs_125_0.9",
+      "corner": "fs",
+      "temp_C": 125,
+      "vdd_V": 0.9,
+      "reason": "q1 swing 0.093 V < 0.1 V"
+    },
+    {
+      "tag": "sf_125_0.9",
+      "corner": "sf",
+      "temp_C": 125,
+      "vdd_V": 0.9,
+      "reason": "ratio 0.5001 not 2"
+    }
+  ],
+  "unparsed_tags": []
+}

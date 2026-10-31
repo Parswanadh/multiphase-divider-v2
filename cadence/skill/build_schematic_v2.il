@@ -56,9 +56,9 @@ defvar(v2LabelForm nil)            ; filled at run time: which schCreateWireLabe
 
 ;; Formats a number as a string for a CDF value. Works for integers and floats.
 procedure(v2Num(x)
-  let((y)
-    y = x * 1.0
-    sprintf(nil "%g" y)))
+  let((v2y)
+    v2y = x * 1.0
+    sprintf(nil "%g" v2y)))
 
 ;; Rounds a coordinate to the 0.0625 grid (used for stub END points only).
 procedure(v2Snap(x)
@@ -102,7 +102,7 @@ procedure(v2CheckPdk()
 ;; Prints the terminal names of one symbol, so a wrong name is easy to fix.
 procedure(v2PrintTerms(label spec)
   let((m)
-    m = car(errset(dbOpenCellViewByType(car(spec) cadr(spec) "symbol" "symbol" "r") t))
+    m = car(errset(dbOpenCellViewByType(car(spec) cadr(spec) "symbol" "schematicSymbol" "r") t))
     cond(
       (m
         printf("  %s  %s/%s terminals:" label car(spec) cadr(spec))
@@ -140,9 +140,9 @@ procedure(v2Master(kind)
     spec = v2Spec(kind)
     m = nil
     cond(
-      ((null(spec)) printf("ERROR: unknown device kind %s\n" kind))
+      (null(spec) printf("ERROR: unknown device kind %s\n" kind))
       (t
-        setq(m car(errset(dbOpenCellViewByType(car(spec) cadr(spec) "symbol" "symbol" "r") t)))
+        setq(m car(errset(dbOpenCellViewByType(car(spec) cadr(spec) "symbol" "schematicSymbol" "r") t)))
         when(null(m) printf("ERROR: symbol %s/%s not found. Check the library is attached.\n" car(spec) cadr(spec)))))
     m))
 
@@ -209,7 +209,7 @@ procedure(v2Label(cv wire pt netName)
 ;; Tries the 9-argument form, then the 10-argument form. Prints which one worked.
 procedure(v2LabelTry(cv wire pt netName)
   let((r1 r2)
-    setq(r1 errset(schCreateWireLabel(cv wire pt netName "lowerLeft" "R0" "stick" labelFont t) t))
+    setq(r1 errset(schCreateWireLabel(cv wire pt netName "lowerLeft" "R0" "stick" labelFont nil) t))
     if(car(r1)
       then v2LabelNote(9)
       else v2LabelTry10(cv wire pt netName))))
@@ -230,15 +230,15 @@ procedure(v2LabelNote(form)
 
 ;; Pin symbol (ipin/opin/iopin) at (x y) with a stub wire and a net label.
 ;; dx, dy: direction of the stub, outward from the device block.
-procedure(v2PinAt(cv x y netName direction dx dy)
+procedure(v2PinAt(cv x v2y netName direction dx dy)
   let((pm r wire x1 y1)
-    pm = car(errset(dbOpenCellViewByType(v2Basic v2PinMaster(direction) "symbol" "symbol" "r") t))
-    r = errset(schCreatePin(cv pm netName direction nil list(x y) "R0") t)
+    pm = car(errset(dbOpenCellViewByType(v2Basic v2PinMaster(direction) "symbol" "schematicSymbol" "r") t))
+    r = errset(schCreatePin(cv pm netName direction nil list(x v2y) "R0") t)
     if(null(car(r)) then
       printf("WARNING: pin %s not created. RISK: schCreatePin args, or basic/ipin symbol missing.\n" netName))
     x1 = x + dx
-    y1 = y + dy
-    wire = v2Wire(cv list(x y) list(x1 y1))
+    y1 = v2y + dy
+    wire = v2Wire(cv list(x v2y) list(x1 y1))
     v2Label(cv wire list(x1 y1) netName)))
 
 ;; Pin master name for a pin direction.
@@ -249,8 +249,8 @@ procedure(v2PinMaster(direction)
     (t "iopin")))
 
 ;; Places an instance at (x y), orientation R0. Returns the instance or nil.
-procedure(v2Inst(cv master instName x y)
-  car(errset(schCreateInst(cv master instName list(x y) "R0") t)))
+procedure(v2Inst(cv master instName x v2y)
+  car(errset(schCreateInst(cv master instName list(x v2y) "R0") t)))
 
 ;; Sets one CDF parameter. If the parameter is type "int", the value is converted.
 ;; RISK: setting ->value does not run CDF callbacks. Check w/l/fingers in the
@@ -312,21 +312,24 @@ procedure(v2Stub(cv master inst lp netName)
 ;;   conns:  list(list(termName netName) ...)
 ;;   params: list(list(cdfName value) ...)
 procedure(v2Place(cv row)
-  let((name kind x y conns params master inst)
+  let((name kind x v2y conns params master inst)
     name = nth(0 row)
     kind = nth(1 row)
     x = nth(2 row)
-    y = nth(3 row)
+    v2y = nth(3 row)
     conns = nth(4 row)
     params = nth(5 row)
     master = v2Master(kind)
-    inst = if(master then v2Inst(cv master name x y) else nil)
+    inst = if(master then v2Inst(cv master name x v2y) else nil)
     if(inst then
       progn(
-        foreach(c conns v2Connect(cv master inst car(c) cadr(c)))
+        ;; Parameters first: the PDK symbol is parametrized, so editing w/l rebuilds it. Wire afterwards,
+        ;; using the instance's own (updated) master for the pin positions.
         foreach(p params v2SetParam(inst car(p) cadr(p)))
-        printf("  placed %s (%s) at %g %g\n" name kind x y))
-      printf("ERROR: could not place %s (%s)\n" name kind))))
+        setq(master if(inst~>master then inst~>master else master))
+        foreach(c conns v2Connect(cv master inst car(c) cadr(c)))
+        printf("  placed %s (%s) at %g %g\n" name kind x v2y))
+      else printf("ERROR: could not place %s (%s)\n" name kind))))
 
 ;; Places every row of a list.
 procedure(v2PlaceAll(cv rows)
@@ -343,8 +346,8 @@ procedure(v2PrepareView(cellName viewName)
   let((obj)
     obj = ddGetObj(v2Lib cellName viewName)
     cond(
-      ((null(obj)) t)
-      ((null(v2Overwrite))
+      (null(obj) t)
+      (null(v2Overwrite)
         printf("SKIP: %s/%s/%s exists (v2Overwrite is nil).\n" v2Lib cellName viewName)
         nil)
       (t v2DeleteView(obj cellName viewName)))))
@@ -415,35 +418,35 @@ procedure(v2Finish(cv cellName)
 ;;------------------------------------------------------------------------------
 
 ;; One NMOS. Netlist order: (drain gate source) ; bulk is always VSS.
-procedure(v2NmosRow(name x y d g s w l)
-  list(name "nmos" x y
+procedure(v2NmosRow(name x v2y d g s w l)
+  list(name "nmos" x v2y
        list(list("D" d) list("G" g) list("S" s) list("B" "VSS"))
        list(list("w" w) list("fw" w) list("fingers" "1") list("l" l) list("m" v2Num(mult)))))
 
 ;; One resistor (analogLib res): PLUS, MINUS, CDF r.
-procedure(v2ResRow(name x y plusNet minusNet)
-  list(name "res" x y
+procedure(v2ResRow(name x v2y plusNet minusNet)
+  list(name "res" x v2y
        list(list("PLUS" plusNet) list("MINUS" minusNet))
        list(list("r" resR))))
 
 ;; One capacitor (analogLib cap): PLUS, MINUS, CDF c.
-procedure(v2CapRow(name x y net)
-  list(name "cap" x y
-       list(list("PLUS" net) list("MINUS" "0"))
+procedure(v2CapRow(name x v2y net)
+  list(name "cap" x v2y
+       list(list("PLUS" net) list("MINUS" "gnd!"))
        list(list("c" capC))))
 
 ;; One DC source (analogLib vdc): PLUS, MINUS, CDF vdc.
-procedure(v2DcRow(name x y net value)
-  list(name "vdc" x y
-       list(list("PLUS" net) list("MINUS" "0"))
+procedure(v2DcRow(name x v2y net value)
+  list(name "vdc" x v2y
+       list(list("PLUS" net) list("MINUS" "gnd!"))
        list(list("vdc" v2Num(value)))))
 
 ;; One pulse source (analogLib vpulse). tdVal = delay (0 for CK, half period for CKb).
-procedure(v2PulseRow(name x y net tdVal)
+procedure(v2PulseRow(name x v2y net tdVal)
   let((pwVal)
     pwVal = tbPeriod / 2.0 - tbRise
-    list(name "vpulse" x y
-         list(list("PLUS" net) list("MINUS" "0"))
+    list(name "vpulse" x v2y
+         list(list("PLUS" net) list("MINUS" "gnd!"))
          list(list("v1" "0")
               list("v2" v2Num(tbVdd))
               list("td" v2Num(tdVal))
@@ -453,14 +456,14 @@ procedure(v2PulseRow(name x y net tdVal)
               list("per" v2Num(tbPeriod))))))
 
 ;; Ground symbol. Its terminal is resolved at run time (name "@FIRST").
-procedure(v2GndRow(name x y)
-  list(name "gnd" x y
-       list(list("@FIRST" "0"))
+procedure(v2GndRow(name x v2y)
+  list(name "gnd" x v2y
+       list(list("@FIRST" "gnd!"))
        nil))
 
 ;; One DLATCH instance in divider_core: pins D Db CK CKb Q Qb VDD VSS NBIAS.
-procedure(v2CoreRow(name x y d db ck ckb q qb)
-  list(name "latch" x y
+procedure(v2CoreRow(name x v2y d db ck ckb q qb)
+  list(name "latch" x v2y
        list(list("D" d) list("Db" db) list("CK" ck) list("CKb" ckb)
             list("Q" q) list("Qb" qb) list("VDD" "VDD") list("VSS" "VSS")
             list("NBIAS" "NBIAS"))
@@ -523,7 +526,7 @@ procedure(v2CorePins()
 ;; tb_divider: core connections. The core VSS goes to global ground "0".
 procedure(v2TbCoreConns()
   list(list("CK" "CK") list("CKb" "CKb") list("NBIAS" "NBIAS")
-       list("VDD" "VDD") list("VSS" "0")
+       list("VDD" "VDD") list("VSS" "gnd!")
        list("Q1" "Q1") list("Q1b" "Q1b") list("Q2" "Q2") list("Q2b" "Q2b")
        list("Q3" "Q3") list("Q3b" "Q3b") list("Q4" "Q4") list("Q4b" "Q4b")))
 
@@ -575,9 +578,9 @@ procedure(v2BuildCore()
     ok = nil
     printf("\n[2/3] divider_core schematic\n")
     cond(
-      ((null(v2ViewExists("DLATCH" "symbol")))
+      (null(v2ViewExists("DLATCH" "symbol"))
         printf("ERROR: DLATCH symbol is missing. Build DLATCH first (see NOTES_v2.md).\n"))
-      ((null(v2PrepareView("divider_core" "schematic"))) nil)
+      (null(v2PrepareView("divider_core" "schematic")) nil)
       (t
         setq(cv dbOpenCellViewByType(v2Lib "divider_core" "schematic" "schematic" "w"))
         when(cv
@@ -595,9 +598,9 @@ procedure(v2BuildTb()
     ok = nil
     printf("\n[3/3] tb_divider schematic\n")
     cond(
-      ((null(v2ViewExists("divider_core" "symbol")))
+      (null(v2ViewExists("divider_core" "symbol"))
         printf("ERROR: divider_core symbol is missing. Build divider_core first.\n"))
-      ((null(v2PrepareView("tb_divider" "schematic"))) nil)
+      (null(v2PrepareView("tb_divider" "schematic")) nil)
       (t
         setq(cv dbOpenCellViewByType(v2Lib "tb_divider" "schematic" "schematic" "w"))
         when(cv
@@ -620,6 +623,8 @@ procedure(buildAll()
     printf("Library %s | resR=%s | mult=%s | main W/L=%s/%s | tail W/L=%s/%s | overwrite=%L\n"
            v2Lib resR v2Num(mult) wMain lMain wTail lTail v2Overwrite)
     v2TechNote()
+    ;; Warm up the PDK: its first use runs libInit.il, which assigns globals (it overwrote a variable named y).
+    v2Master("nmos")
     printf("PDK / library check:\n")
     ok = if(v2LibOk() then v2CheckPdk() else nil)
     if(ok then v2DiagTerms())
