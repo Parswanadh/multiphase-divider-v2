@@ -27,6 +27,9 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
 FINAL = REPO / "results" / "gpdk045" / "final"
+CROP_DIR = REPO / "report" / "gpdk045" / "screens" / "crops"
+READBACK = REPO / "results" / "gpdk045" / "virtuoso_dlatch_params_designD.txt"
+CONN = REPO / "results" / "gpdk045" / "core_connectivity_virtuoso.txt"
 GPDK = REPO / "report" / "gpdk045"
 FIG_DIR = GPDK / "figures"
 SHARED_FIG_DIR = REPO / "report" / "figures"
@@ -35,6 +38,7 @@ NETLIST = REPO / "spectre" / "divider_gpdk45.scs"
 LEDGER = GPDK / "LEDGER.md"
 EXAMPLE = GPDK / "report_data.example.json"
 BUILDER = REPO / "scripts" / "build_academic_docx.py"
+DRAW = REPO / "scripts" / "draw_gpdk45_circuits.py"
 DATA_OUT = GPDK / "report_data.json"
 VENV_PY = Path("/home/parshu/vm/rv/bin/python")
 BUILT_STEM = "23ECE383_System_Design_Report"
@@ -296,6 +300,72 @@ def screen_or_none(name, caption):
     return screen(name, caption) if (SCREEN_DIR / f"{name}.png").is_file() else None
 
 
+def crop(name, caption):
+    """A crop of a Cadence screenshot, made by hand with PIL and stored in screens/crops/."""
+    if not (CROP_DIR / f"{name}.png").is_file():
+        fail(f"missing screenshot crop {name}.png (screens/crops/)")
+    return {"file": f"screens/crops/{name}.png", "caption": caption}
+
+
+def read_readback():
+    """Virtuoso read-back of design D: resistors (as written, e.g. 3K) and nMOS w, l, m."""
+    text = READBACK.read_text(encoding="utf-8")
+    res, mos = {}, {}
+    for line in text.splitlines():
+        m = re.match(r"^(\w+)\s+(\S+)\s+(.*)$", line.strip())
+        if not m:
+            continue
+        name, master, rest = m.groups()
+        if master == "res":
+            res[name] = re.search(r'r="([^"]*)"', rest).group(1)
+        elif master == "nmos1v":
+            mos[name] = {k: re.search(rf'{k}="([^"]*)"', rest).group(1) for k in ("w", "l", "m")}
+    if set(res) != {"R1", "R2"} or len(mos) != 7:
+        fail("read-back does not list R1, R2 and M1 to M7")
+    return res, mos
+
+
+NET_NORM = {"ck": "CK", "ckb": "CKb", "vdd": "VDD", "nbias": "NBIAS", "0": "VSS", "vss": "VSS"}
+
+
+def read_connectivity():
+    """Compare the Virtuoso top-level latch connections with the Spectre netlist.
+
+    Returns (instances compared, mismatching pins). Pins are the DLATCH pin names.
+    """
+    pins = ["D", "Db", "CK", "CKb", "Q", "Qb", "VDD", "VSS", "NBIAS"]
+    virt = {}
+    for line in CONN.read_text(encoding="utf-8").splitlines():
+        m = re.match(r"^(XD\d+)\s+DLATCH:\s+(.*)$", line.strip())
+        if m:
+            virt[m.group(1)] = dict(kv.split("=", 1) for kv in m.group(2).split())
+    spec = {}
+    for line in NETLIST.read_text(encoding="utf-8").splitlines():
+        s_ = line.split("//", 1)[0].strip()
+        m = re.match(r"^(XD\d+)\s*\(([^)]*)\)\s*DLATCH$", s_)
+        if m:
+            nodes = [NET_NORM.get(n, n) for n in m.group(2).split()]
+            spec[m.group(1)] = dict(zip(pins, nodes))
+    if not virt or set(virt) != set(spec):
+        fail("Virtuoso connectivity and netlist name different latch instances")
+    mism = []
+    for x in sorted(spec):
+        for pin in pins:
+            v = virt[x].get(pin)
+            if v is None or NET_NORM.get(v.lower(), v) != spec[x][pin]:
+                mism.append(f"{x}.{pin}")
+    return len(spec), mism
+
+
+def read_schcheck():
+    """schCheck errors/warnings per cell, from the LEDGER.md T4 line."""
+    text = LEDGER.read_text(encoding="utf-8")
+    m = re.search(r"schCheck ([\d]+/[\d]+), ([\d]+/[\d]+), ([\d]+/[\d]+)", text)
+    if m is None:
+        fail("schCheck counts not found in LEDGER.md")
+    return dict(zip(("DLATCH", "divider_core", "tb_divider"), m.groups()))
+
+
 def verdict(ok):
     return "met" if ok else "not met"
 
@@ -404,10 +474,11 @@ def build_data():
 
     # ---------------------------------------------------------- extras and slots
     extras = [
-        ("ring", shared("fig_b_ring_diagram",
-                        "Ring interconnection of the four latches (alternating cross-connections), drawn "
-                        "programmatically by scripts/build_local_report.py from the baseline netlist "
-                        "spice/divider_baseline_cal.cir. The labels are baseline values, not the gpdk045 sizes.")),
+        ("ring", plotted("fig_circuit_ring",
+                         f"Ring interconnection of the four DLATCH instances XD1 to XD4 (alternating cross-connections, "
+                         f"CK and CKb swapped on XD2 and XD3), drawn by scripts/draw_gpdk45_circuits.py from "
+                         f"spectre/divider_gpdk45.scs with design D labels (m = {m_d}, R = {r_d:g} kOhm). Generated "
+                         f"drawing, not a Cadence screenshot.")),
         ("tran_b", plotted("fig_tran_B_6g",
                            f"Transient waveforms of design B at {f_b:g} GHz (m = {m_b}, R1 = R2 = {r_b:g} kOhm), "
                            f"plotted from Spectre output. Output period-measured frequency "
@@ -433,10 +504,11 @@ def build_data():
         ("pvt_dp_b6", plotted("fig_pvt_delay_power_B_6g",
                               f"Delay and power over the PVT matrix of design B at {f_b:g} GHz, plotted from "
                               f"pvt_B6.tsv (passing points only).")),
-        ("dlatch", screen("schematic_dlatch",
-                          "Virtuoso schematic of the D-latch (Cadence GUI screenshot).")),
-        ("tb", screen("schematic_tb",
-                      "Virtuoso schematic of the testbench (Cadence GUI screenshot).")),
+        ("tb", crop("schematic_tb_crop",
+                    "Virtuoso schematic of the testbench tb_divider (Cadence GUI screenshot, cropped to the "
+                    "schematic window).")),
+        ("ciw", crop("virtuoso_ciw_crop",
+                     "Virtuoso 6.1.5 session with the gpdk045 PDK loaded (CIW log, Cadence GUI screenshot).")),
         ("lib", screen("library_manager",
                        "Virtuoso Library Manager showing the cells (Cadence GUI screenshot).")),
         ("drc", screen("drc_result",
@@ -445,13 +517,15 @@ def build_data():
     extra_no = {key: EXTRA_FIG_START + i for i, (key, _) in enumerate(extras)}
 
     figures = {
-        "circuit_diagram": shared("fig_a_latch_schematic",
-                                  "Circuit diagram of one differential D-latch (M1 to M7, R1, R2), drawn "
-                                  "programmatically by scripts/build_local_report.py from the baseline netlist "
-                                  "spice/divider_baseline_cal.cir. The labels on the drawing are baseline values, "
-                                  "not the gpdk045 sizes; Tables 1 and 2 give the gpdk045 sizes."),
-        "impl_screenshot": screen_or_none("schematic_core",
-                                          "Virtuoso schematic of the circuit without sizing (Cadence GUI screenshot)."),
+        "circuit_diagram": plotted("fig_circuit_latch",
+                                   f"Circuit diagram of one differential DLATCH of design D (M1 to M7, R1, R2), drawn "
+                                   f"by scripts/draw_gpdk45_circuits.py from spectre/divider_gpdk45.scs. Labels: "
+                                   f"M1 to M6 W = 240 nm, L = 45 nm; M7 W = 480 nm, L = 90 nm; m = {m_d}; "
+                                   f"R1 = R2 = {r_d:g} kOhm. Generated drawing, not a Cadence screenshot."),
+        "impl_screenshot": crop("schematic_core_crop",
+                                "Virtuoso schematic of the divider core (design D library): four DLATCH instances "
+                                "XD1 to XD4 with the ring connections (Cadence GUI screenshot). Device sizes are in "
+                                "Tables 1 and 2."),
         "waveform_without_sizing": plotted(
             "fig_tran_unsized",
             f"Transient waveforms of the circuit without sizing (m = {m_u}, R1 = R2 = {r_u:g} kOhm) at "
@@ -459,8 +533,11 @@ def build_data():
             f"{a_u['q1_min_v']:.3f} V and {a_u['q1_max_v']:.3f} V ({sw_u_mv:.1f} mV), so the outputs do not divide. "
             f"DC operating point (analysis, t = 0, CK low): M7 region {op_u['region']}, Vds = "
             f"{op_u['vds_v'] * 1e9:.1f} nV, Ids = {op_u['ids_a'] * 1e12:.1f} pA, Vgs = {op_u['vg_v']:g} V."),
-        "sized_circuit_screenshot": screen_or_none(
-            "schematic_sized", "Virtuoso schematic of the circuit based on the sizing concept (Cadence GUI screenshot)."),
+        "sized_circuit_screenshot": crop(
+            "schematic_dlatch_crop",
+            f"Virtuoso schematic of the DLATCH of design D with sizing: m = {m_d}, R1 = R2 = {r_d:g} kOhm "
+            f"(Cadence GUI screenshot, cropped). Device parameters read back from the Virtuoso database are "
+            f"given in the Tool and Technology section and agree with Table 2."),
         "waveform_with_sizing": plotted(
             "fig_tran_D_1p4",
             f"Transient waveforms of design D (m = {m_d}, R1 = R2 = {r_d:g} kOhm) at {f_d:g} GHz, plotted from "
@@ -503,6 +580,26 @@ def build_data():
         "devices": device_rows(net, m_d, r_d, tag_d["vb"]),
         "metrics": metrics_d,
     }
+
+    # ---------------------------------------------------------- Virtuoso read-back and connectivity
+    rb_res, rb_mos = read_readback()
+    rb_r = float(rb_res["R1"][:-1]) if rb_res["R1"].upper().endswith("K") else None
+    if rb_r is None or rb_res["R2"] != rb_res["R1"] or abs(rb_r - r_d) > 1e-9:
+        fail("Virtuoso read-back resistors differ from design D R")
+    if any(v["m"] != str(m_d) for v in rb_mos.values()):
+        fail("Virtuoso read-back multiplier differs from design D m")
+    for name, v in rb_mos.items():
+        if (v["w"], v["l"]) != net["sizes"][name]:
+            fail(f"Virtuoso read-back {name} W/L differs from the netlist")
+    n_inst, mism = read_connectivity()
+    schc = read_schcheck()
+    rb_m7 = rb_mos["M7"]
+    rb_text = (
+        f"Virtuoso database read-back of the DLATCH of design D (results/gpdk045/virtuoso_dlatch_params_designD.txt): "
+        f"R1 and R2 = {rb_r:g} kOhm; M1 to M6 w = {rb_mos['M1']['w']}, l = {rb_mos['M1']['l']}, m = {rb_mos['M1']['m']}; "
+        f"M7 w = {rb_m7['w']}, l = {rb_m7['l']}, m = {rb_m7['m']}. These agree with the Spectre netlist sizes and "
+        f"with Tables 1 and 2."
+    )
 
     # ---------------------------------------------------------- narrative
     d_fail = sum_d["failing"]
@@ -559,12 +656,18 @@ def build_data():
         f"Stimulus and conditions: VDD = 1.0 V with PVT at 0.9 and 1.1 V; temperature {net['temp_c']} C nominal; "
         f"CK rise and fall {to_ps(net['params']['tr'])}; CKb is CK delayed by half a period; tail bias "
         f"vb = {tag_d['vb']:g} V; {to_ff(net['params']['cl'])} load on each of the eight outputs.",
+        rb_text,
         "Plots are generated by scripts from the Spectre results; the waveform and PVT figures are plots, not Virtuoso "
-        "screenshots, and each caption says so. The two circuit drawings (Figures 1 and 9) are generated "
-        "programmatically from the baseline netlist spice/divider_baseline_cal.cir, not from the gpdk045 netlist.",
+        "screenshots, and each caption says so. The two circuit drawings (Figure 1 and Figure "
+        f"{extra_no['ring']}) are generated by scripts/draw_gpdk45_circuits.py from spectre/divider_gpdk45.scs.",
     ]
 
     other_info = [
+        (f"Virtuoso connectivity check (results/gpdk045/core_connectivity_virtuoso.txt): the top-level connections of "
+         f"{n_inst} DLATCH instances (XD1 to XD4) were compared pin by pin with spectre/divider_gpdk45.scs, giving "
+         f"{len(mism)} mismatch{'es' if len(mism) != 1 else ''}"
+         f"{' (' + ', '.join(mism) + ')' if mism else ''}. Schematic checks (schCheck errors/warnings, LEDGER.md): "
+         f"DLATCH {schc['DLATCH']}, divider_core {schc['divider_core']}, tb_divider {schc['tb_divider']}."),
         (f"Second operating point, design B at {f_b:g} GHz: m = {m_b}, R1 = R2 = {r_b:g} kOhm, output "
          f"{num(nom_b['f_out_MHz']):.1f} MHz, power {num(nom_b['power_mW']):.4f} mW, delay "
          f"{num(nom_b['delay_ps']):.2f} ps, PDP {num(nom_b['pdp_fJ']):.3f} fJ, maximum phase-step error "
@@ -619,7 +722,8 @@ def build_data():
          f"figures: the ring diagram (Figure {extra_no['ring']}), the 6 GHz waveforms (Figure {extra_no['tran_b']}), "
          f"phase steps (Figure {extra_no['phase']}), tail voltage (Figure {extra_no['tail_d']}), supply current "
          f"(Figure {extra_no['supply']}), the frequency sweep (Figure {extra_no['fsweep']}) and the PVT plots for "
-         f"design D and B (Figures {extra_no['pvt_dp_d']}, {extra_no['pvt_hm_b6']} and {extra_no['pvt_dp_b6']})."),
+         f"design D and B (Figures {extra_no['pvt_dp_d']}, {extra_no['pvt_hm_b6']} and {extra_no['pvt_dp_b6']}), the "
+         f"testbench schematic (Figure {extra_no['tb']}) and the Virtuoso session log (Figure {extra_no['ciw']})."),
     ]
 
     conclusion = [
@@ -637,8 +741,8 @@ def build_data():
          f"and only design B at 6 GHz comes close ({num(nom_b['max_phase_step_err_deg']):.2f} deg). {d_fail_text} "
          f"Design B, whose load lies inside the regeneration band, passes fewer PVT points ({sum_b6['pass_count']} of "
          f"{sum_b6['total']} at 6 GHz and {sum_b1['pass_count']} of {sum_b1['total']} at 1.4 GHz)."),
-        ("Still to be added: the Virtuoso schematic and layout screenshots, the layout simulation and the DRC result. "
-         "These slots are shown in red in the figure list until they are provided."),
+        ("Still to be added: the Virtuoso layout screenshot, the simulator waveform of the extracted layout and the "
+         "DRC result. These slots are shown in red in the figure list until they are provided."),
     ]
 
     problems_faced = [
@@ -653,7 +757,8 @@ def build_data():
         "The Spectre ASCII raw layout (first variable on the Variables line, several values per line) broke the first parser.",
         "The 125 C corners failed for the marginal sizing.",
         "The VM had no guest tools, so files were moved by virtual CD images and a virtual serial port with MD5 checks.",
-        "The phase error at 1.4 GHz is large (38.46 deg for design D), far from the paper's 3.75 deg.",
+        f"The phase error at {f_d:g} GHz is large ({metrics_d['max_phase_step_err_deg']} deg for design D), far from "
+        f"the paper's {LITERATURE['phase_err_deg']} deg.",
     ]
     problems_resolved = [
         "Installed gcc 4.4.7 and glibc-devel from the CentOS 6.5 vault RPMs, replaced the bundled perl wrapper by the "
@@ -661,7 +766,7 @@ def build_data():
         "The measured values were stored as TSV and JSON files (nominal, sweep, PVT and analysis files), so each "
         "number in this report is read from one of those files.",
         "The unsized design was replaced by the sizing concept: the load was set from the stack-resistance rule, "
-        "giving design D (41 of 45 PVT points).",
+        f"giving design D ({sum_d['pass_count']} of {sum_d['total']} PVT points).",
         "The division test was made strict: all eight outputs at f_in/2 within 0.1 percent, each swinging at least 0.1 V.",
         "The parsers were fixed for the Spectre ASCII raw layout, and the PVT and sweep results were checked against "
         "their summary files.",
@@ -674,8 +779,8 @@ def build_data():
         "Cadence GUI screenshot is substituted for them.",
         "The Ron value and the recorded division pairs are taken from LEDGER.md. The Ron value is not in a separate "
         "output file, so the report cites the ledger.",
-        "The two circuit drawings were generated from the earlier baseline netlist (spice/divider_baseline_cal.cir), "
-        "not from the gpdk045 netlist. Their device labels therefore differ from Tables 1 and 2.",
+        "The two circuit drawings are generated from the gpdk045 Spectre netlist with the design D labels, so they "
+        "agree with Tables 1 and 2. The earlier baseline drawings in report/figures are not used in this report.",
         "The paper's constants are literature values, and the title-page register and name fields are left blank by design.",
     ]
 
@@ -741,7 +846,17 @@ def run_builder(data):
     return out_docx, out_pdf, (int(m.group(1)) if m else None)
 
 
+def draw_circuits():
+    """Regenerate the two gpdk045 circuit drawings (needs matplotlib, from /usr/bin/python3)."""
+    python = "/usr/bin/python3" if Path("/usr/bin/python3").is_file() else sys.executable
+    proc = subprocess.run([python, str(DRAW)], capture_output=True, text=True, timeout=600)
+    if proc.returncode != 0:
+        fail(f"draw_gpdk45_circuits failed:\n{proc.stdout}\n{proc.stderr}")
+    print(proc.stdout.rstrip())
+
+
 def main():
+    draw_circuits()
     data, checks = build_data()
     docx, pdf, pages = run_builder(data)
     print(f"report_data.json: {DATA_OUT}")

@@ -22,7 +22,7 @@ All numbers below come from Cadence Spectre 12.1 (MMSIM121) runs inside the Cent
 - T2 design exploration + PVT matrices: complete
 - T3 final nominal runs with raw waveforms, op-point (M7 saturation): complete (M7 is in triode: V(tail) 8-67 mV vs Vdsat 358 mV)
 - T4 schematic in Virtuoso: built in batch Virtuoso 6.1.5 (DLATCH, divider_core, tb_divider; schCheck 0/0, 0/0, 0/1); core connectivity diffed against the Spectre netlist: 0 mismatches; GUI screenshots captured in Virtuoso 6.1.5 at 1600x1200 (report/gpdk045/screens/schematic_*.png); library rebuilt with design D (R=3k, m=4), parameters read back from the database (results/gpdk045/virtuoso_dlatch_params_designD.txt)
-- T5 layout + DRC in Virtuoso/Assura: pending
+- T5 layout + DRC: placement-only layout generated in Virtuoso (DLATCH: 7 nmos1v pcells + 2 poly resistors + pins; divider_core: 4 instances 2x2, clock-star lengths equal). Assura 4.1 DRC on DLATCH/layout: 21 errors in 3 rules (psubstrate StampErrorMult 1, StampErrorConnect 6, METAL1.A.1 area 14). NOT routed, NOT LVS-checked, no post-layout simulation.
 - T6 report data assembly + docx: pending
 
 ## SKILL debugging findings (Virtuoso 6.1.5, 32-bit, batch)
@@ -35,3 +35,6 @@ All numbers below come from Cadence Spectre 12.1 (MMSIM121) runs inside the Cent
 
 - Console resolution raised to 1600x1200 via xrandr for legible screenshots; GUI sessions self-exit via hiRegTimer.
 - Ruling: schematics in the report show design D (R=3k, m=4); the unsized variant (m=1, R=1.15k) is described by its netlist and simulation only — if wrong, rebuild with resR=1.15k mult=1 and recapture (about 5 min).
+
+- Ruling: layout reported as placement-only with the real DRC count (21), because routing/LVS-clean layout was not achievable in the available time — if wrong, the layout section needs a routed layout; the report states the limitation.
+- Assura batch RSF that works: avParameters(?inputLayout ("df2" "divider_lib") ?cellName ?viewName ?rulesFile ?workingDirectory ?runName ?avrpt t); run `assura file.rsf` (no avDRC call).

@@ -1,0 +1,3 @@
+Rule No. 220 : psubstrate_StampErrorMult	Real Error Count : 1; Flat Error Count : 1
+Rule No. 221 : psubstrate_StampErrorConnect	Real Error Count : 6; Flat Error Count : 6
+Rule No. 595 : METAL1.A.1: Metal1 area must be >= 0.02 um	Real Error Count : 14; Flat Error Count : 14

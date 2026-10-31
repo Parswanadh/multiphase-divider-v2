@@ -232,7 +232,7 @@ procedure(divPrintCdf(cellName)
     if(cdf
       then errset(
              foreach(p cdf~>parameters
-               printf("   %s  %s  %s\n" p~>name p~>type p~>defValue))
+               printf("   %L  %L  %L\n" p~>name p~>type p~>defValue))
              t)
       else printf("   (cdfGetBaseCellCDF returned nil; in CIW try: cdfGetBaseCellCDF(ddGetObj(\"%s\" \"%s\"))~>parameters)\n"
              divPdkLib cellName))
@@ -333,9 +333,9 @@ procedure(buildLayoutDLATCH()
     divPrintCdf(divResCell)
     lib = ddGetObj(divLibName)
     cond(
-      ((not(lib))
+      (not(lib)
         printf("ERROR: library %s not found. Create it attached to gpdk045 and rerun.\n" divLibName))
-      ((ddGetObj(divLibName "DLATCH" "layout"))
+      (ddGetObj(divLibName "DLATCH" "layout")
         printf("SKIP: DLATCH/layout already exists. Delete it in the Library Manager to rebuild.\n"))
       (t
         cv = dbOpenCellViewByType(divLibName "DLATCH" "layout" divViewType "w")  ; [VERIFY] creates view
@@ -394,9 +394,9 @@ procedure(buildDividerCore()
   let((cvT dlM bb W H G o ox oy inst gp net lenCk lenCkb cx cy pos dx dy pt)
     printf("== build_layout_v2: divider_core\n")
     cond(
-      ((not(divPinTable))
+      (not(divPinTable)
         printf("ERROR: divPinTable empty. Run buildLayoutDLATCH() first in this CIW session.\n"))
-      ((ddGetObj(divLibName "divider_core" "layout"))
+      (ddGetObj(divLibName "divider_core" "layout")
         printf("SKIP: divider_core/layout already exists.\n"))
       (t
         dlM = dbOpenCellViewByType(divLibName "DLATCH" "layout" divViewType "r")
