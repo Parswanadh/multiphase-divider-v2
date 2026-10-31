@@ -1,0 +1,81 @@
+<section id="gpdk045-facts">
+<h2>Facts verified from the real gpdk045_v_6_0 package</h2>
+<p>The statements below were checked against the files of the installed <code>gpdk045_v_6_0</code> package, not taken from a manual. Where something is still unconfirmed, the section says so.</p>
+
+<h3>Package layout</h3>
+<ul>
+<li>The top level holds <code>assura</code>, <code>diva</code>, <code>gpdk045</code> (the OpenAccess library, with cell data in OA format), <code>models</code>, <code>pvs</code> and <code>soce</code>, plus <code>cds.lib</code>, <code>pvtech.lib</code> and <code>assura_tech.lib</code>.</li>
+<li>The library entry in <code>cds.lib</code> is <code>DEFINE gpdk045 ./gpdk045</code>. The file also defines <code>gpdk045_pvs</code> (<code>./pvs</code>) and <code>gpdk045_av</code> (<code>./assura</code>).</li>
+</ul>
+
+<h3>Spectre models</h3>
+<ul>
+<li><code>models/spectre/gpdk045.scs</code> defines the corner sections <code>tt</code>, <code>ff</code>, <code>ss</code>, <code>fs</code> and <code>sf</code>, plus <code>mc</code>. Each corner includes the per-device files (<code>gpdk045_mos.scs</code>, <code>gpdk045_diode.scs</code>, and so on) with the same corner name.</li>
+<li>Include it in a netlist with <code>include "&lt;path&gt;/models/spectre/gpdk045.scs" section=tt</code>.</li>
+<li>The 1.0 V standard-Vt NMOS is the inline subcircuit <code>g45n1svt (d g s b)</code> with parameters <code>l w multi nf factor</code>. It is built on a BSIM4 model card named <code>nch</code>.</li>
+<li>Other device subcircuits in <code>gpdk045_mos.scs</code>: <code>g45n1hvt</code>, <code>g45n1lvt</code>, <code>g45n1nvt</code> (native), <code>g45n2svt</code> and <code>g45n2nvt</code> (2.0 V NMOS), and PMOS <code>g45p1svt</code>, <code>g45p1hvt</code>, <code>g45p1lvt</code> and <code>g45p2svt</code>.</li>
+<li>The Virtuoso library cell <code>nmos1v</code> exists with the views <code>auCdl</code>, <code>auLvs</code>, <code>hspiceD</code>, <code>ivpcell</code>, <code>layout</code>, <code>spectre</code> and <code>symbol</code>. The view data is binary, so I did not confirm from the files that it netlists to <code>g45n1svt</code>. Check the netlist of an <code>nmos1v</code> instance in the GUI.</li>
+<li>All ten device subcircuits contain the gate-resistance sub-model <code>xrg</code>. That sub-model is <code>ressnpoly_rg</code> or <code>ressppoly_rg</code>, and it is written with a <code>bsource</code> behavioural source. Spectre therefore has to compile an AHDL module the first time it reads the model.</li>
+<li>Sections in <code>gpdk045_mos.scs</code>: <code>stat_mis_*</code> (mismatch statistics for Monte Carlo: <code>stat_mis_std</code>, <code>_hvt</code>, <code>_lvt</code>, <code>_na</code>, <code>_18</code>, <code>_18na</code>), the corners <code>tt ff ss fs sf</code>, and the same corners with the <code>_hvt</code>, <code>_lvt</code>, <code>_na</code> and <code>_18</code> suffixes.</li>
+</ul>
+
+<h3>Netlist skeleton</h3>
+<p>This is the skeleton from <code>spectre/divider_gpdk45.scs</code>. The include path is the one written in that file. Replace it with the location of the package in your VM.</p>
+<pre><code>simulator lang=spectre
+
+include "/home/buet/pdk/gpdk045_v_6_0/models/spectre/gpdk045.scs" section=tt
+
+subckt DLATCH (D Db CK CKb Q Qb VDD VSS NBIAS)
+  R1 (VDD Q)  resistor r=rl
+  R2 (VDD Qb) resistor r=rl
+  M1 (Q  D  xs   VSS) g45n1svt w=240n l=45n
+  M2 (Qb Db xs   VSS) g45n1svt w=240n l=45n
+  M5 (xs CK tail VSS) g45n1svt w=240n l=45n
+  M3 (Q  Qb xh   VSS) g45n1svt w=240n l=45n
+  M4 (Qb Q  xh   VSS) g45n1svt w=240n l=45n
+  M6 (xh CKb tail VSS) g45n1svt w=240n l=45n
+  M7 (tail NBIAS VSS VSS) g45n1svt w=480n l=90n
+ends DLATCH</code></pre>
+
+<h3>Troubleshooting: AHDL compile crash in the CentOS 6.5 VM</h3>
+<p>On the 32-bit CentOS 6.5 guest (MMSIM 12.1), Spectre crashed while compiling the AHDL module for instance <code>bsource_1</code> inside <code>g45n1svt</code>, with:</p>
+<pre><code>ERROR (VACOMP-1008): Cannot compile ahdlcmi module library
+FATAL (SPECTRE-18): Segmentation fault</code></pre>
+<p>The cause was found in two parts. Cadence's bundled perl (<code>MMSIM121/tools.lnx86/perl/bin/cdsPerl</code>) is a 64-bit binary, and the 32-bit guest cannot run it (<code>cannot execute binary file</code>). So <code>ahdlcmigenclist.pl</code> failed and the generated makefile had no sources. The guest also had no gcc. The fix below was applied in that order.</p>
+<ol class="steps">
+<li><strong>Install gcc 4.4.7 and glibc-devel</strong> from the CentOS 6.5 vault RPMs. The guest has no working yum SSL, so use the ISO as a local repository:
+<pre><code>mount -o loop /path/to/CentOS-6.5-i386-bin-DVD1.iso /mnt/cdrom
+yum --disablerepo='*' localinstall /path/to/vault-rpms/gcc-4.4.7*.rpm /path/to/vault-rpms/glibc-devel-*.rpm
+gcc --version</code></pre>
+The RPM file names depend on the ISO you use. Check that <code>gcc --version</code> reports 4.4.7 before continuing.</li>
+<li><strong>Replace the perl launcher</strong> with a shell wrapper that calls the system perl. Keep the original as <code>perl.orig</code>:
+<pre><code>cd MMSIM121/tools.lnx86/perl/bin
+mv perl perl.orig
+printf '#!/bin/sh\nexec /usr/bin/perl "$@"\n' &gt; perl
+chmod +x perl
+./perl -v</code></pre>
+</li>
+<li>Run the netlist again. The AHDL compile of <code>bsource_1</code> should now succeed. The simulation result after this fix is reported in the project status, not here.</li>
+</ol>
+
+<h3>What this means for you</h3>
+<ul>
+<li>Use the corner names <code>tt</code>, <code>ff</code>, <code>ss</code>, <code>fs</code> and <code>sf</code> for the PVT sweep. Do not invent section names.</li>
+<li>Use the device name <code>g45n1svt</code> in the netlist and expect the first Spectre run to pause on the AHDL compile. A crash at that point is the VM problem above, not a netlist error.</li>
+<li>Use <code>stat_mis_*</code> only with a Monte Carlo analysis. The corner sections give a deterministic process corner.</li>
+</ul>
+
+<div class="callout warn"><strong>Model names are now checked, the GUI is not</strong>
+The <code>VERIFY</code> items in the earlier sections about the model path, the section name and the device name are resolved by this section: the sections are <code>tt</code>, <code>ff</code>, <code>ss</code>, <code>fs</code> and <code>sf</code>, and the device is <code>g45n1svt</code> with the <code>nmos1v</code> cell. The menu paths and the Virtuoso CDF parameter names are still unverified and must be checked in the GUI.</div>
+
+<h3>Second blocker found after the Perl fix: the bundled compiler</h3>
+<p>With Perl fixed the AHDL build started compiling but stopped with <code>gnumake: *** [obj/optimize/5.0/bsource_1_libahdlcmi.so] Error 126</code> (cannot execute). In <code>MMSIM121/tools.lnx86/cdsgcc/gcc/4.4/bin</code> the entries <code>gcc</code>, <code>ld</code> and <code>c++filt</code> are symlinks to a wrapper that starts a bundled compiler that does not run on the 32-bit guest. The fix that made Spectre complete with 0 errors and 0 warnings on gpdk045 was to back up that directory and point the three entries at the guest's system tools (gcc 4.4.7 installed from the CentOS 6.5 vault RPMs):</p>
+<pre><code>cd ~/cadence/MMSIM121/tools.lnx86/cdsgcc/gcc/4.4
+cp -a bin bin.orig
+cd bin
+ln -sf /usr/bin/gcc gcc
+ln -sf /usr/bin/ld ld
+ln -sf /usr/bin/c++filt c++filt</code></pre>
+<div class="callout note"><strong>Both fixes are needed, in this order</strong>
+(1) system gcc and glibc-devel installed, (2) <code>perl/bin/perl</code> wrapper changed to <code>exec /usr/bin/perl "$@"</code>, (3) the three symlinks above. Only the first Spectre run pays the AHDL compile cost; later runs reuse the compiled library for the same netlist directory name.</div>
+</section>

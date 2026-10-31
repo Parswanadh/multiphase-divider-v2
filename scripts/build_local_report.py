@@ -300,7 +300,7 @@ def fig_latch(cal, path):
     T(10.9, 4.2, "xs", weight="bold")
     L([7.95, 7.95], [4.2, 3.4])
     T(8.1, 3.8, "xh", weight="bold")
-    T(5.7, 4.2, "xh", weight="bold")
+    T(5.45, 4.2, "xh", ha="right", weight="bold")
     # tail node: M5/M6 sources, M7 drain
     L([2.75, 2.75, 7.95, 7.95], [1.8, 1.4, 1.4, 1.8])
     L([5.25, 5.25], [1.4, 1.4]); dot(5.25, 1.4)
@@ -393,7 +393,7 @@ def fig_ring(cal, path):
     ax.legend(handles=[
         Patch(facecolor=CK_FILL, edgecolor=BLUE, label="latch with CK pin on net CK"),
         Patch(facecolor=CKB_FILL, edgecolor=ORANGE, label="latch with CK pin on net CKb (clock swapped)"),
-    ], loc="lower right", bbox_to_anchor=(1.0, -0.02), fontsize=8, frameon=False)
+    ], loc="upper center", bbox_to_anchor=(0.5, -0.03), ncol=2, fontsize=8, frameon=False)
     ax.text(-1.0, 7.5, "Ring: XD1 -> XD2 -> XD3 -> XD4 -> XD1. Red labels = net driven by the source latch.",
             fontsize=8, color=GREY, va="top")
     ax.text(-1.0, -1.0, "Each output node (Q1, Q1b ... Q4b) also has a 30 fF capacitor to ground (Cl1 ... Cl4b, not drawn). "
@@ -854,10 +854,10 @@ def main():
     rows = []
     for name in ("M1", "M2", "M5", "M3", "M4", "M6", "M7"):
         m = lat["mos"][name]
-        rows.append([name, "NMOS (nmos)", m["d"], m["g"], m["s"], m["b"], m["W"], m["L"]])
+        rows.append([name, "NMOS", m["d"], m["g"], m["s"], m["b"], m["W"], m["L"]])
     for name in ("R1", "R2"):
         r = lat["res"][name]
-        rows.append([name, "resistor", r["n1"], "-", r["n2"], "-", "value", r["value"]])
+        rows.append([name, "resistor", r["n1"], "-", r["n2"], "-", "-", r["value"]])
     add_table(doc, ["Device", "Type", "Drain / n1", "Gate", "Source / n2", "Bulk", "W", "L / value"], rows,
               [1.6, 2.6, 2.4, 2.0, 2.4, 1.6, 2.1, 2.3], size=8.5)
     doc.add_paragraph().paragraph_format.space_after = Pt(0)

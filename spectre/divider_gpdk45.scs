@@ -1,18 +1,19 @@
-// 8-phase divide-by-2 divider (Kuo et al., IEEE LMWT 2025) for Cadence gpdk045
-// Standalone Spectre netlist: sanity-check it BEFORE building the schematic, then
-// compare against the schematic-generated netlist.  Run:  spectre divider_gpdk45.scs +log run.log
+// 8-phase divide-by-2 divider (Kuo et al., IEEE LMWT 2025) on Cadence GPDK045 (gpdk045_v_6_0)
+// Standalone Spectre netlist. Run in the VM:  spectre divider_gpdk45.scs -format nutascii -raw out.raw
 //
-// !! UNTESTED against the real PDK: this machine has no gpdk045. Items marked VERIFY
-// !! must be checked in YOUR PDK install. All sizes/bias are STARTING POINTS only.
+// Model file / device names below were read from the real gpdk045_v_6_0 package:
+//   models/spectre/gpdk045.scs  provides corner sections  tt ff ss fs sf
+//   the 1.0 V standard-Vt NMOS is the subcircuit  g45n1svt (d g s b)  params l w nf multi
+//   (it is what the Virtuoso library cell nmos1v netlists to)
+// Sizes and bias are STARTING VALUES from the 180 nm design, not yet tuned for gpdk045.
 simulator lang=spectre
 
-// VERIFY: path to the gpdk045 Spectre model file and the section name for typical corner
-include "/path/to/gpdk045/models/spectre/gpdk045.scs" section=typical   // VERIFY
+include "/home/buet/pdk/gpdk045_v_6_0/models/spectre/gpdk045.scs" section=tt
 
 parameters vdd=1.0 fin=1G tck=1/fin tr=20p cl=10f rl=8k vb=0.8
+simulatorOptions options temp=27 tnom=27
 
-// supplies / bias / clocks
-VDD (vdd 0)  vsource dc=vdd
+VDD (vdd 0)   vsource dc=vdd
 VB  (nbias 0) vsource dc=vb
 VCK  (ck  0) vsource type=pulse val0=0 val1=vdd delay=0       rise=tr fall=tr width=tck/2-tr period=tck
 VCKB (ckb 0) vsource type=pulse val0=0 val1=vdd delay=tck/2   rise=tr fall=tr width=tck/2-tr period=tck
@@ -20,16 +21,13 @@ VCKB (ckb 0) vsource type=pulse val0=0 val1=vdd delay=tck/2   rise=tr fall=tr wi
 subckt DLATCH (D Db CK CKb Q Qb VDD VSS NBIAS)
   R1 (VDD Q)  resistor r=rl
   R2 (VDD Qb) resistor r=rl
-  // sample pair + clock switch (VERIFY device name: nmos1v is the 1.0V thin-oxide NMOS)
-  M1 (Q  D  xs   VSS) nmos1v w=240n l=45n
-  M2 (Qb Db xs   VSS) nmos1v w=240n l=45n
-  M5 (xs CK tail VSS) nmos1v w=240n l=45n
-  // hold cross-coupled pair + inverse clock switch
-  M3 (Q  Qb xh   VSS) nmos1v w=240n l=45n
-  M4 (Qb Q  xh   VSS) nmos1v w=240n l=45n
-  M6 (xh CKb tail VSS) nmos1v w=240n l=45n
-  // tail current source: long channel, biased in saturation
-  M7 (tail NBIAS VSS VSS) nmos1v w=480n l=90n
+  M1 (Q  D  xs   VSS) g45n1svt w=240n l=45n
+  M2 (Qb Db xs   VSS) g45n1svt w=240n l=45n
+  M5 (xs CK tail VSS) g45n1svt w=240n l=45n
+  M3 (Q  Qb xh   VSS) g45n1svt w=240n l=45n
+  M4 (Qb Q  xh   VSS) g45n1svt w=240n l=45n
+  M6 (xh CKb tail VSS) g45n1svt w=240n l=45n
+  M7 (tail NBIAS VSS VSS) g45n1svt w=480n l=90n
 ends DLATCH
 
 // interconnect: Q1b->D2, Q2->D3, Q3b->D4, Q4->D1b
@@ -47,8 +45,8 @@ CL3b (Q3b 0) capacitor c=cl
 CL4  (Q4  0) capacitor c=cl
 CL4b (Q4b 0) capacitor c=cl
 
-// Without initial conditions the symmetric state may never resolve (no division).
+// start-up: without initial conditions the symmetric state may never resolve
 ic Q1=1.0 Q1b=0 Q2=1.0 Q2b=0 Q3=0 Q3b=1.0 Q4=0 Q4b=1.0
 
-tran tran stop=40n errpreset=conservative maxstep=5p
-save Q1 Q1b Q2 Q2b Q3 Q3b Q4 Q4b ck ckb VDD:p
+tran tran stop=40n ic=node errpreset=conservative maxstep=5p
+save Q1 Q1b Q2 Q2b Q3 Q3b Q4 Q4b ck VDD:p
