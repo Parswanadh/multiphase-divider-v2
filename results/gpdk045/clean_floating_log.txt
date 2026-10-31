@@ -1,0 +1,54 @@
+clean_floating run log (divider_lib: DLATCH, divider_core, tb_divider; schematic views)
+Tool: cadence/skill/auto/clean_floating.il (cfCleanCell(cell mode)). Check/dump: cadence/skill/auto/wire_verify.il
+Backups: schematic_bak (original unwired, untouched). schematic_wired = copy of the wired state before this run (dbCopyCellView).
+
+Method (geometry + schCheck markers, no per-net coordinates):
+  candidate = net label L at P such that L is the only label at P, P is not an instance terminal,
+  exactly one wire touches P and P is its endpoint, that wire is a 2-point stub (length <= 1.0),
+  and the stub's other end Q lies on another wire H.
+  selected = candidates whose P equals the centre of a schCheck marker ("Floating net" marker).
+  action: create label (same name, on H at Q, schCreateWireLabel 9-arg form, font 0.25),
+          then delete the old label L, then delete the stub W.
+  Net names are kept; every component keeps its name. No pin, instance or net is deleted.
+
+schCheck (errors, warnings):
+  DLATCH        before (0 23)  after (0 0)   markers 23, candidates 23, selected 23, applied 23
+  divider_core  before (0 11)  after (0 0)   markers 11, candidates 19, selected 11, applied 11
+  tb_divider    before (0 19)  after (0 1)   markers 19, candidates 18, selected 18, applied 18
+  tb_divider remaining warning (the one known warning of the baseline):
+    Warning: Instance name collides with signal name - "VDD".
+    The supply source instance and its net are both named VDD. Not a floating net. Renaming the
+    instance would change the netlist, so it was left alone.
+  Re-check from disk after dbSave: DLATCH (0 0), divider_core (0 0), tb_divider (0 1).
+
+Removed / moved (per cell, wires and labels):
+  DLATCH        wires 84 -> 61 (23 stub wires removed), labels 41 -> 41 (23 labels moved to the path end)
+  divider_core  wires 110 -> 99 (11 stub wires removed), labels 49 -> 49 (11 labels moved)
+  tb_divider    wires 64 -> 46 (18 stub wires removed), labels 38 -> 38 (18 labels moved)
+  Moved labels (examples): D (-6.5,4.0) -> (-6.0,4.0); Q (6.5,5.0) -> (6.0,5.0); NBIAS (-6.5,-6.5) -> (-6.0,-6.5);
+  VDD (0.0,10.5) -> (0.0,10.0). Full list: the CF CAND/CF DONE lines of the run.
+  Rejected in development (not applied): a first geometry rule also selected labels on wire interiors
+  (D at (-2.25,4.6875) on a vertical path); the endpoint guard removed those. A second version selected
+  19 candidates in divider_core, 8 more than the markers; the marker filter removed them.
+
+Connectivity (wire_verify.il: sorted INST/PARAM/CONN lines, base = wired state before the run, post = after save):
+  DLATCH        456 lines base, 456 post, diff 0 (INST 18, PARAM 406, CONN 32)
+  divider_core   53 lines base,  53 post, diff 0 (INST 17, PARAM 0,  CONN 36)
+  tb_divider    472 lines base, 472 post, diff 0 (INST 14, PARAM 420, CONN 38)
+  Verdict: connectivity identical.
+
+Netlist (ocean createNetlist for tb_divider, base vs post, guest directories netlist_base / netlist_post):
+  netlist: byte-identical.
+  input.scs: identical except the "// Generated on:" line.
+  si.foregnd.log: only netlisting timestamps differ (not netlist content).
+  Verdict: netlist unchanged.
+
+Screenshots (gui_fit2 variant, Virtuoso maximised, zoom by the Fit key after maximise):
+  report/gpdk045/screens/schematic_dlatch_full.png   (replaced)
+  report/gpdk045/screens/schematic_core_full.png     (replaced; the circuit spans about 90% of the
+  width of the previous capture, the labels are all visible)
+  Note: gui_fit2.sh named in the task did not exist; the helper used is
+  /home/parshu/vm/wire_work/gui_fit2.sh (copy of gui_fit.sh with a Fit key press instead of the
+  hiZoomIn timer, which did not zoom in this VM).
+
+Files: guest ~/gpdk_run/clean/{base,post}_<cell>_{conn,shapes,geom}.txt, netlist_base/, netlist_post/.
