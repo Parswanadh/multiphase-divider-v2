@@ -1,0 +1,2 @@
+tag	divides	f_in_GHz	f_out_MHz	ratio	power_mW	delay_ps	pdp_fJ	max_phase_step_err_deg	swing_lo	swing_hi	phases_deg	phase_steps_deg	periods_averaged	i_avg_mA	reason
+g_1.4G_3k_1.0_10f_m4	1	1.4000	700.000	2.0000	0.541337	25.99	14.067	38.461	0.5827	1.0172	q1:0.00,q2:83.46,q3b:90.00,q4b:173.46,q1b:180.00,q2b:263.46,q3:270.00,q4:353.46	83.46,6.54,83.46,6.54,83.46,6.54,83.46,6.54	18	0.541337	ok

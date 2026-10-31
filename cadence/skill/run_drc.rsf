@@ -1,0 +1,18 @@
+; run_drc.rsf  -  Assura DRC template for DLATCH (VERIFY every keyword)
+; Created because the task named this file. Not run; syntax follows the
+; avParameters/avDRC shape from the Assura docs as remembered, NOT verified.
+; Paths are the VM paths (the local PDK copy is /home/parshu/vm/pdk/gpdk045_v_6_0).
+; Technology library for Assura: gpdk045_av (assura_tech.lib: DEFINE gpdk045_av ./assura)
+; Ruleset: "default" (assura/techRuleSets) -> DrcRules ./assuraDRC.rul
+
+avParameters(
+  ?inputLayout ("df2" "divider_lib")          ; VERIFY: DFII source spec
+  ?cellName "DLATCH"
+  ?viewName "layout"
+  ?rulesFile "/home/buet/pdk/gpdk045_v_6_0/assura/assuraDRC.rul"
+  ?ruleSet "default"                          ; VERIFY: ruleset name key
+  ?runName "DLATCH_drc"
+  ?workingDirectory "./assura_drc_DLATCH"
+  ?avrpt t
+)
+avDRC()

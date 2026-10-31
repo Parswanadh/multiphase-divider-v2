@@ -1,0 +1,15 @@
+Instance: XD1.M7 of g45n1svt
+Model: XD1.M7.nch.23
+Primitive: bsim4
+ d : V(XD1.tail) = 54.3894 nV
+ g : V(XD1.M7.n1) = 1 V
+ s : val(0) = 0 
+ b : val(0) = 0 
+ region = triode
+ reversed = no
+ ids = 137.387 pA
+ vgs = 1 V
+ vds = 54.3894 nV
+ vbs = 0 V
+ vgd = 1 V
+ vdb = 54.3894 nV

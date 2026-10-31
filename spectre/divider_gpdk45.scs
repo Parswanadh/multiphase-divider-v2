@@ -49,5 +49,6 @@ CL4b (Q4b 0) capacitor c=cl
 // start-up: without initial conditions the symmetric state may never resolve
 ic Q1=1.0 Q1b=0 Q2=1.0 Q2b=0 Q3=0 Q3b=1.0 Q4=0 Q4b=1.0
 
+opinfo info what=oppoint where=file file="oppoint.txt"
 tran tran stop=40n ic=node errpreset=conservative maxstep=5p
-save Q1 Q1b Q2 Q2b Q3 Q3b Q4 Q4b ck VDD:p
+save Q1 Q1b Q2 Q2b Q3 Q3b Q4 Q4b ck VDD:p XD1.tail XD2.tail

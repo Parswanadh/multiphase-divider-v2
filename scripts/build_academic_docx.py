@@ -23,7 +23,7 @@ from pathlib import Path
 
 from docx import Document
 from docx.enum.table import WD_TABLE_ALIGNMENT
-from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_BREAK
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import Inches, Pt, RGBColor
@@ -146,6 +146,11 @@ class Builder:
         self.missing.append(what)
         self.para(f"NOT YET AVAILABLE: {what}", bold=True, color=RED, after=8)
 
+    def _picture(self, p, path, width_in, height_in):
+        run = p.add_run()
+        self._font(run)
+        run.add_picture(str(path), width=Inches(width_in), height=Inches(height_in))
+
     @staticmethod
     def _aspect(path):
         # PIL is used for the pixel size only. Explicit width and height are
@@ -201,7 +206,6 @@ class Builder:
         run_with(end)
 
     def _cell(self, cell, s, bold=False, italic=False, color=None):
-        cell.text = ""
         p = cell.paragraphs[0]
         p.paragraph_format.space_after = Pt(0)
         self.text(p, s, bold=bold, italic=italic, color=color)
@@ -250,8 +254,7 @@ class Builder:
         if aspect * width_in > MAX_FIG_H_IN:
             width_in = MAX_FIG_H_IN / aspect
         pic = self.para(align="c", keep=True, after=2)
-        pic.add_run().add_picture(str(path), width=Inches(width_in),
-                                  height=Inches(width_in * aspect))
+        self._picture(pic, path, width_in, width_in * aspect)
         cap = self.para(align="c", after=10)
         self.text(cap, f"Figure {n}: ", bold=True)
         self.text(cap, caption or "")
@@ -323,8 +326,7 @@ class Builder:
             if path is not None and path.is_file():
                 p = self.para(align="c", after=6)
                 w_in = 3.6
-                p.add_run().add_picture(str(path), width=Inches(w_in),
-                                        height=Inches(w_in * self._aspect(path)))
+                self._picture(p, path, w_in, w_in * self._aspect(path))
             else:
                 self.need(f"institution logo (file not found: {logo})")
         else:
@@ -497,7 +499,7 @@ class Builder:
                 ])
             self.table(["Corner", "Temp (C)", "VDD (V)", "Divides", "f_out (MHz)",
                         "Delay (ps)", "Power (mW)", "PDP (fJ)", "Note"],
-                       rows, [0.75, 0.55, 0.55, 0.7, 0.75, 0.65, 0.7, 0.6, 1.25],
+                       rows, [0.8, 0.65, 0.55, 0.7, 0.75, 0.65, 0.7, 0.6, 1.1],
                        "PVT analysis results (FAIL rows are kept)")
         self.figure(FIG_NO["pvt_screenshot"], self._slot("pvt_screenshot"),
                     dict(FIG_SLOTS)["pvt_screenshot"])
@@ -545,7 +547,9 @@ class Builder:
             self.para("EXAMPLE DATA - NOT A RESULT", size=HEADING_PT, bold=True,
                       color=RED, align="c", after=12)
         self.title_page()
-        self.doc.add_page_break()
+        brk = self.para(after=0)
+        self._font(brk.add_run(), size=BODY_PT)
+        brk.runs[-1].add_break(WD_BREAK.PAGE)
         self.sec_title_and_paper()
         self.sec_circuit()
         self.sec_theory_tools()

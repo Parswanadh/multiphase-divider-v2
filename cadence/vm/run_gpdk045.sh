@@ -22,7 +22,8 @@ runx() { # tag corner temp vdd fin rl vb cl mult
     printf "%s\tERROR\tno raw produced (spectre exit %s)\n" "$tag" "$rc" >> out/summary.tsv
   fi
   echo "$tag spectre_exit=$rc"
-  [ "$tag" = "tt_27_1.0" ] || rm -f out/$tag.raw
+  [ "$tag" = "tt_27_1.0" ] || [ -n "$KEEP" ] || rm -f out/$tag.raw
+  [ -n "$KEEP" ] && [ -f oppoint.txt ] && cp oppoint.txt out/$tag.oppoint
   rm -rf $tag.ahdlSimDB core*
 }
 case $MODE in
