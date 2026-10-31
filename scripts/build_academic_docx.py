@@ -37,8 +37,9 @@ HEADING_PT = 14
 RED = RGBColor(0xC0, 0x00, 0x00)
 BLACK = RGBColor(0x00, 0x00, 0x00)
 MAX_FIG_W_IN = 6.3
-MAX_FIG_H_IN = 7.1
-TEXT_W_IN = 6.3  # Scaled to full text width inside double page borders
+MAX_FIG_H_IN = 5.2
+TEXT_W_IN = 6.7  # Full text width with 0.9 in page margins (8.5 - 1.8)
+DEFAULT_PLOT_W = 5.8  # Preferred width for plots (5.5 to 6.3 in)
 DOCX_NAME = "23ECE383_System_Design_Report.docx"
 
 # Figure slots in the order they appear in the document. A slot holding a figure (or a
@@ -137,12 +138,13 @@ class Builder:
         return run
 
     def para(self, s="", *, size=BODY_PT, bold=False, italic=False, color=None,
-             align=None, before=0, after=6, keep=False):
+             align=None, before=0, after=6, keep=False, keep_together=False):
         p = self.doc.add_paragraph()
         pf = p.paragraph_format
         pf.space_before = Pt(before)
         pf.space_after = Pt(after)
         pf.keep_with_next = keep
+        pf.keep_together = keep_together
         pf.widow_control = True
         if align == "c":
             p.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -165,6 +167,17 @@ class Builder:
         pf.widow_control = True
         p.alignment = WD_ALIGN_PARAGRAPH.LEFT
         self.text(p, s, HEADING_PT, bold=True, color=BLACK)
+        return p
+
+    def subheading(self, s):
+        p = self.doc.add_paragraph()
+        pf = p.paragraph_format
+        pf.space_before = Pt(8)
+        pf.space_after = Pt(2)
+        pf.keep_with_next = True
+        pf.widow_control = True
+        p.alignment = WD_ALIGN_PARAGRAPH.LEFT
+        self.text(p, s, size=BODY_PT, bold=True, color=BLACK)
         return p
 
     def need(self, what):
@@ -226,7 +239,7 @@ class Builder:
         else:
             self.need(what)
 
-    def body(self, items, what, keep_together=False):
+    def body(self, items, what, keep_together=False, keep_first_together=False):
         if isinstance(items, str):
             items = [items]
         if not items:
@@ -234,7 +247,8 @@ class Builder:
             return
         items = [item for item in items if item]
         for i, item in enumerate(items):
-            self.para(str(item), after=6, keep=keep_together and i < len(items) - 1)
+            self.para(str(item), after=6, keep=keep_together and i < len(items) - 1,
+                      keep_together=keep_first_together and i == 0)
 
     def _field(self, p, instr):
         def run_with(element=None, text=None):
@@ -345,7 +359,8 @@ class Builder:
 
     def figure(self, n, slot, what, *, width_in=None, max_h=None):
         if self._is_note(slot):
-            self.para(str(slot["note"]), after=8)
+            p = self.para(str(slot["note"]), after=8)
+            p.paragraph_format.keep_together = True
             return
         if not slot:
             self.need(f"Figure {n} - {what}")
@@ -362,7 +377,7 @@ class Builder:
         is_cadence = "screens" in norm
 
         if is_cadence:
-            # Cadence screenshot: scaled to full text width (about 6.3 in)
+            # Cadence screenshot: scaled to full text width (about 6.7 in)
             render_path = path
             aspect = self._aspect(render_path)
             w_in = TEXT_W_IN
@@ -380,18 +395,17 @@ class Builder:
             elif width_in is not None:
                 w_in = width_in
                 h_in = w_in * aspect
+                if h_in > MAX_FIG_H_IN:
+                    h_in = MAX_FIG_H_IN
+                    w_in = h_in / aspect
             elif max_h is not None:
                 h_in = max_h
                 w_in = h_in / aspect
-                if w_in > TEXT_W_IN:
-                    w_in = TEXT_W_IN
+                if w_in > DEFAULT_PLOT_W:
+                    w_in = DEFAULT_PLOT_W
                     h_in = w_in * aspect
-            elif aspect >= 1.2:
-                # Tall 4-trace waveforms: clamp height so figure + caption fit on one page
-                h_in = MAX_FIG_H_IN
-                w_in = h_in / aspect
             else:
-                w_in = TEXT_W_IN
+                w_in = DEFAULT_PLOT_W
                 h_in = w_in * aspect
                 if h_in > MAX_FIG_H_IN:
                     h_in = MAX_FIG_H_IN
@@ -438,8 +452,8 @@ class Builder:
         sec.page_width = Inches(8.5)
         sec.page_height = Inches(11)
         for side in ("left_margin", "right_margin", "top_margin", "bottom_margin"):
-            setattr(sec, side, Inches(1))
-        sec.footer_distance = Inches(0.5)
+            setattr(sec, side, Inches(0.9))
+        sec.footer_distance = Inches(0.45)
 
         # Double page border, as in the format file.
         sect_pr = sec._sectPr
@@ -531,8 +545,12 @@ class Builder:
                 tcW.set(qn("w:type"), "dxa")
                 tcW.set(qn("w:w"), str(int(w * 1440)))
 
-        self.para("BATCH NUMBER:", bold=True, before=24, after=8)
-        self.para("FACULTY EXAMINER SIGNATURE WITH EVALUATION DATE", bold=True, before=36, after=0)
+        p_batch = self.para(before=20, after=12)
+        self.text(p_batch, "BATCH NUMBER: ", bold=True)
+        self.text(p_batch, "____________________________________", bold=False)
+
+        self.para("________________________________________________________", before=32, after=4)
+        self.para("FACULTY EXAMINER SIGNATURE WITH EVALUATION DATE", bold=True, before=0, after=0)
 
     # --------------------------------------------------------------- sections
     def sec_title_and_paper(self):
@@ -570,7 +588,7 @@ class Builder:
         self.heading("CIRCUIT DIAGRAM:")
         # Scale to fit cleanly below Details of the Paper on Page 2
         self.figure(self.fig_no["circuit_diagram"], self._slot("circuit_diagram"),
-                    dict(FIG_SLOTS)["circuit_diagram"], max_h=3.6)
+                    dict(FIG_SLOTS)["circuit_diagram"], width_in=DEFAULT_PLOT_W, max_h=3.6)
 
     def sec_theory_tools(self):
         self.heading("THEORY AND WORKING PRINCIPLE:")
@@ -596,7 +614,7 @@ class Builder:
             for dev in devices
         ]
         self.table(["Device", "W", "L", "Multiplier", "Role"], rows,
-                   [1.1, 1.1, 1.1, 1.0, 2.0], caption,
+                   [1.1, 1.1, 1.1, 1.1, 2.3], caption,
                    alignments=["l", "c", "c", "c", "l"])
 
     def sec_implementation(self):
@@ -610,7 +628,7 @@ class Builder:
 
         self.heading("SCREENSHOT OF THE OUTPUT WAVEFORM OBTAINED FROM THE SIMULATOR (DC AND TRANSIENT):")
         self.figure(self.fig_no["waveform_without_sizing"], self._slot("waveform_without_sizing"),
-                    dict(FIG_SLOTS)["waveform_without_sizing"])
+                    dict(FIG_SLOTS)["waveform_without_sizing"], width_in=DEFAULT_PLOT_W, max_h=4.6)
         if self.d.get("schematic_sim"):
             self.sec_schematic_sim(self.d["schematic_sim"])
 
@@ -619,22 +637,23 @@ class Builder:
 
         Its figure takes the number after the last extra figure, so no existing figure number moves.
         """
-        self.heading(sub.get("heading") or "Simulation from the Virtuoso schematic")
+        self.subheading(sub.get("heading") or "Simulation from the Virtuoso schematic")
         self.body(sub.get("paragraphs"), "schematic simulation text (schematic_sim.paragraphs)")
         if sub.get("figure_ref"):
             self.body([sub["figure_ref"]], "schematic simulation figure reference")
         if sub.get("figure"):
             number = self.extra_start + len(self._slot_list("extra_figures"))
-            self.figure(number, sub["figure"], "schematic simulation figure (schematic_sim.figure)")
+            self.figure(number, sub["figure"], "schematic simulation figure (schematic_sim.figure)",
+                        width_in=DEFAULT_PLOT_W, max_h=4.5)
 
     def sec_sizing(self):
         self.heading("SCREENSHOT OF THE CIRCUIT BASED ON SIZING CONCEPT:")
+        self.figure(self.fig_no["sized_circuit_screenshot"], self._slot("sized_circuit_screenshot"),
+                    dict(FIG_SLOTS)["sized_circuit_screenshot"])
         design = self._design("with_sizing")
         self.body(design.get("description"),
                   "description of the circuit with sizing (designs.with_sizing.description)")
         self._device_table("with_sizing", "Device list, circuit based on the sizing concept")
-        self.figure(self.fig_no["sized_circuit_screenshot"], self._slot("sized_circuit_screenshot"),
-                    dict(FIG_SLOTS)["sized_circuit_screenshot"])
 
         self.heading("SCREENSHOT OF THE OUTPUT WAVEFORM OBTAINED FROM THE SIMULATOR FOR THE CIRCUIT "
                      "WITH SIZING CONCEPT (DC AND TRANSIENT):")
@@ -665,10 +684,10 @@ class Builder:
                 left, right = metric_text(m_wo, key), metric_text(m_w, key)
             rows.append([label, left, right, proofs.get(key or "sat", default_proof)])
         self.table(["Parameter", "Value without Sizing", "Value with Sizing", "Proof (figure)"],
-                   rows, [1.9, 1.5, 1.5, 1.4],
+                   rows, [2.1, 1.5, 1.5, 1.6],
                    "Performance values with and without the sizing concept, "
                    "with the proof figures for each row",
-                   alignments=["l", "c", "c", "c"])
+                   alignments=["l", "c", "c", "c"], keep_together=False)
         for note in self.d.get("values_notes") or []:
             self.para(str(note), size=BODY_PT, after=4)
 
@@ -704,10 +723,10 @@ class Builder:
                 rows.append(row_cells)
 
         header = ["Corner", "Temp (°C)", "0.9 V", "1.0 V", "1.1 V"]
-        widths = [1.3, 1.2, 1.25, 1.25, 1.3]
+        widths = [1.34, 1.34, 1.34, 1.34, 1.34]
         alignments = ["c", "c", "c", "c", "c"]
         caption = f"PVT summary for {title_suffix} ({pass_cnt} of {pass_cnt + fail_cnt} corners pass)"
-        self.table(header, rows, widths, caption, alignments)
+        self.table(header, rows, widths, caption, alignments, keep_together=False)
 
     def sec_pvt_layout(self):
         self.heading("SCREENSHOT OF THE PVT ANALYSIS:")
@@ -719,13 +738,14 @@ class Builder:
             self._build_pvt_summary_table("B6", "design B at 6.0 GHz")
 
         self.figure(self.fig_no["pvt_screenshot"], self._slot("pvt_screenshot"),
-                    dict(FIG_SLOTS)["pvt_screenshot"])
+                    dict(FIG_SLOTS)["pvt_screenshot"], width_in=DEFAULT_PLOT_W, max_h=2.4)
 
         self.heading("SCREENSHOT OF THE LAYOUT:")
         self.figure(self.fig_no["layout_screenshot"], self._slot("layout_screenshot"),
                     dict(FIG_SLOTS)["layout_screenshot"])
 
-        self.heading("SCREENSHOT OF THE OUTPUT WAVEFORM OBTAINED FROM THE SIMULATOR FOR THE LAYOUT:")
+        h_layout_wf = self.heading("SCREENSHOT OF THE OUTPUT WAVEFORM OBTAINED FROM THE SIMULATOR FOR THE LAYOUT:")
+        h_layout_wf.paragraph_format.keep_with_next = True
         self.figure(self.fig_no.get("layout_waveform"), self._slot("layout_waveform"),
                     dict(FIG_SLOTS)["layout_waveform"])
 
@@ -734,21 +754,30 @@ class Builder:
         self.heading("ANY OTHER RELEVANT INFORMATION:")
         self.body(d.get("other_info"), "other relevant information text (other_info)")
         extras = self._slot_list("extra_figures")
-        extra_heights = {
-            0: 3.4,  # Fig 8: ring architecture
-            1: 3.4,  # Fig 9: paper sizing failure
-            3: 3.4,  # Fig 11: phase steps
-            4: 3.1,  # Fig 12: tail saturation U8k
-            5: 3.1,  # Fig 13: tail saturation D 1.4G
-            6: 3.1,  # Fig 14: tail saturation B 6G
-            7: 3.4,  # Fig 15: supply current
+        extra_dims = {
+            0: (DEFAULT_PLOT_W, 3.4),  # Fig 8: ring architecture
+            1: (DEFAULT_PLOT_W, 3.0),  # Fig 9: paper sizing failure
+            2: (DEFAULT_PLOT_W, 5.0),  # Fig 10: design B transient
+            3: (DEFAULT_PLOT_W, 3.1),  # Fig 11: phase steps
+            4: (DEFAULT_PLOT_W, 2.2),  # Fig 12: tail saturation U8k
+            5: (DEFAULT_PLOT_W, 2.2),  # Fig 13: tail saturation D 1.4G
+            6: (DEFAULT_PLOT_W, 2.2),  # Fig 14: tail saturation B 6G
+            7: (DEFAULT_PLOT_W, 3.4),  # Fig 15: supply current
+            8: (6.0, 3.2),             # Fig 16: frequency sweeps
+            9: (6.0, 3.2),             # Fig 17: pvt delay/power D 1.4G
+            10: (6.0, 3.2),            # Fig 18: pvt heatmap B 6G
+            11: (6.0, 2.8),            # Fig 19: pvt delay/power B 6G
+            12: (TEXT_W_IN, None),     # Fig 20: layout dlatch (Cadence screenshot)
+            13: (DEFAULT_PLOT_W, 3.5),  # Fig 21: assura DRC summary
+            14: (DEFAULT_PLOT_W, 4.8),  # Fig 22: design D transient plot
         }
         for i, item in enumerate(extras):
-            target_h = extra_heights.get(i)
-            self.figure(self.extra_start + i, item, f"additional figure {i + 1}", max_h=target_h)
+            w_target, h_target = extra_dims.get(i, (DEFAULT_PLOT_W, None))
+            self.figure(self.extra_start + i, item, f"additional figure {i + 1}",
+                        width_in=w_target, max_h=h_target)
 
         self.heading("CONCLUSION:")
-        self.body(d.get("conclusion"), "conclusion text (conclusion)")
+        self.body(d.get("conclusion"), "conclusion text (conclusion)", keep_first_together=True)
 
         self.heading("PROBLEMS FACED DURING THE IMPLEMENTATION:")
         self.body(d.get("problems_faced"), "problems faced text (problems_faced)")
@@ -760,7 +789,7 @@ class Builder:
         self.body(d.get("other_comment"), "other comment text (other_comment)")
 
         self.heading("REFERENCES:")
-        self.body(d.get("references"), "references (references)", keep_together=True)
+        self.body(d.get("references"), "references (references)", keep_together=False)
 
     def sec_appendix(self):
         pvt_rows = self.d.get("pvt_rows") or []
@@ -811,7 +840,7 @@ class Builder:
             ])
 
         header = ["Corner", "Temp (°C)", "VDD (V)", "Divides", "f_out (MHz)", "Delay (ps)", "Power (mW)", "PDP (fJ)", "Note"]
-        widths = [0.85, 0.85, 0.85, 0.85, 1.05, 0.95, 0.95, 0.95, 2.1]
+        widths = [0.65, 0.75, 0.70, 0.75, 0.90, 0.80, 0.80, 0.75, 3.30]
         alignments = ["c", "c", "c", "c", "c", "c", "c", "c", "l"]
         self.table(header, rows, widths,
                    "Complete PVT analysis results for design D at 1.4 GHz (45 corners)",

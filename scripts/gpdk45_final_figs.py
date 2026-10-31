@@ -100,9 +100,12 @@ def setup_style():
         "font.family": "serif",
         "font.serif": [fam, "Liberation Serif", "DejaVu Serif"],
         "mathtext.fontset": "stix",
-        "font.size": 9,
-        "axes.titlesize": 9,
-        "axes.labelsize": 9,
+        "font.size": 10,
+        "axes.titlesize": 11,
+        "axes.labelsize": 10.5,
+        "xtick.labelsize": 10,
+        "ytick.labelsize": 10,
+        "legend.fontsize": 9.5,
         "savefig.facecolor": "white",
         "figure.facecolor": "white",
         "axes.facecolor": "white",
@@ -340,7 +343,7 @@ def measure_design(name, finals):
 
 # ----------------------------------------------------------------- figures
 def save(fig, path):
-    fig.savefig(path, dpi=300, facecolor="white")
+    fig.savefig(path, dpi=300, bbox_inches="tight", pad_inches=0.15, facecolor="white")
     plt.close(fig)
     print(f"wrote {path}")
 
@@ -354,7 +357,7 @@ def plot_tran_divider(name, m, ctx, outdir):
         color = BLUE if not p.endswith("b") else GREEN
         rows.append((p.upper(), p, color, ctx["phases"][p]))
     fig, axes = plt.subplots(len(rows), 1, sharex=True, figsize=(7.2, 10.8))
-    fig.subplots_adjust(left=0.14, right=0.86, top=0.925, bottom=0.06, hspace=0.12)
+    fig.subplots_adjust(left=0.15, right=0.84, top=0.925, bottom=0.06, hspace=0.14)
     # ideal 45 deg grid: edges at Q1 rising + k * T/8
     q1r = ctx["q1r"]
     ref = q1r[np.searchsorted(q1r, t0)]
@@ -368,24 +371,24 @@ def plot_tran_divider(name, m, ctx, outdir):
         pad = 0.12 * (hi - lo)
         ax.set_ylim(lo - pad, hi + pad)
         ax.yaxis.set_major_locator(MaxNLocator(nbins=3))
-        ax.set_ylabel(f"{label}\n(V)", rotation=0, ha="right", va="center")
-        ax.tick_params(labelsize=8)
+        ax.set_ylabel(f"{label}\n(V)", rotation=0, ha="right", va="center", fontsize=10.5)
+        ax.tick_params(labelsize=10)
         for g in grid:
             ax.axvline(g, color="#b5b5b5", lw=0.6, ls="--", zorder=0)
         if ph is not None:
-            ax.text(1.015, 0.5, f"phase\n{ph:.2f}°", transform=ax.transAxes,
-                    ha="left", va="center", fontsize=8)
+            ax.text(1.02, 0.5, f"phase\n{ph:.2f}°", transform=ax.transAxes,
+                    ha="left", va="center", fontsize=10)
         for s in ["top", "right"]:
             ax.spines[s].set_visible(False)
-    axes[0].text(1.015, 0.5, f"f_in\n{m['tsv']['f_in_GHz']:.2f}\nGHz", transform=axes[0].transAxes,
-                 ha="left", va="center", fontsize=8)
-    axes[-1].set_xlabel("time (ns)")
+    axes[0].text(1.02, 0.5, f"f_in\n{m['tsv']['f_in_GHz']:.2f}\nGHz", transform=axes[0].transAxes,
+                 ha="left", va="center", fontsize=10)
+    axes[-1].set_xlabel("time (ns)", fontsize=10.5)
     axes[-1].set_xlim(t0 * 1e9, t1 * 1e9)
     fig.suptitle(
         f"Transient of the gpdk045 8-phase divider, {desc(name, m['tsv'])}, VDD = {VDD:.1f} V.\n"
         f"Output {m['tsv']['f_out_MHz']:.1f} MHz; three output periods after settle "
         f"(start {t0*1e9:.2f} ns). Traces sorted by measured phase; dashed lines: ideal 45° grid.",
-        fontsize=9, y=0.985)
+        fontsize=10.5, y=0.985)
     save(fig, os.path.join(outdir, f"fig_tran_{name}.png"))
 
 
@@ -409,20 +412,20 @@ def plot_tran_unsized(m, ctx, outdir):
             pad = 0.25 * (hi - lo)
             ax.set_ylim(lo - pad, hi + pad)
             ax.text(0.99, 0.92, f"steady swing {(hi - lo) * 1e3:.1f} mV",
-                    transform=ax.transAxes, ha="right", va="top", fontsize=8,
+                    transform=ax.transAxes, ha="right", va="top", fontsize=9.5,
                     bbox=dict(facecolor="white", edgecolor="none", alpha=0.85, pad=1.5))
         ax.yaxis.set_major_locator(MaxNLocator(nbins=3))
-        ax.set_ylabel(f"{label}\n(V)", rotation=0, ha="right", va="center")
-        ax.tick_params(labelsize=8)
+        ax.set_ylabel(f"{label}\n(V)", rotation=0, ha="right", va="center", fontsize=10.5)
+        ax.tick_params(labelsize=10)
         for s in ["top", "right"]:
             ax.spines[s].set_visible(False)
-    axes[-1].set_xlabel("time (ns)")
+    axes[-1].set_xlabel("time (ns)", fontsize=10.5)
     axes[-1].set_xlim(t0 * 1e9, t1 * 1e9)
     fig.suptitle(
         f"Unsized divider, {desc('unsized', m['tsv'])}, VDD = {VDD:.1f} V: the outputs do not divide.\n"
         f"Q1 follows the clock at {m['tsv']['f_out_MHz']:.1f} MHz with a steady swing of "
         f"{swing_mv:.1f} mV (Q1 zoomed; {PLOT_PERIODS} output periods shown).",
-        fontsize=9, y=0.985)
+        fontsize=10.5, y=0.985)
     save(fig, os.path.join(outdir, "fig_tran_unsized.png"))
 
 
@@ -445,24 +448,25 @@ def plot_phase_steps(all_m, outdir):
         elif [f"{order[k].upper()}→{order[(k + 1) % 8].upper()}" for k in range(8)] != labels:
             raise RuntimeError(f"{name}: phase order differs from the first design")
         xs = x + (j - (n_des - 1) / 2) * width
-        bars = ax.bar(xs, steps, width, color=colors[name], label=(
+        bars = ax.bar(xs, steps, width, color=colors[name], zorder=2, label=(
             f"{name} ({tsv['f_in_GHz']:.1f} GHz in, {tsv['f_out_MHz']:.0f} MHz out), "
             f"max error {tsv['max_phase_step_err_deg']:.2f}°"))
         for b, v in zip(bars, steps):
             ax.text(b.get_x() + b.get_width() / 2, v + 1.2, f"{v:.1f}", ha="center",
-                    va="bottom", fontsize=6)
-    ax.axhline(45, color=ORANGE, lw=1.4, ls="--", label="ideal 45°")
+                    va="bottom", fontsize=8.5, zorder=3)
+    ax.axhline(45, color="#666666", lw=1.2, ls="--", label="ideal 45°", zorder=1)
     ax.set_xticks(x)
-    ax.set_xticklabels(labels, fontsize=8)
-    ax.set_xlabel("adjacent output pair (measured phase order)")
-    ax.set_ylabel("phase step (deg)")
+    ax.set_xticklabels(labels, fontsize=10)
+    ax.tick_params(axis="y", labelsize=10)
+    ax.set_xlabel("adjacent output pair (measured phase order)", fontsize=10.5)
+    ax.set_ylabel("phase step (deg)", fontsize=10.5)
     ax.set_ylim(0, 100)
-    ax.legend(fontsize=8, frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.30),
+    ax.legend(fontsize=9.5, frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.22),
               ncol=1)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
     fig.suptitle("Adjacent phase steps of the 8 divider outputs, from the measured "
-                 "phases (tsv), vs the ideal 45° step", fontsize=9, y=0.985)
+                 "phases (tsv), vs the ideal 45° step", fontsize=10.5, y=0.985)
     save(fig, os.path.join(outdir, "fig_phase_steps.png"))
 
 
@@ -491,15 +495,16 @@ def plot_tail(name, ctx, m, vdsat, outdir):
     else:
         title_v = "Vdsat not provided"
     ax.set_xlim(t0 * 1e9, t1 * 1e9)
-    ax.set_xlabel("time (ns)")
-    ax.set_ylabel("V(XD1.tail) (V)")
-    ax.legend(fontsize=8, frameon=False, loc="center right")
+    ax.tick_params(labelsize=10)
+    ax.set_xlabel("time (ns)", fontsize=10.5)
+    ax.set_ylabel("V(XD1.tail) (V)", fontsize=10.5)
+    ax.legend(fontsize=9.5, frameon=False, loc="center right")
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
     fig.suptitle(
         f"Tail node V(XD1.tail) of {desc(name, m['tsv'])},\n"
         f"three output periods after settle; {title_v}.",
-        fontsize=9, y=0.975)
+        fontsize=10.5, y=0.975)
     save(fig, os.path.join(outdir, f"fig_tail_saturation_{name}.png"))
 
 
@@ -520,18 +525,19 @@ def plot_supply(all_m, all_ctx, outdir):
         ax.text(0.99, 0.55,
                 f"mean {mean2*1e3:.4f} mA (tsv i_avg {m['tsv']['i_avg_mA']:.4f} mA), "
                 f"peak {m['supply_peak_ma_steady']:.3f} mA",
-                transform=ax.transAxes, ha="right", va="center", fontsize=8,
+                transform=ax.transAxes, ha="right", va="center", fontsize=9.5,
                 bbox=dict(facecolor="white", edgecolor="none", alpha=0.85, pad=1.5))
-        ax.set_ylabel(f"{name}\nI(VDD) (A)")
+        ax.set_ylabel(f"{name}\nI(VDD) (A)", fontsize=10.5)
+        ax.tick_params(labelsize=10)
         ax.yaxis.set_major_locator(MaxNLocator(nbins=4))
         ax.ticklabel_format(axis="y", style="sci", scilimits=(-3, -3))
         ax.set_xlim(0, CURRENT_PERIODS * tper * 1e9)
-        ax.set_xlabel(f"time after window start (ns), {CURRENT_PERIODS} output periods")
+        ax.set_xlabel(f"time after window start (ns), {CURRENT_PERIODS} output periods", fontsize=10.5)
         ax.spines["top"].set_visible(False)
         ax.spines["right"].set_visible(False)
     fig.suptitle("Supply current drawn from VDD (positive = drawn) after settle, "
                  f"{', '.join(DIVIDERS)}, {CURRENT_PERIODS} output periods each; dashed: mean over window.",
-                 fontsize=9, y=0.975)
+                 fontsize=10.5, y=0.975)
     save(fig, os.path.join(outdir, "fig_supply_current.png"))
 
 

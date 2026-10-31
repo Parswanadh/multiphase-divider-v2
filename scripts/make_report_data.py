@@ -727,7 +727,7 @@ def build_data():
     # ---------------------------------------------------------- figure numbers
     viva_file = SCREEN_DIR / "viva_tran_D_1p4GHz_full.png"
     extra_keys = ["ring", "tran_paper", "tran_b", "phase", "tail_8", "tail_d", "tail_b", "supply",
-                  "fsweep", "pvt_dp_d", "pvt_hm_b6", "pvt_dp_b6", "ciw", "layout_dlatch", "drc"]
+                  "fsweep", "pvt_dp_d", "pvt_hm_b6", "pvt_dp_b6", "layout_dlatch", "drc"]
     if viva_file.is_file():
         extra_keys.append("tran_d_plot")
     extra_no = {key: EXTRA_FIG_START + i for i, key in enumerate(extra_keys)}
@@ -789,8 +789,6 @@ def build_data():
                               f"points pass).")),
         ("pvt_dp_b6", plotted("fig_pvt_delay_power_B_6g",
                               f"Delay and power across the PVT matrix for design B at {f_b:g} GHz (crosses mark failing corners).")),
-        ("ciw", screen("virtuoso_ciw_gpdk045_loaded",
-                       "Virtuoso Command Interpreter Window (CIW) log confirming gpdk045 library initialization.")),
         ("layout_dlatch", screen("layout_dlatch_cadence",
                                  f"Virtuoso layout editor showing the DLATCH cell: {lay['n_mos']} unit nMOS devices (m = {m_8}) and "
                                  f"{lay['n_res']} poly resistors (placement only, unrouted).")),

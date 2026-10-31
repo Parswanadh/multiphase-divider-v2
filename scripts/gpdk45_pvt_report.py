@@ -61,8 +61,13 @@ REASON_MAX = 60
 plt.rcParams.update({
     "font.family": "serif",
     "font.serif": ["Liberation Serif", "Times New Roman", "DejaVu Serif"],
-    "font.size": 9,
-    "axes.titlesize": 10,
+    "mathtext.fontset": "stix",
+    "font.size": 10,
+    "axes.titlesize": 11,
+    "axes.labelsize": 10.5,
+    "xtick.labelsize": 10,
+    "ytick.labelsize": 10,
+    "legend.fontsize": 9.5,
     "savefig.dpi": 300,
 })
 
@@ -246,7 +251,7 @@ def fig_heatmap(recs, label, fin, outdir):
         for j, (t, v) in enumerate(cells):
             grid[i, j] = 1.0 if recs[(c, t, v)]["pass"] else 0.0
     n_pass = int(grid.sum())
-    fig, ax = plt.subplots(figsize=(7.6, 3.4))
+    fig, ax = plt.subplots(figsize=(8.0, 3.8))
     ax.imshow(grid, cmap=ListedColormap([FAIL_CELL, PASS_CELL]), vmin=0, vmax=1, aspect="auto")
     for i, c in enumerate(CORNERS):
         for j, (t, v) in enumerate(cells):
@@ -255,30 +260,30 @@ def fig_heatmap(recs, label, fin, outdir):
                 txt = f"{r['delay_ps']:.1f} ps"
             else:
                 txt = "FAIL"
-            ax.text(j, i, txt, ha="center", va="center", fontsize=8,
+            ax.text(j, i, txt, ha="center", va="center", fontsize=9.5,
                     color="black" if r["pass"] else FAIL_COLOR,
                     fontweight="normal" if r["pass"] else "bold")
     for j in (2.5, 5.5):
         ax.axvline(j, color="white", lw=2.5)
     ax.set_xticks(range(len(cells)))
-    ax.set_xticklabels([f"{t} °C\n{v:.1f} V" for t, v in cells], fontsize=8)
+    ax.set_xticklabels([f"{t} °C\n{v:.1f} V" for t, v in cells], fontsize=10)
     ax.set_yticks(range(len(CORNERS)))
-    ax.set_yticklabels([c.upper() for c in CORNERS], fontsize=8)
-    ax.set_ylabel("Process corner")
-    ax.set_xlabel("Temperature and supply voltage")
-    ax.set_title(f"PVT pass/fail map, design {label}, f_in = {fin:g} GHz ({n_pass}/{len(GRID)} pass)")
-    fig.text(0.5, 0.01,
+    ax.set_yticklabels([c.upper() for c in CORNERS], fontsize=10)
+    ax.set_ylabel("Process corner", fontsize=10.5)
+    ax.set_xlabel("Temperature and supply voltage", fontsize=10.5)
+    ax.set_title(f"PVT pass/fail map, design {label}, f_in = {fin:g} GHz ({n_pass}/{len(GRID)} pass)", fontsize=11)
+    fig.text(0.5, 0.015,
              "Green: pass, cell text is propagation delay. Red: FAIL (wrong divide ratio or output not toggling).",
-             ha="center", fontsize=7, color="0.25")
-    fig.tight_layout(rect=(0, 0.05, 1, 1))
+             ha="center", fontsize=9.5, color="0.25")
+    fig.tight_layout(rect=(0, 0.06, 1, 1))
     path = os.path.join(outdir, f"fig_pvt_heatmap_{label}.png")
-    fig.savefig(path, dpi=300)
+    fig.savefig(path, dpi=300, bbox_inches="tight", pad_inches=0.15)
     plt.close(fig)
     return path
 
 
 def fig_delay_power(recs, label, fin, outdir):
-    fig, (axd, axp) = plt.subplots(1, 2, figsize=(8.4, 4.3), sharex=True)
+    fig, (axd, axp) = plt.subplots(1, 2, figsize=(8.8, 4.6), sharex=True)
     panels = [(axd, "delay_ps", "Propagation delay (ps)", "Delay"),
               (axp, "power_mW", "Power (mW)", "Power")]
     for ax, key, ylabel, title in panels:
@@ -309,28 +314,29 @@ def fig_delay_power(recs, label, fin, outdir):
                 max_k = max(max_k, k)
                 ax.scatter([v], [y], marker="x", s=30, color=FAIL_COLOR, linewidths=1.4, zorder=5)
                 ax.annotate(f"{c}/{t}", (v, y), xytext=(4, 0), textcoords="offset points",
-                            fontsize=6, va="center", color=FAIL_COLOR)
+                            fontsize=8, va="center", color=FAIL_COLOR)
         bottom = band_top - (max_k + 1) * step - 0.05 * span
         ax.axhline(band_top + 0.45 * step, color="0.7", lw=0.6)
         ax.set_ylim(bottom, hi + 0.12 * span)
         ax.set_xlim(0.85, 1.15)
         ax.set_xticks(VDDS)
-        ax.set_xlabel("VDD (V)")
-        ax.set_ylabel(ylabel)
-        ax.set_title(title)
+        ax.tick_params(labelsize=10)
+        ax.set_xlabel("VDD (V)", fontsize=10.5)
+        ax.set_ylabel(ylabel, fontsize=10.5)
+        ax.set_title(title, fontsize=11)
         ax.grid(True, color="0.9", lw=0.6)
         ax.set_axisbelow(True)
 
     handles = [Line2D([], [], color=CORNER_COLOR[c], lw=1.6, label=c.upper()) for c in CORNERS]
     handles += [Line2D([], [], color="0.2", ls=TEMP_LS[t], lw=1.4, label=f"{t} °C") for t in TEMPS]
     handles += [Line2D([], [], color=FAIL_COLOR, marker="x", ls="", ms=6, mew=1.4, label="FAIL")]
-    fig.legend(handles=handles, loc="lower center", ncol=9, frameon=False, fontsize=7.5,
+    fig.legend(handles=handles, loc="lower center", ncol=9, frameon=False, fontsize=9.5,
                bbox_to_anchor=(0.5, 0.0))
     fig.suptitle(f"Delay and power vs. supply voltage, design {label}, f_in = {fin:g} GHz "
-                 f"(passing points; FAIL marked below the data)", fontsize=10)
+                 f"(passing points; FAIL marked below the data)", fontsize=11)
     fig.tight_layout(rect=(0, 0.08, 1, 0.94))
     path = os.path.join(outdir, f"fig_pvt_delay_power_{label}.png")
-    fig.savefig(path, dpi=300)
+    fig.savefig(path, dpi=300, bbox_inches="tight", pad_inches=0.15)
     plt.close(fig)
     return path
 

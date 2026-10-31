@@ -24,7 +24,7 @@ JOBS = [("pvt_D.tsv", "D_1p4"), ("pvt_B.tsv", "B_1p4"), ("pvt_E.tsv", "E_1p4"), 
 
 
 def fig_delay_power_clamped(recs, label, fin, outdir):
-    fig, (axd, axp) = plt.subplots(1, 2, figsize=(8.4, 4.3), sharex=True)
+    fig, (axd, axp) = plt.subplots(1, 2, figsize=(8.8, 4.6), sharex=True)
     panels = [(axd, "delay_ps", "Propagation delay (ps)", "Delay"),
               (axp, "power_mW", "Power (mW)", "Power")]
     for ax, key, ylabel, title in panels:
@@ -44,26 +44,27 @@ def fig_delay_power_clamped(recs, label, fin, outdir):
                 ax.scatter([v], [0.035 * top], marker="x", s=30, color=pr.FAIL_COLOR,
                            linewidths=1.4, zorder=5, clip_on=False)
                 ax.annotate(f"{n_fail} FAIL", (v, 0.035 * top), xytext=(5, 0),
-                            textcoords="offset points", fontsize=6.5, va="center",
+                            textcoords="offset points", fontsize=8.5, va="center",
                             color=pr.FAIL_COLOR)
         ax.set_xlim(0.85, 1.15)
         ax.set_xticks(pr.VDDS)
-        ax.set_xlabel("VDD (V)")
-        ax.set_ylabel(ylabel)
-        ax.set_title(title)
+        ax.tick_params(labelsize=10)
+        ax.set_xlabel("VDD (V)", fontsize=10.5)
+        ax.set_ylabel(ylabel, fontsize=10.5)
+        ax.set_title(title, fontsize=11)
         ax.grid(True, color="0.9", lw=0.6)
         ax.set_axisbelow(True)
     handles = [Line2D([], [], color=pr.CORNER_COLOR[c], lw=1.6, label=c.upper()) for c in pr.CORNERS]
     handles += [Line2D([], [], color="0.2", ls=pr.TEMP_LS[t], lw=1.4, label=f"{t} °C") for t in pr.TEMPS]
     handles += [Line2D([], [], color=pr.FAIL_COLOR, marker="x", ls="", ms=6, mew=1.4,
                        label="count of failing points")]
-    fig.legend(handles=handles, loc="lower center", ncol=9, frameon=False, fontsize=7.5,
+    fig.legend(handles=handles, loc="lower center", ncol=9, frameon=False, fontsize=9.5,
                bbox_to_anchor=(0.5, 0.0))
     fig.suptitle(f"Delay and power vs. supply voltage, design {label}, f_in = {fin:g} GHz "
-                 f"(lines: passing points; red cross: failing points at that supply)", fontsize=10)
+                 f"(lines: passing points; red cross: failing points at that supply)", fontsize=11)
     fig.tight_layout(rect=(0, 0.08, 1, 0.94))
     path = os.path.join(outdir, f"fig_pvt_delay_power_{label}.png")
-    fig.savefig(path, dpi=300)
+    fig.savefig(path, dpi=300, bbox_inches="tight", pad_inches=0.15)
     plt.close(fig)
     return path
 

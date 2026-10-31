@@ -96,10 +96,6 @@
         "caption": "Delay and power across the PVT matrix for design B at 6 GHz (crosses mark failing corners)."
       },
       {
-        "file": "screens/virtuoso_ciw_gpdk045_loaded.png",
-        "caption": "Virtuoso Command Interpreter Window (CIW) log confirming gpdk045 library initialization."
-      },
-      {
         "file": "screens/layout_dlatch_full.png",
         "caption": "Virtuoso layout editor showing the DLATCH cell: 7 unit nMOS devices (m = 1) and 2 poly resistors (placement only, unrouted)."
       },
@@ -1260,8 +1256,8 @@
     "Circuit schematics for the DLATCH and divider core are illustrated in Figure 1 and Figure 2 (ring architecture in Figure 8)."
   ],
   "other_info": [
-    "Layout. The DLATCH cell contains 7 unit nMOS pcells (0.595 um wide) and 2 poly resistors (segment width 0.8 um, segment length 7.855 um, 200 ohm/sq, target resistance 2000 ohm). Transistors M1-M6 use 2 fingers of 120 nm (240 nm, L = 45 nm); M7 uses 4 fingers of 120 nm (480 nm, L = 90 nm) for m = 1. Design D requires 4x width (m = 4) and 3 kOhm load (baseline uses 8 kOhm). DLATCH boundary is 4.875 x 20.28 um. Cell divider_core places XD1 R0, XD2 MY, XD3 MX, XD4 R180 with a 1 um gap (clock-star length 98.62 um each). An automatic routing run with Cadence Chip Assembly Router completed 136 of 137 connections but produced 134 DRC errors and mismatches in LVS, so the placement layout is reported. Cell layouts are shown in Figure 7 (divider_core) and Figure 21 (DLATCH).",
-    "DRC verification. Assura DRC on DLATCH reports 21 errors across 3 rules (Figure 22). Rules 220 (1) and 221 (6) give 7 substrate-stamp errors from unrouted taps at device pitch 0.755 um. Rule 595 (14) gives 14 Metal1 minimum-area errors (threshold 0.02 um^2); 4 markers measure 0.06 x 0.12 um (0.0072 um^2) across x = 0.96-1.155 um, y = 1-2.02 um. Contact pins (0.2 x 0.15 um = 0.03 um^2) meet the minimum area. The unrouted layout is not DRC clean.",
+    "Layout. The DLATCH cell contains 7 unit nMOS pcells (0.595 um wide) and 2 poly resistors (segment width 0.8 um, segment length 7.855 um, 200 ohm/sq, target resistance 2000 ohm). Transistors M1-M6 use 2 fingers of 120 nm (240 nm, L = 45 nm); M7 uses 4 fingers of 120 nm (480 nm, L = 90 nm) for m = 1. Design D requires 4x width (m = 4) and 3 kOhm load (baseline uses 8 kOhm). DLATCH boundary is 4.875 x 20.28 um. Cell divider_core places XD1 R0, XD2 MY, XD3 MX, XD4 R180 with a 1 um gap (clock-star length 98.62 um each). An automatic routing run with Cadence Chip Assembly Router completed 136 of 137 connections but produced 134 DRC errors and mismatches in LVS, so the placement layout is reported. Cell layouts are shown in Figure 7 (divider_core) and Figure 20 (DLATCH).",
+    "DRC verification. Assura DRC on DLATCH reports 21 errors across 3 rules (Figure 21). Rules 220 (1) and 221 (6) give 7 substrate-stamp errors from unrouted taps at device pitch 0.755 um. Rule 595 (14) gives 14 Metal1 minimum-area errors (threshold 0.02 um^2); 4 markers measure 0.06 x 0.12 um (0.0072 um^2) across x = 0.96-1.155 um, y = 1-2.02 um. Contact pins (0.2 x 0.15 um = 0.03 um^2) meet the minimum area. The unrouted layout is not DRC clean.",
     "Schematic connectivity. Pin-by-pin comparison of the 4 DLATCH instances (XD1-XD4) against the netlist confirmed full consistency with 0 mismatches. Schematic checks: 0 errors and 23 warnings for DLATCH; 0 errors and 11 warnings for divider_core; 0 errors and 19 warnings for tb_divider. The warnings are floating-net notices at net-label stubs; the netlist is unchanged by the wiring.",
     "Design B operating point. At 6 GHz (m = 4, R1 = R2 = 2 kOhm), the divider achieves 3000.0 MHz output, 0.4929 mW power, 27.94 ps delay, 13.768 fJ PDP, and 3.78 deg maximum phase error (48.78 and 41.22 deg steps). Output Q1 swings 0.135 V (0.818 V to 0.953 V), above the 0.1 V limit. Peak tail voltage reaches 66.2 mV, below Vdsat = 357.8 mV (triode, Figure 14). PVT results appear in Table 5.",
     "DC operating points. At t = 0 (clocks low, switches off), tail current is negligible (Vgs = 1 V). For paper sizing, M7 is in triode (Vds = 56.3 nV, Ids = 35.6 pA). For design D, M7 is in triode (Vds = 54.4 nV, Ids = 137.4 pA). For design B (m = 4, vb = 1 V), M7 is in triode (Vds = 54.4 nV, Ids = 137.4 pA).",

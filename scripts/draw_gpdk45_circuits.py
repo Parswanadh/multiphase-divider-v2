@@ -28,6 +28,12 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 from matplotlib.patches import Patch, Rectangle  # noqa: E402
 
+matplotlib.rcParams.update({
+    "font.family": "serif",
+    "font.serif": ["Liberation Serif", "DejaVu Serif", "Times New Roman"],
+    "mathtext.fontset": "stix",
+})
+
 REPO = Path(__file__).resolve().parent.parent
 NETLIST = REPO / "spectre" / "divider_gpdk45.scs"
 READBACK = REPO / "results" / "gpdk045" / "virtuoso_dlatch_params_designD.txt"
@@ -233,8 +239,8 @@ def fig_latch(net, cfg, path):
         L([xc, xc + 0.25, xc + 0.25], [yc + 0.36, yc + 0.36, drain_end])
         L([xc, xc + 0.25, xc + 0.25], [yc - 0.36, yc - 0.36, yc - 0.8])
         T(xc - 0.7, yc - 0.45, f"{name} nMOS  m = {cfg['m']}\nW = {length(m['W'])}  L = {length(m['L'])}",
-          ha="right", va="top", size=8)
-        T(xc - 0.66, yc, m["g"], net_color(m["g"]), ha="right", size=9, weight="bold")
+          ha="right", va="top", size=10)
+        T(xc - 0.66, yc, m["g"], net_color(m["g"]), ha="right", size=11, weight="bold")
 
     VDD_Y, QB_Y = 7.7, 6.05
     LAYOUT = {"M1": (2.5, 5.0), "M3": (5.3, 5.0), "M4": (7.7, 5.0), "M2": (10.5, 5.0),
@@ -251,41 +257,41 @@ def fig_latch(net, cfg, path):
 
     # supply rail and load resistors (R1: VDD to Q, R2: VDD to Qb)
     L([2.75, 10.75], [VDD_Y, VDD_Y], RED_NET)
-    T(2.6, VDD_Y + 0.12, "VDD", RED_NET, ha="right", weight="bold")
+    T(2.6, VDD_Y + 0.12, "VDD", RED_NET, ha="right", size=11, weight="bold")
     for x, name, out_y in ((2.75, "R1", "Q"), (10.75, "R2", "Qb")):
         L([x, x], [VDD_Y, 7.25])
         ax.add_patch(Rectangle((x - 0.15, 6.45), 0.3, 0.8, fill=False, ec=INK, lw=1.2))
         L([x, x], [6.45, QB_Y])
-        T(x + 0.25, 6.85, f"{name} = {cfg['rl']}  (VDD to {out_y})", size=9)
+        T(x + 0.25, 6.85, f"{name} = {cfg['rl']}  (VDD to {out_y})", size=10.5)
         dot(x, QB_Y)
     L([2.75, 5.55], [QB_Y, QB_Y]); dot(5.55, QB_Y)
     L([7.95, 10.75], [QB_Y, QB_Y]); dot(7.95, QB_Y)
-    T(4.15, QB_Y + 0.14, "Q", ha="center", weight="bold")
-    T(9.35, QB_Y + 0.14, "Qb", ha="center", weight="bold")
+    T(4.15, QB_Y + 0.14, "Q", ha="center", size=11, weight="bold")
+    T(9.35, QB_Y + 0.14, "Qb", ha="center", size=11, weight="bold")
     # xs (sampling sources and M5 drain) and xh (hold sources and M6 drain)
     L([2.75, 2.75], [4.2, 3.4])
-    T(2.9, 3.8, "xs", weight="bold")
-    T(10.9, 4.2, "xs", weight="bold")
+    T(2.9, 3.8, "xs", size=11, weight="bold")
+    T(10.9, 4.2, "xs", size=11, weight="bold")
     L([7.95, 7.95], [4.2, 3.4])
-    T(8.1, 3.3, "xh", weight="bold")
-    T(5.45, 4.2, "xh", ha="right", weight="bold")
+    T(8.1, 3.3, "xh", size=11, weight="bold")
+    T(5.45, 4.2, "xh", ha="right", size=11, weight="bold")
     # tail node: M5 and M6 sources, M7 drain
     L([2.75, 2.75, 7.95, 7.95], [1.8, 1.4, 1.4, 1.8])
     L([5.25, 5.25], [1.4, 1.4]); dot(5.25, 1.4)
-    T(3.4, 1.52, "tail", weight="bold")
+    T(3.4, 1.52, "tail", size=11, weight="bold")
     # M7 source is the DLATCH VSS pin, tied to global ground at the top level
     L([5.25, 5.25], [-0.2, -0.3])
     L([5.05, 5.45], [-0.3, -0.3]); L([5.13, 5.37], [-0.38, -0.38]); L([5.21, 5.29], [-0.46, -0.46])
-    T(5.6, -0.4, "VSS (0 V)", weight="bold")
+    T(5.6, -0.4, "VSS (0 V)", size=11, weight="bold")
     # gate of M7 is the NBIAS pin
     T(0.2, 8.3, "One DLATCH subcircuit, transistor level (drawn from spectre/divider_gpdk45.scs)",
-      size=10, weight="bold")
+      size=12, weight="bold")
     T(0.2, -0.55,
       f"Net-name labels: identical names are the same node. Bulk tied to VSS for all devices (as in the "
       f"netlist). Design D: m = {cfg['m']} (multi = mult), R1 = R2 = {cfg['rl']} (read back from Virtuoso).\n"
       f"Output load on each output node: {cfg['cl']} (eight capacitors, not drawn here).",
-      size=7.5, c=GREY, va="top")
-    fig.savefig(path, bbox_inches="tight", facecolor="white")
+      size=9.5, c=GREY, va="top")
+    fig.savefig(path, bbox_inches="tight", pad_inches=0.15, facecolor="white")
     plt.close(fig)
 
 
@@ -310,19 +316,19 @@ def fig_ring(net, cfg, path):
         kind = ctype(latch[x])
         ax.add_patch(Rectangle((bx, by), W, H, facecolor=CK_FILL if kind == "CK" else CKB_FILL,
                                edgecolor=BLUE if kind == "CK" else ORANGE, lw=1.6))
-        ax.text(bx + W / 2, by + H / 2 + 0.5, x, ha="center", va="center", fontsize=12, fontweight="bold")
-        ax.text(bx + W / 2, by + H / 2 + 0.2,
+        ax.text(bx + W / 2, by + H / 2 + 0.52, x, ha="center", va="center", fontsize=14, fontweight="bold")
+        ax.text(bx + W / 2, by + H / 2 + 0.18,
                 f"DLATCH, CK pin on net {kind}\nR1 = R2 = {cfg['rl']} to VDD\n"
                 f"7 nMOS, m = {cfg['m']}\nW/L {length(cfg['w'])}/{length(cfg['l'])} "
                 f"(M7 {length(cfg['w7'])}/{length(cfg['l7'])})",
-                ha="center", va="top", fontsize=6.8, color=INK)
+                ha="center", va="top", fontsize=9.2, color=INK)
         for pin in ("D", "Db", "Q", "Qb", "CK", "CKb"):
             side = SIDE[x]["inp"] if pin in ("D", "Db") else (SIDE[x]["out"] if pin in ("Q", "Qb") else SIDE[x]["clk"])
             px, py = ppos(x, side, PIN_FRAC[x][pin])
             ax.plot([px], [py], "o", color=INK, ms=3)
-            inset = {"top": (px, py - 0.1, "center", "top"), "bottom": (px, py + 0.1, "center", "bottom"),
-                     "left": (px + 0.1, py, "left", "center"), "right": (px - 0.1, py, "right", "center")}[side]
-            ax.text(inset[0], inset[1], pin, ha=inset[2], va=inset[3], fontsize=8, fontweight="bold", color=INK)
+            inset = {"top": (px, py - 0.12, "center", "top"), "bottom": (px, py + 0.12, "center", "bottom"),
+                     "left": (px + 0.12, py, "left", "center"), "right": (px - 0.12, py, "right", "center")}[side]
+            ax.text(inset[0], inset[1], pin, ha=inset[2], va=inset[3], fontsize=10, fontweight="bold", color=INK)
 
     # clock pins: stubs to the global clock nets
     for x in BOX:
@@ -335,7 +341,7 @@ def fig_ring(net, cfg, path):
             ax.plot([px, px + dx], [py, py + dy], color=net_color(net_name), lw=1.4)
             tx, ty = px + dx * 1.1, py + dy * 1.1
             ha, va = ("center", "bottom") if side == "top" else (("center", "top") if side == "bottom" else ("left", "center"))
-            ax.text(tx, ty, net_name, color=net_color(net_name), ha=ha, va=va, fontsize=9, fontweight="bold")
+            ax.text(tx, ty, net_name, color=net_color(net_name), ha=ha, va=va, fontsize=10.5, fontweight="bold")
 
     # data links: each output drives the input that carries its net
     for (sx, sp, dx_, dp) in EXP_EDGES:
@@ -355,17 +361,17 @@ def fig_ring(net, cfg, path):
                "left": (ps[0] - 0.06, ps[1] + 0.07, "right", "bottom"),
                "top": (ps[0], ps[1] + 0.08, "center", "bottom"),
                "bottom": (ps[0], ps[1] - 0.08, "center", "top")}[s_side]
-        ax.text(lab[0], lab[1], net_name, ha=lab[2], va=lab[3], fontsize=9, fontweight="bold", color=RED_NET)
+        ax.text(lab[0], lab[1], net_name, ha=lab[2], va=lab[3], fontsize=10.5, fontweight="bold", color=RED_NET)
 
     ax.legend(handles=[
         Patch(facecolor=CK_FILL, edgecolor=BLUE, label="latch with CK pin on net CK"),
         Patch(facecolor=CKB_FILL, edgecolor=ORANGE, label="latch with CK pin on net CKb (clock swapped)"),
-    ], loc="upper center", bbox_to_anchor=(0.5, -0.03), ncol=2, fontsize=8, frameon=False)
+    ], loc="upper center", bbox_to_anchor=(0.5, -0.03), ncol=2, fontsize=10, frameon=False)
     ax.text(-1.0, 7.5, "Ring: XD1 -> XD2 -> XD3 -> XD4 -> XD1. Red labels = net driven by the source latch.",
-            fontsize=8, color=GREY, va="top")
+            fontsize=10, color=GREY, va="top")
     ax.text(-1.0, -1.0, f"Each output node also has a {cfg['cl']} capacitor to ground (CL1 ... CL4b, not drawn). "
-            "VDD pins are on net VDD, VSS pins on the global ground.", fontsize=7.5, color=GREY)
-    fig.savefig(path, bbox_inches="tight", facecolor="white")
+            "VDD pins are on net VDD, VSS pins on the global ground.", fontsize=9.5, color=GREY)
+    fig.savefig(path, bbox_inches="tight", pad_inches=0.15, facecolor="white")
     plt.close(fig)
 
 
