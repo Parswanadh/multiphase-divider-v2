@@ -116,7 +116,7 @@
         "Selection of R: load resistance was swept from 5 to 12 kOhm at tail bias vb = 0.8 V and 1 V. Division fails up to 6 kOhm and succeeds from 7 kOhm at vb = 1 V; at vb = 0.8 V it fails up to 7 kOhm and divides from 8 kOhm. The value R = 8 kOhm at vb = 1 V was selected as the minimum round value dividing at both biases.",
         "Failure of reference paper sizing: direct implementation of the paper rule (m = 1, R1 = R2 = Ron/2 = 1.15 kOhm, Ron = 2.3 kOhm) fails to divide at 1.4 GHz. Output Q1 oscillates at 2799.8 MHz (2.0 x f_in) with only 15.3 mV swing (Figure 9). Supply power is 0.165 mW; delay, PDP, and phase error are undefined.",
         "Mechanism: the pull-down path comprises three stacked devices (M1, M5, M7) with effective resistance 3 Ron = 6.90 kOhm for m = 1. Regeneration requires R1 >= 1.1 x 3 Ron = 7.59 kOhm as established in Theory, consistent with simulated bounds of 6-7 kOhm at vb = 1 V and 7-8 kOhm at vb = 0.8 V.",
-        "Schematic checks: 0 errors and 23 warnings for DLATCH; 0 errors and 11 warnings for divider_core; 0 errors and 19 warnings for tb_divider. The warnings are floating-net notices at net-label stubs; the netlist is unchanged by the wiring."
+        "Schematic checks: 0 errors and 0 warnings for DLATCH and divider_core; 0 errors and 1 warning for tb_divider (the supply source instance and its net are both named VDD)."
       ],
       "devices": [
         {

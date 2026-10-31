@@ -749,11 +749,11 @@ def build_data():
     tb_e, tb_w = schc["tb_divider"].split("/")
     if (dl_e, dl_w) == (core_e, core_w):
         sch_text = (f"Schematic checks: {dl_e} errors and {dl_w} warnings for DLATCH and divider_core; "
-                    f"{tb_e} errors and {tb_w} warnings for tb_divider. The warnings are floating-net notices at net-label stubs; the netlist is unchanged by the wiring.")
+                    f"{tb_e} errors and {tb_w} warning for tb_divider (the supply source instance and its net are both named VDD).")
     else:
         sch_text = (f"Schematic checks: {dl_e} errors and {dl_w} warnings for DLATCH; "
                     f"{core_e} errors and {core_w} warnings for divider_core; "
-                    f"{tb_e} errors and {tb_w} warnings for tb_divider. The warnings are floating-net notices at net-label stubs; the netlist is unchanged by the wiring.")
+                    f"{tb_e} errors and {tb_w} warning for tb_divider (the supply source instance and its net are both named VDD).")
     vdsat_note = (f"Extracted saturation voltage Vdsat = {vds_info['vdsat_v']:.3f} V for design D (Vgs = "
                   f"{op_d['vg_v']:g} V).")
     extras = [
