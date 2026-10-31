@@ -19,24 +19,26 @@ import json
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 from docx import Document
-from docx.enum.table import WD_TABLE_ALIGNMENT
+from docx.enum.section import WD_ORIENT, WD_SECTION
+from docx.enum.table import WD_ROW_HEIGHT_RULE, WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_BREAK
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import Inches, Pt, RGBColor
-from PIL import Image
+from PIL import Image, ImageChops
 
 FONT = "Times New Roman"
 BODY_PT = 12
 HEADING_PT = 14
 RED = RGBColor(0xC0, 0x00, 0x00)
 BLACK = RGBColor(0x00, 0x00, 0x00)
-MAX_FIG_W_IN = 6.0
-MAX_FIG_H_IN = 7.0
-TEXT_W_IN = 6.5  # Letter width 8.5 in minus two 1 in margins
+MAX_FIG_W_IN = 6.3
+MAX_FIG_H_IN = 7.1
+TEXT_W_IN = 6.3  # Scaled to full text width inside double page borders
 DOCX_NAME = "23ECE383_System_Design_Report.docx"
 
 # Figure slots in the order they appear in the document. A slot holding a figure (or a
@@ -97,6 +99,7 @@ class Builder:
         self.doc = Document()
         self.tab_no = 0
         self.missing = []
+        self.temp_dir = Path(tempfile.mkdtemp(prefix="academic_report_img_"))
         figs = self.d.get("figures") or {}
         self.fig_no = {}
         n = 0
@@ -106,6 +109,9 @@ class Builder:
             n += 1
             self.fig_no[key] = n
         self.extra_start = n + 1
+
+    def cleanup(self):
+        shutil.rmtree(self.temp_dir, ignore_errors=True)
 
     @staticmethod
     def _is_note(slot):
@@ -137,10 +143,15 @@ class Builder:
         pf.space_before = Pt(before)
         pf.space_after = Pt(after)
         pf.keep_with_next = keep
+        pf.widow_control = True
         if align == "c":
             p.alignment = WD_ALIGN_PARAGRAPH.CENTER
         elif align == "r":
             p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+        elif align == "j":
+            p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+        else:
+            p.alignment = WD_ALIGN_PARAGRAPH.LEFT
         if s:
             self.text(p, s, size, bold, italic, color)
         return p
@@ -149,8 +160,10 @@ class Builder:
         p = self.doc.add_paragraph(style="Heading 1")
         pf = p.paragraph_format
         pf.space_before = Pt(12)
-        pf.space_after = Pt(6)
+        pf.space_after = Pt(4)
         pf.keep_with_next = True
+        pf.widow_control = True
+        p.alignment = WD_ALIGN_PARAGRAPH.LEFT
         self.text(p, s, HEADING_PT, bold=True, color=BLACK)
         return p
 
@@ -166,12 +179,40 @@ class Builder:
 
     @staticmethod
     def _aspect(path):
-        # PIL is used for the pixel size only. Explicit width and height are
-        # passed to python-docx, which otherwise divides by the image DPI
-        # (zero in some JPEGs).
         with Image.open(path) as im:
             w_px, h_px = im.size
         return h_px / w_px
+
+    def _trim_figure(self, path):
+        """Trim white margins from matplotlib plots under report/gpdk045/figures/."""
+        if not path or not path.is_file():
+            return path
+        norm = str(path).replace("\\", "/")
+        if "screens" in norm or "figures" not in norm:
+            return path
+        try:
+            with Image.open(path) as im:
+                if im.mode in ("RGBA", "LA") or (im.mode == "P" and "transparency" in im.info):
+                    bg = Image.new("RGB", im.size, (255, 255, 255))
+                    bg.paste(im, mask=im.convert("RGBA").split()[3])
+                    im_rgb = bg
+                else:
+                    im_rgb = im.convert("RGB")
+                bg = Image.new("RGB", im.size, (255, 255, 255))
+                diff = ImageChops.difference(im_rgb, bg)
+                bbox = diff.getbbox()
+                if bbox:
+                    w, h = im.size
+                    pad = 2
+                    bbox = (max(0, bbox[0] - pad), max(0, bbox[1] - pad),
+                            min(w, bbox[2] + pad), min(h, bbox[3] + pad))
+                    cropped = im.crop(bbox)
+                    out_path = self.temp_dir / f"trimmed_{path.name}"
+                    cropped.save(out_path)
+                    return out_path
+        except Exception:
+            pass
+        return path
 
     def _resolve(self, file_name):
         if not file_name:
@@ -181,7 +222,7 @@ class Builder:
 
     def value_line(self, value, what):
         if value:
-            self.para(str(value), after=8)
+            self.para(str(value), after=6)
         else:
             self.need(what)
 
@@ -218,42 +259,91 @@ class Builder:
         end.set(qn("w:fldCharType"), "end")
         run_with(end)
 
-    def _cell(self, cell, s, bold=False, italic=False, color=None):
+    def _cell(self, cell, s, bold=False, italic=False, color=None, align="l", pad_v=1.5):
         p = cell.paragraphs[0]
-        p.paragraph_format.space_after = Pt(0)
-        self.text(p, s, bold=bold, italic=italic, color=color)
+        p.paragraph_format.space_before = Pt(pad_v)
+        p.paragraph_format.space_after = Pt(pad_v)
+        p.paragraph_format.line_spacing = 1.0
+        if align == "c":
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        elif align == "r":
+            p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+        else:
+            p.alignment = WD_ALIGN_PARAGRAPH.LEFT
+        self.text(p, s, size=BODY_PT, bold=bold, italic=italic, color=color)
 
-    def table(self, header, rows, widths, caption):
+    def table(self, header, rows, widths, caption, alignments=None, pad_v=1.5, keep_together=True):
         self.tab_no += 1
-        cap = self.para(keep=True, after=4)
+        cap = self.para(keep=True, before=6, after=3)
+        cap.paragraph_format.keep_together = True
+        cap.paragraph_format.keep_with_next = True
         self.text(cap, f"Table {self.tab_no}: ", bold=True)
         self.text(cap, caption)
+
+        if alignments is None:
+            alignments = ["l"] + ["c"] * (len(header) - 1)
+
         t = self.doc.add_table(rows=1, cols=len(header))
         t.style = self.doc.styles["Table Grid"]
         t.alignment = WD_TABLE_ALIGNMENT.CENTER
         t.autofit = False
-        for i, h in enumerate(header):
-            self._cell(t.rows[0].cells[i], h, bold=True)
+
+        tblPr = t._tbl.tblPr
+        tblBorders = OxmlElement("w:tblBorders")
+        for border_name in ("top", "left", "bottom", "right", "insideH", "insideV"):
+            b_el = OxmlElement(f"w:{border_name}")
+            b_el.set(qn("w:val"), "single")
+            b_el.set(qn("w:sz"), "4")
+            b_el.set(qn("w:space"), "0")
+            b_el.set(qn("w:color"), "000000")
+            tblBorders.append(b_el)
+        tblPr.append(tblBorders)
+
         trpr = t.rows[0]._tr.get_or_add_trPr()
-        header_flag = OxmlElement("w:tblHeader")
-        trpr.append(header_flag)
+        trpr.append(OxmlElement("w:tblHeader"))
+        t.rows[0]._tr.get_or_add_trPr().append(OxmlElement("w:cantSplit"))
+
+        for i, h in enumerate(header):
+            cell = t.rows[0].cells[i]
+            shd = OxmlElement("w:shd")
+            shd.set(qn("w:val"), "clear")
+            shd.set(qn("w:color"), "auto")
+            shd.set(qn("w:fill"), "E0E0E0")
+            cell._tc.get_or_add_tcPr().append(shd)
+            align = alignments[i] if i < len(alignments) else "c"
+            self._cell(cell, h, bold=True, align=align, pad_v=pad_v)
+
         for row in rows:
             new_row = t.add_row()
             new_row._tr.get_or_add_trPr().append(OxmlElement("w:cantSplit"))
             cells = new_row.cells
             for i, value in enumerate(row):
+                align = alignments[i] if i < len(alignments) else "c"
                 if isinstance(value, tuple):
-                    self._cell(cells[i], value[0], bold=True, color=value[1])
+                    color = RED if value[1] in (RED, "RED") else value[1]
+                    self._cell(cells[i], value[0], bold=True, color=color, align=align, pad_v=pad_v)
                 else:
-                    self._cell(cells[i], value)
+                    self._cell(cells[i], str(value), align=align, pad_v=pad_v)
+
+        if keep_together and len(t.rows) > 1:
+            for row in t.rows[:-1]:
+                for cell in row.cells:
+                    cell.paragraphs[0].paragraph_format.keep_with_next = True
+
         for i, w in enumerate(widths):
             t.columns[i].width = Inches(w)
+            w_dxa = str(int(w * 1440))
             for row in t.rows:
-                row.cells[i].width = Inches(w)
-        self.para(after=4)
+                cell = row.cells[i]
+                cell.width = Inches(w)
+                tcW = cell._tc.get_or_add_tcPr().get_or_add_tcW()
+                tcW.set(qn("w:type"), "dxa")
+                tcW.set(qn("w:w"), w_dxa)
+
+        self.para(after=6)
         return t
 
-    def figure(self, n, slot, what):
+    def figure(self, n, slot, what, *, width_in=None, max_h=None):
         if self._is_note(slot):
             self.para(str(slot["note"]), after=8)
             return
@@ -267,13 +357,50 @@ class Builder:
         caption = slot.get("caption")
         if not caption:
             self.need(f"Figure {n} caption text ({what})")
-        aspect = self._aspect(path)  # height / width
-        width_in = MAX_FIG_W_IN
-        if aspect * width_in > MAX_FIG_H_IN:
-            width_in = MAX_FIG_H_IN / aspect
-        pic = self.para(align="c", keep=True, after=2)
-        self._picture(pic, path, width_in, width_in * aspect)
-        cap = self.para(align="c", after=10)
+
+        norm = str(path).replace("\\", "/")
+        is_cadence = "screens" in norm
+
+        if is_cadence:
+            # Cadence screenshot: scaled to full text width (about 6.3 in)
+            render_path = path
+            aspect = self._aspect(render_path)
+            w_in = TEXT_W_IN
+            h_in = w_in * aspect
+        else:
+            # Matplotlib plot: trimmed white margins
+            render_path = self._trim_figure(path)
+            aspect = self._aspect(render_path)
+            if width_in is not None and max_h is not None:
+                w_in = width_in
+                h_in = w_in * aspect
+                if h_in > max_h:
+                    h_in = max_h
+                    w_in = h_in / aspect
+            elif width_in is not None:
+                w_in = width_in
+                h_in = w_in * aspect
+            elif max_h is not None:
+                h_in = max_h
+                w_in = h_in / aspect
+                if w_in > TEXT_W_IN:
+                    w_in = TEXT_W_IN
+                    h_in = w_in * aspect
+            elif aspect >= 1.2:
+                # Tall 4-trace waveforms: clamp height so figure + caption fit on one page
+                h_in = MAX_FIG_H_IN
+                w_in = h_in / aspect
+            else:
+                w_in = TEXT_W_IN
+                h_in = w_in * aspect
+                if h_in > MAX_FIG_H_IN:
+                    h_in = MAX_FIG_H_IN
+                    w_in = h_in / aspect
+
+        pic = self.para(align="c", keep=True, before=2, after=2)
+        self._picture(pic, render_path, w_in, h_in)
+        cap = self.para(align="c", before=2, after=8)
+        cap.paragraph_format.keep_together = True
         self.text(cap, f"Figure {n}: ", bold=True)
         self.text(cap, caption or "")
 
@@ -342,7 +469,7 @@ class Builder:
         if logo:
             path = self._resolve(logo)
             if path is not None and path.is_file():
-                p = self.para(align="c", after=6)
+                p = self.para(align="c", before=4, after=8)
                 w_in = 3.6
                 self._picture(p, path, w_in, w_in * self._aspect(path))
             else:
@@ -350,34 +477,62 @@ class Builder:
         else:
             self.need('institution logo image (set "logo" in the data file)')
 
-        self.para("AMRITA SCHOOL OF ENGINEERING, BENGALURU", align="c", after=10)
-        self.para("DEPARTMENT OF ELECTRONICS & COMMUNICATION ENGINEERING", align="c", after=10)
-        self.para("B. TECH. V SEMESTER (ECE AND EAC) AY 2026-2027", bold=True, align="c", before=10, after=10)
-        self.para("ASSIGNMENT FOR 23ECE302 VLSI DESIGN", bold=True, align="c", before=10, after=10)
-        self.para("SYSTEM DESIGN FOR 23ECE383 VLSI DESIGN LABORATORY", bold=True, align="c", before=10, after=6)
-        self.para("REPORT", bold=True, align="c", after=4)
-        self.para("JULY TO NOVEMBER 2026", bold=True, align="c", after=4)
+        self.para("AMRITA SCHOOL OF ENGINEERING, BENGALURU", align="c", before=4, after=4)
+        self.para("DEPARTMENT OF ELECTRONICS & COMMUNICATION ENGINEERING", align="c", before=0, after=10)
+        self.para("B. TECH. V SEMESTER (ECE AND EAC) AY 2026-2027", bold=True, align="c", before=4, after=4)
+        self.para("ASSIGNMENT FOR 23ECE302 VLSI DESIGN", bold=True, align="c", before=4, after=4)
+        self.para("SYSTEM DESIGN FOR 23ECE383 VLSI DESIGN LABORATORY", bold=True, align="c", before=4, after=6)
+        self.para("REPORT", bold=True, align="c", before=4, after=4)
+        self.para("JULY TO NOVEMBER 2026", bold=True, align="c", before=4, after=14)
 
         system_title = (d.get("titles") or {}).get("system_design_project")
         if system_title:
-            self.para(system_title, bold=True, italic=True, align="c", before=14, after=14)
+            self.para(system_title, bold=True, italic=True, align="c", before=8, after=14)
         else:
             self.need("system design project title (titles.system_design_project)")
 
-        self.para("Submitted by", bold=True, align="c", before=8, after=6)
+        self.para("Submitted by", bold=True, align="c", before=6, after=6)
         sub = self.doc.add_table(rows=5, cols=3)
         sub.style = self.doc.styles["Table Grid"]
+        sub.alignment = WD_TABLE_ALIGNMENT.CENTER
         sub.autofit = False
+
+        tblPr = sub._tbl.tblPr
+        tblBorders = OxmlElement("w:tblBorders")
+        for border_name in ("top", "left", "bottom", "right", "insideH", "insideV"):
+            b_el = OxmlElement(f"w:{border_name}")
+            b_el.set(qn("w:val"), "single")
+            b_el.set(qn("w:sz"), "4")
+            b_el.set(qn("w:space"), "0")
+            b_el.set(qn("w:color"), "000000")
+            tblBorders.append(b_el)
+        tblPr.append(tblBorders)
+
         headers = ["REGISTER NUMBER", "NAME", "SIGNATURE WITH DATE"]
         for i, h in enumerate(headers):
-            self._cell(sub.rows[0].cells[i], h, italic=True)
-        for i, w in enumerate([2.3, 2.0, 2.2]):
-            sub.columns[i].width = Inches(w)
-            for row in sub.rows:
-                row.cells[i].width = Inches(w)
+            cell = sub.rows[0].cells[i]
+            shd = OxmlElement("w:shd")
+            shd.set(qn("w:val"), "clear")
+            shd.set(qn("w:color"), "auto")
+            shd.set(qn("w:fill"), "E0E0E0")
+            cell._tc.get_or_add_tcPr().append(shd)
+            self._cell(cell, h, bold=True, italic=True, align="c")
 
-        self.para("BATCH NUMBER:", before=22, after=6)
-        self.para("FACULTY EXAMINER SIGNATURE WITH EVALUATION DATE", bold=True, before=22, after=0)
+        col_w = [2.2, 2.1, 2.2]
+        for row_idx, row in enumerate(sub.rows):
+            row._tr.get_or_add_trPr().append(OxmlElement("w:cantSplit"))
+            if row_idx > 0:
+                row.height = Pt(28)
+                row.height_rule = WD_ROW_HEIGHT_RULE.AT_LEAST
+            for i, w in enumerate(col_w):
+                cell = row.cells[i]
+                cell.width = Inches(w)
+                tcW = cell._tc.get_or_add_tcPr().get_or_add_tcW()
+                tcW.set(qn("w:type"), "dxa")
+                tcW.set(qn("w:w"), str(int(w * 1440)))
+
+        self.para("BATCH NUMBER:", bold=True, before=24, after=8)
+        self.para("FACULTY EXAMINER SIGNATURE WITH EVALUATION DATE", bold=True, before=36, after=0)
 
     # --------------------------------------------------------------- sections
     def sec_title_and_paper(self):
@@ -413,8 +568,9 @@ class Builder:
 
     def sec_circuit(self):
         self.heading("CIRCUIT DIAGRAM:")
+        # Scale to fit cleanly below Details of the Paper on Page 2
         self.figure(self.fig_no["circuit_diagram"], self._slot("circuit_diagram"),
-                    dict(FIG_SLOTS)["circuit_diagram"])
+                    dict(FIG_SLOTS)["circuit_diagram"], max_h=3.6)
 
     def sec_theory_tools(self):
         self.heading("THEORY AND WORKING PRINCIPLE:")
@@ -440,7 +596,8 @@ class Builder:
             for dev in devices
         ]
         self.table(["Device", "W", "L", "Multiplier", "Role"], rows,
-                   [1.1, 1.2, 1.2, 1.1, 1.9], caption)
+                   [1.1, 1.1, 1.1, 1.0, 2.0], caption,
+                   alignments=["l", "c", "c", "c", "l"])
 
     def sec_implementation(self):
         self.heading("SCREENSHOT OF THE SIMULATOR BASED CIRCUIT IMPLEMENTATION:")
@@ -508,11 +665,49 @@ class Builder:
                 left, right = metric_text(m_wo, key), metric_text(m_w, key)
             rows.append([label, left, right, proofs.get(key or "sat", default_proof)])
         self.table(["Parameter", "Value without Sizing", "Value with Sizing", "Proof (figure)"],
-                   rows, [1.9, 1.6, 1.6, 1.4],
+                   rows, [1.9, 1.5, 1.5, 1.4],
                    "Performance values with and without the sizing concept, "
-                   "with the proof figures for each row")
+                   "with the proof figures for each row",
+                   alignments=["l", "c", "c", "c"])
         for note in self.d.get("values_notes") or []:
-            self.para(str(note), size=10, after=4)
+            self.para(str(note), size=BODY_PT, after=4)
+
+    def _build_pvt_summary_table(self, prefix, title_suffix):
+        pvt = self.d.get("pvt_rows") or []
+        corners = ["tt", "ff", "ss", "fs", "sf"]
+        temps = [-40, 27, 125]
+        vdds = [0.9, 1.0, 1.1]
+
+        lookup = {}
+        for r in pvt:
+            parts = r.get("corner", "").split()
+            if len(parts) == 2 and parts[0] == prefix:
+                c, t, v = parts[1], r.get("temp"), r.get("vdd")
+                lookup[(c, t, v)] = r
+
+        rows = []
+        pass_cnt = 0
+        fail_cnt = 0
+        for c in corners:
+            for t in temps:
+                row_cells = [c, f"{t}"]
+                for v in vdds:
+                    item = lookup.get((c, t, v))
+                    if item is None:
+                        row_cells.append("n/a")
+                    elif item.get("divides") is True:
+                        pass_cnt += 1
+                        row_cells.append("PASS")
+                    else:
+                        fail_cnt += 1
+                        row_cells.append(("FAIL", RED))
+                rows.append(row_cells)
+
+        header = ["Corner", "Temp (°C)", "0.9 V", "1.0 V", "1.1 V"]
+        widths = [1.3, 1.2, 1.25, 1.25, 1.3]
+        alignments = ["c", "c", "c", "c", "c"]
+        caption = f"PVT summary for {title_suffix} ({pass_cnt} of {pass_cnt + fail_cnt} corners pass)"
+        self.table(header, rows, widths, caption, alignments)
 
     def sec_pvt_layout(self):
         self.heading("SCREENSHOT OF THE PVT ANALYSIS:")
@@ -520,24 +715,9 @@ class Builder:
         if not pvt_rows:
             self.need("PVT corner sweep rows (pvt_rows)")
         else:
-            rows = []
-            for r in pvt_rows:
-                divides = r.get("divides")
-                if divides is True:
-                    div_cell = "PASS"
-                elif divides is False:
-                    div_cell = ("FAIL", RED)
-                else:
-                    div_cell = "n/a"
-                rows.append([
-                    na(r.get("corner")), na(r.get("temp")), na(r.get("vdd")), div_cell,
-                    na(r.get("f_out_mhz")), na(r.get("delay_ps")), na(r.get("power_mw")),
-                    na(r.get("pdp_fj")), r.get("note") or "",
-                ])
-            self.table(["Corner", "Temp (C)", "VDD (V)", "Divides", "f_out (MHz)",
-                        "Delay (ps)", "Power (mW)", "PDP (fJ)", "Note"],
-                       rows, [0.7, 0.55, 0.55, 0.75, 0.75, 0.6, 0.65, 0.55, 1.4],
-                       "PVT analysis results (FAIL rows are kept; ratio = f_in / f_out, a division needs 2)")
+            self._build_pvt_summary_table("D", "design D at 1.4 GHz (41 of 45 pass; FAIL at 125 °C, 0.9 V for tt, ss, fs, sf)")
+            self._build_pvt_summary_table("B6", "design B at 6.0 GHz (21 of 45 pass)")
+
         self.figure(self.fig_no["pvt_screenshot"], self._slot("pvt_screenshot"),
                     dict(FIG_SLOTS)["pvt_screenshot"])
 
@@ -554,8 +734,18 @@ class Builder:
         self.heading("ANY OTHER RELEVANT INFORMATION:")
         self.body(d.get("other_info"), "other relevant information text (other_info)")
         extras = self._slot_list("extra_figures")
+        extra_heights = {
+            0: 3.4,  # Fig 8: ring architecture
+            1: 3.4,  # Fig 9: paper sizing failure
+            3: 3.4,  # Fig 11: phase steps
+            4: 3.1,  # Fig 12: tail saturation U8k
+            5: 3.1,  # Fig 13: tail saturation D 1.4G
+            6: 3.1,  # Fig 14: tail saturation B 6G
+            7: 3.4,  # Fig 15: supply current
+        }
         for i, item in enumerate(extras):
-            self.figure(self.extra_start + i, item, f"additional figure {i + 1}")
+            target_h = extra_heights.get(i)
+            self.figure(self.extra_start + i, item, f"additional figure {i + 1}", max_h=target_h)
 
         self.heading("CONCLUSION:")
         self.body(d.get("conclusion"), "conclusion text (conclusion)")
@@ -571,6 +761,61 @@ class Builder:
 
         self.heading("REFERENCES:")
         self.body(d.get("references"), "references (references)", keep_together=True)
+
+    def sec_appendix(self):
+        pvt_rows = self.d.get("pvt_rows") or []
+        d_rows = [r for r in pvt_rows if r.get("corner", "").startswith("D")]
+        if not d_rows:
+            return
+
+        sec = self.doc.add_section(WD_SECTION.NEW_PAGE)
+        sec.orientation = WD_ORIENT.LANDSCAPE
+        sec.page_width = Inches(11.0)
+        sec.page_height = Inches(8.5)
+        sec.top_margin = Inches(0.75)
+        sec.bottom_margin = Inches(0.75)
+        sec.left_margin = Inches(0.8)
+        sec.right_margin = Inches(0.8)
+
+        borders = OxmlElement("w:pgBorders")
+        borders.set(qn("w:offsetFrom"), "text")
+        borders.set(qn("w:display"), "allPages")
+        for side in ("top", "left", "bottom", "right"):
+            el = OxmlElement(f"w:{side}")
+            el.set(qn("w:val"), "double")
+            el.set(qn("w:sz"), "4")
+            el.set(qn("w:space"), "10")
+            el.set(qn("w:color"), "000000")
+            borders.append(el)
+        sec._sectPr.find(qn("w:pgMar")).addnext(borders)
+
+        h = self.heading("APPENDIX: COMPLETE PVT DATA")
+        h.paragraph_format.space_before = Pt(4)
+        h.paragraph_format.space_after = Pt(2)
+        self.para("Complete 45-corner simulation results for design D at 1.4 GHz across process corners (tt, ff, ss, fs, sf), temperatures (-40, 27, 125 °C), and supply voltages (0.9, 1.0, 1.1 V). Total 41 corners pass division to 700.0 MHz; 4 corners fail (all at 125 °C, 0.9 V for tt, ss, fs, sf).", after=4)
+
+        rows = []
+        for r in d_rows:
+            divides = r.get("divides")
+            if divides is True:
+                div_cell = "PASS"
+            elif divides is False:
+                div_cell = ("FAIL", RED)
+            else:
+                div_cell = "n/a"
+            corner_name = r.get("corner", "").replace("D ", "")
+            rows.append([
+                corner_name, na(r.get("temp")), na(r.get("vdd")), div_cell,
+                na(r.get("f_out_mhz")), na(r.get("delay_ps")), na(r.get("power_mw")),
+                na(r.get("pdp_fj")), r.get("note") or "",
+            ])
+
+        header = ["Corner", "Temp (°C)", "VDD (V)", "Divides", "f_out (MHz)", "Delay (ps)", "Power (mW)", "PDP (fJ)", "Note"]
+        widths = [0.85, 0.85, 0.85, 0.85, 1.05, 0.95, 0.95, 0.95, 2.1]
+        alignments = ["c", "c", "c", "c", "c", "c", "c", "c", "l"]
+        self.table(header, rows, widths,
+                   "Complete PVT analysis results for design D at 1.4 GHz (45 corners)",
+                   alignments, pad_v=0.8, keep_together=False)
 
     def _slot_list(self, key):
         items = (self.d.get("figures") or {}).get(key)
@@ -595,6 +840,7 @@ class Builder:
         self.sec_values()
         self.sec_pvt_layout()
         self.sec_rest()
+        self.sec_appendix()
 
         core = self.doc.core_properties
         core.author = ""
@@ -629,21 +875,24 @@ def main(argv=None):
         raise SystemExit("data file must contain a JSON object")
 
     builder = Builder(data, data_path.parent)
-    builder.build()
+    try:
+        builder.build()
 
-    out_dir = Path(args.out).resolve()
-    out_dir.mkdir(parents=True, exist_ok=True)
-    docx_path = out_dir / DOCX_NAME
-    builder.doc.save(str(docx_path))
-    print(f"DOCX: {docx_path}")
+        out_dir = Path(args.out).resolve()
+        out_dir.mkdir(parents=True, exist_ok=True)
+        docx_path = out_dir / DOCX_NAME
+        builder.doc.save(str(docx_path))
+        print(f"DOCX: {docx_path}")
 
-    if not args.no_pdf:
-        pdf_path = convert_to_pdf(docx_path, out_dir)
-        print(f"PDF:  {pdf_path}")
+        if not args.no_pdf:
+            pdf_path = convert_to_pdf(docx_path, out_dir)
+            print(f"PDF:  {pdf_path}")
 
-    print(f"NOT YET AVAILABLE items: {len(builder.missing)}")
-    for item in builder.missing:
-        print(f"  - {item}")
+        print(f"NOT YET AVAILABLE items: {len(builder.missing)}")
+        for item in builder.missing:
+            print(f"  - {item}")
+    finally:
+        builder.cleanup()
     return 0
 
 
