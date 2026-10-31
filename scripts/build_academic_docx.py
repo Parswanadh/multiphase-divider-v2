@@ -454,6 +454,18 @@ class Builder:
         self.heading("SCREENSHOT OF THE OUTPUT WAVEFORM OBTAINED FROM THE SIMULATOR (DC AND TRANSIENT):")
         self.figure(self.fig_no["waveform_without_sizing"], self._slot("waveform_without_sizing"),
                     dict(FIG_SLOTS)["waveform_without_sizing"])
+        if self.d.get("schematic_sim"):
+            self.sec_schematic_sim(self.d["schematic_sim"])
+
+    def sec_schematic_sim(self, sub):
+        """Optional subsection: simulation run from the Virtuoso schematic (OCEAN).
+
+        Its figure takes the number after the last extra figure, so no existing figure number moves.
+        """
+        self.heading(sub.get("heading") or "Simulation from the Virtuoso schematic")
+        self.body(sub.get("paragraphs"), "schematic simulation text (schematic_sim.paragraphs)")
+        number = self.extra_start + len(self._slot_list("extra_figures"))
+        self.figure(number, sub.get("figure"), "schematic simulation figure (schematic_sim.figure)")
 
     def sec_sizing(self):
         self.heading("SCREENSHOT OF THE CIRCUIT BASED ON SIZING CONCEPT:")

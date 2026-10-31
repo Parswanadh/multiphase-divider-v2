@@ -41,6 +41,7 @@ SCREEN_DIR = GPDK / "screens"
 NETLIST = REPO / "spectre" / "divider_gpdk45.scs"
 LEDGER = GPDK / "LEDGER.md"
 EXAMPLE = GPDK / "report_data.example.json"
+SCHEM_SIM_MD = GPDK / "section_schematic_sim.md"
 DRC_RULES = REPO / "results" / "gpdk045" / "assura_drc_dlatch_rules.txt"
 BUILDER = REPO / "scripts" / "build_academic_docx.py"
 DRAW = REPO / "scripts" / "draw_gpdk45_circuits.py"
@@ -464,6 +465,26 @@ def screen(name, caption):
 
 def screen_or_none(name, caption):
     return screen(name, caption) if (SCREEN_DIR / f"{name}.png").is_file() else None
+
+
+def read_schematic_section():
+    """Subsection on the OCEAN simulation from the Virtuoso schematic (section_schematic_sim.md).
+
+    The markdown has a '### ' heading, then paragraphs; the last paragraph starts with
+    'Evidence files:' and lists comma-separated repo paths, which go to the references.
+    """
+    blocks = [b.strip() for b in SCHEM_SIM_MD.read_text(encoding="utf-8").split("\n\n") if b.strip()]
+    if not blocks or not blocks[0].startswith("### "):
+        fail(f"{SCHEM_SIM_MD.name}: first block must be a '### ' heading")
+    heading = blocks[0][4:].strip()
+    paragraphs = [" ".join(b.split()) for b in blocks[1:]]
+    if not paragraphs or not paragraphs[-1].startswith("Evidence files:"):
+        fail(f"{SCHEM_SIM_MD.name}: last paragraph must start with 'Evidence files:'")
+    evidence = [e.strip() for e in paragraphs.pop()[len("Evidence files:"):].split(",") if e.strip()]
+    for rel in evidence:
+        if not (REPO / rel).is_file():
+            fail(f"{SCHEM_SIM_MD.name}: evidence file missing: {rel}")
+    return heading, paragraphs, evidence
 
 
 def crop(name, caption):
@@ -1204,13 +1225,21 @@ def build_data():
         "The paper's constants are literature values, and the title-page register and name fields are left blank by design.",
     ]
 
+    sch_heading, sch_paras, sch_evidence = read_schematic_section()
+    schematic_sim = {
+        "heading": sch_heading,
+        "paragraphs": sch_paras,
+        "figure": screen("schematic_tb_cadence",
+                         "Virtuoso testbench schematic of tb_divider, the circuit simulated by OCEAN "
+                         "(Cadence GUI screenshot)."),
+    }
     references = [
         f"{LITERATURE['authors']}, \"A Compact Multiphase Divide-by-Two CMOS Frequency Divider,\" IEEE Microw. "
         f"Wireless Technol. Lett., vol. {paper['volume']}, no. {paper['issue']}, pp. {paper['pages']}, "
         f"{paper['date']}, doi: {paper['doi']}.",
         "Cadence Design Systems, Cadence GPDK045 v6.0 documentation (45 nm generic process design kit).",
         "Cadence Design Systems, Spectre Circuit Simulator Reference, MMSIM 12.1.",
-    ]
+    ] + [f"Evidence file: {rel}" for rel in sch_evidence]
 
     # ---------------------------------------------------------- Table 3 proof column and notes
     fn = extra_no
@@ -1252,6 +1281,7 @@ def build_data():
         "problems_resolved": problems_resolved,
         "other_comment": other_comment,
         "references": references,
+        "schematic_sim": schematic_sim,
     }
 
     checks = {
