@@ -20,28 +20,28 @@
       "caption": "Schematic of the differential DLATCH stage (M1-M7, R1, R2). Sizing: M1-M6 W = 240 nm, L = 45 nm; M7 W = 480 nm, L = 90 nm. Values shown for design D (m = 4, R1 = R2 = 3 kOhm; baseline uses m = 1, R = 8 kOhm)."
     },
     "impl_screenshot": {
-      "file": "screens/crops/schematic_core_crop.png",
-      "caption": "Virtuoso schematic of the divider core with four DLATCH instances (XD1 to XD4) connected in a ring. Baseline and design D share this topology, differing only in m and R (Tables 1 and 2). Schematic check: DLATCH 0/0, divider_core 0/0, tb_divider 0/1 errors/warnings."
+      "file": "screens/schematic_core_cadence.png",
+      "caption": "Virtuoso schematic editor window showing the divider core with four DLATCH instances (XD1 to XD4) connected in a ring. Baseline and design D share this topology, differing only in m and R (Tables 1 and 2). Schematic check: DLATCH 0/0, divider_core 0/0, tb_divider 0/1 errors/warnings."
     },
     "waveform_without_sizing": {
       "file": "figures/fig_tran_U8k.png",
       "caption": "Transient waveforms for the baseline divider without sizing (m = 1, R1 = R2 = 8 kOhm, vb = 1 V) at 1.4 GHz. All eight outputs divide to 700.0 MHz, with Q1 swinging from 0.749 V to 0.978 V. Waveforms for paper sizing appear in Figure 9."
     },
     "sized_circuit_screenshot": {
-      "file": "screens/crops/schematic_dlatch_crop.png",
-      "caption": "Virtuoso schematic of the DLATCH cell with sizing applied (design D: m = 4, R1 = R2 = 3 kOhm), consistent with Table 2. Schematic check: DLATCH 0/0, divider_core 0/0, tb_divider 0/1 errors/warnings."
+      "file": "screens/schematic_dlatch_cadence.png",
+      "caption": "Virtuoso schematic editor window showing the DLATCH cell with sizing applied (design D: m = 4, R1 = R2 = 3 kOhm), consistent with Table 2. Schematic check: DLATCH 0/0, divider_core 0/0, tb_divider 0/1 errors/warnings."
     },
     "waveform_with_sizing": {
-      "file": "figures/fig_tran_D_1p4.png",
-      "caption": "Transient waveforms for design D (m = 4, R1 = R2 = 3 kOhm) at 1.4 GHz. Output frequency is 700.0 MHz with Q1 swinging from 0.583 V to 1.017 V. Tail voltage V(XD1.tail) remains between 8.1 mV and 66.9 mV (XD2 reaches 68.2 mV)."
+      "file": "screens/viva_tran_D_1p4GHz_full.png",
+      "caption": "ViVA transient waveforms of design D from the Virtuoso testbench via Spectre."
     },
     "pvt_screenshot": {
       "file": "figures/fig_pvt_heatmap_D_1p4.png",
       "caption": "PVT pass/fail map for design D at 1.4 GHz across 5 corners, temperatures -40/27/125 C, and supplies 0.9/1/1.1 V (41 of 45 points pass)."
     },
     "layout_screenshot": {
-      "file": "screens/crops/layout_core_crop.png",
-      "caption": "Virtuoso layout of divider_core showing four DLATCH instances (XD1 to XD4) placed in a 2x2 array (placement only, unrouted)."
+      "file": "screens/layout_core.png",
+      "caption": "Virtuoso layout editor showing divider_core with four DLATCH instances (XD1 to XD4) placed in a 2x2 array (placement only, unrouted)."
     },
     "layout_waveform": {
       "note": "The layout is placement only: it is not routed, and LVS and post-layout simulation were not run."
@@ -96,20 +96,24 @@
         "caption": "Delay and power across the PVT matrix for design B at 6 GHz (crosses mark failing corners)."
       },
       {
-        "file": "screens/crops/schematic_tb_crop.png",
-        "caption": "Virtuoso schematic of testbench tb_divider. Schematic check: DLATCH 0/0, divider_core 0/0, tb_divider 0/1 errors/warnings."
+        "file": "screens/schematic_tb_full.png",
+        "caption": "Virtuoso schematic editor window showing testbench tb_divider. Schematic check: DLATCH 0/0, divider_core 0/0, tb_divider 0/1 errors/warnings."
       },
       {
-        "file": "screens/crops/virtuoso_ciw_crop.png",
+        "file": "screens/virtuoso_ciw_gpdk045_loaded.png",
         "caption": "Virtuoso Command Interpreter Window (CIW) log confirming gpdk045 library initialization."
       },
       {
-        "file": "screens/crops/layout_dlatch_crop.png",
-        "caption": "Virtuoso layout of the DLATCH cell: 7 unit nMOS devices (m = 1) and 2 poly resistors (placement only, unrouted)."
+        "file": "screens/layout_dlatch_cadence.png",
+        "caption": "Virtuoso layout editor showing the DLATCH cell: 7 unit nMOS devices (m = 1) and 2 poly resistors (placement only, unrouted)."
       },
       {
         "file": "screens/drc_result.png",
         "caption": "Assura DRC summary for the DLATCH layout showing 21 errors across 3 rules."
+      },
+      {
+        "file": "figures/fig_tran_D_1p4.png",
+        "caption": "Transient waveforms for design D (m = 4, R1 = R2 = 3 kOhm) at 1.4 GHz. Output frequency is 700.0 MHz with Q1 swinging from 0.583 V to 1.017 V. Tail voltage V(XD1.tail) remains between 8.1 mV and 66.9 mV (XD2 reaches 68.2 mV)."
       }
     ]
   },
@@ -1259,7 +1263,7 @@
     "Circuit schematics for the DLATCH and ring architecture are illustrated in Figure 1 and Figure 8."
   ],
   "other_info": [
-    "Layout. The DLATCH cell contains 7 unit nMOS pcells (0.595 um wide) and 2 poly resistors (segW 0.8 um, segL 7.855 um, 200 ohm/sq, target 2000 ohm). Transistors M1-M6 use 2 fingers of 120 nm (240 nm, L = 45 nm); M7 uses 4 fingers of 120 nm (480 nm, L = 90 nm) for m = 1. Design D requires 4x width (m = 4) and 3 kOhm load (baseline uses 8 kOhm). DLATCH boundary is 4.875 x 20.28 um. Cell divider_core places XD1 R0, XD2 MY, XD3 MX, XD4 R180 with a 1 um gap (clock-star length 98.62 um each). The layout is placement only: it is not routed, and LVS and post-layout simulation were not run. Cell layouts are shown in Figure 7 (divider_core) and Figure 22 (DLATCH).",
+    "Layout. The DLATCH cell contains 7 unit nMOS pcells (0.595 um wide) and 2 poly resistors (segW 0.8 um, segL 7.855 um, 200 ohm/sq, target 2000 ohm). Transistors M1-M6 use 2 fingers of 120 nm (240 nm, L = 45 nm); M7 uses 4 fingers of 120 nm (480 nm, L = 90 nm) for m = 1. Design D requires 4x width (m = 4) and 3 kOhm load (baseline uses 8 kOhm). DLATCH boundary is 4.875 x 20.28 um. Cell divider_core places XD1 R0, XD2 MY, XD3 MX, XD4 R180 with a 1 um gap (clock-star length 98.62 um each). The layout is placement only: it is not routed, and LVS and post-layout simulation were not run. An automatic routing run with Cadence's Chip Assembly Router completed 136 of 137 connections but produced 134 DRC errors and mismatches in LVS, so the placement layout is the one reported. Cell layouts are shown in Figure 7 (divider_core) and Figure 22 (DLATCH).",
     "DRC verification. Assura DRC on DLATCH reports 21 errors across 3 rules (Figure 23). Rules 220 (1) and 221 (6) give 7 substrate-stamp errors from unrouted taps at device pitch 0.755 um. Rule 595 (14) gives 14 Metal1 minimum-area errors (threshold 0.02 um^2); 4 markers measure 0.06 x 0.12 um (0.0072 um^2) across x = 0.96-1.155 um, y = 1-2.02 um. Contact pins (0.2 x 0.15 um = 0.03 um^2) meet the minimum area. The unrouted layout is not DRC clean.",
     "Schematic connectivity. Pin-by-pin comparison of the 4 DLATCH instances (XD1-XD4) against the netlist confirmed full consistency with 0 mismatches. Schematic check warnings: DLATCH 0/0, divider_core 0/0, and tb_divider 0/1.",
     "Design B operating point. At 6 GHz (m = 4, R1 = R2 = 2 kOhm), the divider achieves 3000.0 MHz output, 0.4929 mW power, 27.94 ps delay, 13.768 fJ PDP, and 3.78 deg maximum phase error (48.78 and 41.22 deg steps). Output Q1 swings 0.135 V (0.818 V to 0.953 V), above the 0.1 V limit. Peak tail voltage reaches 66.2 mV, below Vdsat = 357.8 mV (triode, Figure 14). PVT results appear in Table 4.",
@@ -1271,7 +1275,7 @@
     "Transient delay and edge times. First-edge CK-to-Q1 delays are 135.96 ps (U8k), 51.95 ps (design D), and 66.10 ps (design B). Multi-phase average delay for design D is 25.99 ps. Output Q1 rise and fall times are 134.6 ps and 102.6 ps.",
     "Supply current. Design D average supply current is 0.54144 mA (0.541337 mA integrated from transient, matching within 0.018%). Peak current is 0.560 mA (Figure 15).",
     "Comparison with reference literature. Reported values from Kuo et al. (TSMC 180 nm, 1.8 V, 1.4 GHz) are 2.34 mW, phase error within 3.75 deg, and core area 91.7 x 52.9 um^2. In 45 nm, design D at 1.4 GHz consumes 0.5413 mW with 38.46 deg phase error; design B reaches 3.78 deg at 6 GHz.",
-    "Figure index. Primary figures 1 to 7 cover schematics, waveforms, and layout. Figures 8 onwards provide supplementary validation: ring architecture (Figure 8), paper sizing waveforms (Figure 9), design B waveforms at 6 GHz (Figure 10), phase steps (Figure 11), tail node voltages (Figures 12, 13, and 14), supply current (Figure 15), frequency sweeps (Figure 16), PVT distributions (Figures 17, 18, and 19), testbench schematic (Figure 20), session log (Figure 21), DLATCH layout (Figure 22), and DRC summary (Figure 23)."
+    "Figure index. Primary figures 1 to 7 cover schematics, waveforms, and layout. Figures 8 onwards provide supplementary validation: ring architecture (Figure 8), paper sizing waveforms (Figure 9), design B waveforms at 6 GHz (Figure 10), phase steps (Figure 11), tail node voltages (Figures 12, 13, and 14), supply current (Figure 15), frequency sweeps (Figure 16), PVT distributions (Figures 17, 18, and 19), testbench schematic (Figure 20), session log (Figure 21), DLATCH layout (Figure 22), DRC summary (Figure 23), and transient waveform plot for design D (Figure 24)."
   ],
   "conclusion": [
     "Multiphase CMOS division in 45 nm was demonstrated at two operating points using the stack resistance rule. Design D at 1.4 GHz (m = 4, R = 3 kOhm) achieved 0.5413 mW, 25.99 ps delay, 14.067 fJ PDP, and 38.46 deg phase error (41 of 45 PVT corners passing). Design B at 6 GHz (m = 4, R = 2 kOhm) achieved 0.4929 mW, 27.94 ps delay, 13.768 fJ PDP, and 3.78 deg phase error (21 of 45 PVT corners passing). Design B exhibited reduced swing (0.135 V, 0.818 V to 0.953 V against the 0.1 V limit), failed at tt, 27 C, 0.9 V, and failed division at 6.2 GHz.",
@@ -1311,15 +1315,15 @@
     "Yue-Fang Kuo, Shih-Hung Lin, Bo-Yi Chen and Liang-Chen Liu, \"A Compact Multiphase Divide-by-Two CMOS Frequency Divider,\" IEEE Microw. Wireless Technol. Lett., vol. 35, no. 5, pp. 617-620, May 2025, doi: 10.1109/LMWT.2025.3528863.",
     "Cadence Design Systems, Cadence GPDK045 v6.0 documentation (45 nm generic process design kit).",
     "Cadence Design Systems, Spectre Circuit Simulator Reference, MMSIM 12.1.",
-    "Evidence file: results/gpdk045/ocean_schematic_run.txt",
-    "Evidence file: cadence/ocean/run_schematic_tb.ocn",
-    "Evidence file: results/gpdk045/virtuoso_netlist_tb_divider.scs"
+    "Evidence file: results/gpdk045/ocean_schematic_run_1p4GHz_D.txt",
+    "Evidence file: cadence/ocean/run_schematic_tb_param.ocn",
+    "Evidence file: results/gpdk045/final/D_1p4.tsv"
   ],
   "schematic_sim": {
     "heading": "Simulation driven directly from the Virtuoso schematic (OCEAN)",
     "paragraphs": [
-      "To evaluate the circuit directly from the schematic environment, an OCEAN script was used to netlist the divider_lib/tb_divider schematic with Virtuoso's netlister and simulate it using Spectre 12.1 under the gpdk045 tt corner at 27 C. Inspection confirms that the devices and values in the Virtuoso-generated netlist match the standalone netlist, specifically M1–M6 (w=240n, l=45n, m=4), M7 (w=480n, l=90n, m=4), and load resistors R1 and R2 (3k).",
-      "Transient simulation demonstrates divide-by-2 operation from 1 GHz to 500 MHz, evidenced by Q1 rising edges occurring 2.0 ns apart relative to a 1.0 ns clock period. The Q1 output signal achieves a voltage swing of 0.713–1.006 V. The circuit exhibits an average supply current of 0.39 mA, corresponding to about 0.39 mW of power consumption at a 1.0 V supply. Several caveats apply to this run: the testbench bias was set to 0.8 V rather than 1.0 V, only Q1 was checked in this script, and the verification remains a nominal single-corner check."
+      "To evaluate the sized divider circuit (design D) directly from the Cadence schematic environment, the testbench schematic was simulated with Spectre at the nominal typical corner (tt, 27 C, 1.0 V supply, 1.0 V bias) with a 1.4 GHz input clock. The circuit uses load resistors R1 = R2 = 3 kOhm and transistor multiplicity m = 4. All 8 outputs divide to 700 MHz with a frequency division ratio of 2.0.",
+      "Propagation delay from the clock to the divider outputs is 26.66 ps, compared with 25.99 ps from the standalone netlist. Average supply power is 0.455 mW, compared with 0.541 mW from the standalone netlist run. The power differs by about 16 percent between the two flows. The cause is under investigation; the averaging window and the device parameters added by the Virtuoso netlister differ; the standalone value is used for the power and PDP tables."
     ],
     "figure": null,
     "figure_ref": "The testbench schematic is shown in Figure 20."

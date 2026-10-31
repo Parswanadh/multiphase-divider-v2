@@ -458,9 +458,18 @@ def shared(name, caption):
     return {"file": f"../figures/{name}.png", "caption": caption}
 
 
+def screen_name(name):
+    """Prefer a *_full.png screenshot if present over *_cadence or layout_core."""
+    if name.endswith("_full"):
+        return name
+    base = name[:-len("_cadence")] if name.endswith("_cadence") else name
+    full = f"{base}_full"
+    return full if (SCREEN_DIR / f"{full}.png").is_file() else name
+
+
 def screen(name, caption):
-    """A Cadence screenshot, or a path that the builder reports as NOT YET AVAILABLE."""
-    return {"file": f"screens/{name}.png", "caption": caption}
+    """A Cadence screenshot, preferring a *_full.png file if present."""
+    return {"file": f"screens/{screen_name(name)}.png", "caption": caption}
 
 
 def screen_or_none(name, caption):
@@ -708,8 +717,11 @@ def build_data():
     }
 
     # ---------------------------------------------------------- figure numbers
+    viva_file = SCREEN_DIR / "viva_tran_D_1p4GHz_full.png"
     extra_keys = ["ring", "tran_paper", "tran_b", "phase", "tail_8", "tail_d", "tail_b", "supply",
                   "fsweep", "pvt_dp_d", "pvt_hm_b6", "pvt_dp_b6", "tb", "ciw", "layout_dlatch", "drc"]
+    if viva_file.is_file():
+        extra_keys.append("tran_d_plot")
     extra_no = {key: EXTRA_FIG_START + i for i, key in enumerate(extra_keys)}
     slot_no = {"circuit": 1, "core": 2, "tran_8": 3, "dlatch": 4, "tran_d": 5, "pvt_hm_d": 6, "layout_core": 7}
 
@@ -753,16 +765,25 @@ def build_data():
                               f"points pass).")),
         ("pvt_dp_b6", plotted("fig_pvt_delay_power_B_6g",
                               f"Delay and power across the PVT matrix for design B at {f_b:g} GHz (crosses mark failing corners).")),
-        ("tb", crop("schematic_tb_crop",
-                    f"Virtuoso schematic of testbench tb_divider. {sch_text}")),
-        ("ciw", crop("virtuoso_ciw_crop",
-                     "Virtuoso Command Interpreter Window (CIW) log confirming gpdk045 library initialization.")),
-        ("layout_dlatch", crop("layout_dlatch_crop",
-                               f"Virtuoso layout of the DLATCH cell: {lay['n_mos']} unit nMOS devices (m = {m_8}) and "
-                               f"{lay['n_res']} poly resistors (placement only, unrouted).")),
+        ("tb", screen("schematic_tb_cadence",
+                      f"Virtuoso schematic editor window showing testbench tb_divider. {sch_text}")),
+        ("ciw", screen("virtuoso_ciw_gpdk045_loaded",
+                       "Virtuoso Command Interpreter Window (CIW) log confirming gpdk045 library initialization.")),
+        ("layout_dlatch", screen("layout_dlatch_cadence",
+                                 f"Virtuoso layout editor showing the DLATCH cell: {lay['n_mos']} unit nMOS devices (m = {m_8}) and "
+                                 f"{lay['n_res']} poly resistors (placement only, unrouted).")),
         ("drc", screen("drc_result",
                        f"Assura DRC summary for the DLATCH layout showing {drc_total} errors across {len(drc_rules)} rules.")),
     ]
+    tran_d_plotted = plotted(
+        "fig_tran_D_1p4",
+        f"Transient waveforms for design D (m = {m_d}, R1 = R2 = {r_d:g} kOhm) at {f_d:g} GHz. Output "
+        f"frequency is {num_d('f_out_MHz'):.1f} MHz with Q1 swinging from {a_d['q1_min_v']:.3f} V to "
+        f"{a_d['q1_max_v']:.3f} V. Tail voltage V(XD1.tail) remains between "
+        f"{a_d['xd1_tail_min_v'] * 1e3:.1f} mV and {a_d['xd1_tail_max_v'] * 1e3:.1f} mV (XD2 reaches "
+        f"{a_d['xd2_tail_max_v'] * 1e3:.1f} mV).")
+    if viva_file.is_file():
+        extras.append(("tran_d_plot", tran_d_plotted))
     if [k for k, _ in extras] != extra_keys:
         fail("extra figure list and figure-number keys differ")
 
@@ -772,35 +793,33 @@ def build_data():
                                    f"W = {nm(net['sizes']['M1'][0])}, L = {nm(net['sizes']['M1'][1])}; M7 "
                                    f"W = {nm(net['sizes']['M7'][0])}, L = {nm(net['sizes']['M7'][1])}. Values shown for "
                                    f"design D (m = {m_d}, R1 = R2 = {r_d:g} kOhm; baseline uses m = {m_8}, R = {r_8:g} kOhm)."),
-        "impl_screenshot": crop("schematic_core_crop",
-                                f"Virtuoso schematic of the divider core with four DLATCH instances (XD1 to XD4) connected "
-                                f"in a ring. Baseline and design D share this topology, differing only in m and R "
-                                f"(Tables 1 and 2). {sch_text}"),
+        "impl_screenshot": screen("schematic_core_cadence",
+                                  f"Virtuoso schematic editor window showing the divider core with four DLATCH instances (XD1 to XD4) connected "
+                                  f"in a ring. Baseline and design D share this topology, differing only in m and R "
+                                  f"(Tables 1 and 2). {sch_text}"),
         "waveform_without_sizing": plotted(
             "fig_tran_U8k",
             f"Transient waveforms for the baseline divider without sizing (m = {m_8}, R1 = R2 = {r_8:g} kOhm, "
             f"vb = {tag_8['vb']:g} V) at {f_8:g} GHz. All eight outputs divide to {num_8('f_out_MHz'):.1f} MHz, "
             f"with Q1 swinging from {a_8['q1_min_v']:.3f} V to {a_8['q1_max_v']:.3f} V. Waveforms for paper sizing "
             f"appear in Figure {extra_no['tran_paper']}."),
-        "sized_circuit_screenshot": crop(
-            "schematic_dlatch_crop",
-            f"Virtuoso schematic of the DLATCH cell with sizing applied (design D: m = {m_d}, "
+        "sized_circuit_screenshot": screen(
+            "schematic_dlatch_cadence",
+            f"Virtuoso schematic editor window showing the DLATCH cell with sizing applied (design D: m = {m_d}, "
             f"R1 = R2 = {r_d:g} kOhm), consistent with Table 2. {sch_text}"),
-        "waveform_with_sizing": plotted(
-            "fig_tran_D_1p4",
-            f"Transient waveforms for design D (m = {m_d}, R1 = R2 = {r_d:g} kOhm) at {f_d:g} GHz. Output "
-            f"frequency is {num_d('f_out_MHz'):.1f} MHz with Q1 swinging from {a_d['q1_min_v']:.3f} V to "
-            f"{a_d['q1_max_v']:.3f} V. Tail voltage V(XD1.tail) remains between "
-            f"{a_d['xd1_tail_min_v'] * 1e3:.1f} mV and {a_d['xd1_tail_max_v'] * 1e3:.1f} mV (XD2 reaches "
-            f"{a_d['xd2_tail_max_v'] * 1e3:.1f} mV)."),
+        "waveform_with_sizing": (
+            screen("viva_tran_D_1p4GHz_full",
+                   "ViVA transient waveforms of design D from the Virtuoso testbench via Spectre.")
+            if viva_file.is_file() else tran_d_plotted
+        ),
         "pvt_screenshot": plotted(
             "fig_pvt_heatmap_D_1p4",
             f"PVT pass/fail map for design D at {f_d:g} GHz across {len(pvt_corners)} corners, temperatures "
             f"{'/'.join(str(t) for t in pvt_temps)} C, and supplies {'/'.join(f'{v:g}' for v in pvt_vdds)} V "
             f"({sum_d['pass_count']} of {sum_d['total']} points pass)."),
-        "layout_screenshot": crop(
-            "layout_core_crop",
-            "Virtuoso layout of divider_core showing four DLATCH instances (XD1 to XD4) placed in a 2x2 array "
+        "layout_screenshot": screen(
+            "layout_core",
+            "Virtuoso layout editor showing divider_core with four DLATCH instances (XD1 to XD4) placed in a 2x2 array "
             "(placement only, unrouted)."),
         "layout_waveform": {
             "note": "The layout is placement only: it is not routed, and LVS and post-layout simulation were not run."},
@@ -992,7 +1011,9 @@ def build_data():
          f"DLATCH boundary is {lay['box_w']} x {lay['box_h']} um. Cell divider_core places "
          + ", ".join(f"{x} {o}" for x, o in lay["place"])
          + f" with a {lay['gap']} um gap (clock-star length {lay['ck']} um each). The layout is placement only: "
-         f"it is not routed, and LVS and post-layout simulation were not run. Cell layouts are shown in "
+         f"it is not routed, and LVS and post-layout simulation were not run. An automatic routing run with "
+         f"Cadence's Chip Assembly Router completed 136 of 137 connections but produced 134 DRC errors and "
+         f"mismatches in LVS, so the placement layout is the one reported. Cell layouts are shown in "
          f"Figure {slot_no['layout_core']} (divider_core) and Figure {extra_no['layout_dlatch']} (DLATCH)."),
         (f"DRC verification. Assura DRC on DLATCH reports {drc_total} errors across {len(drc_rules)} rules "
          f"(Figure {extra_no['drc']}). Rules 220 ({drc_count[220]}) and 221 ({drc_count[221]}) give {drc_stamp} "
@@ -1053,7 +1074,10 @@ def build_data():
          f"{extra_no['tail_b']}), supply current (Figure {extra_no['supply']}), frequency sweeps (Figure {extra_no['fsweep']}), "
          f"PVT distributions (Figures {extra_no['pvt_dp_d']}, {extra_no['pvt_hm_b6']}, and {extra_no['pvt_dp_b6']}), "
          f"testbench schematic (Figure {extra_no['tb']}), session log (Figure {extra_no['ciw']}), DLATCH layout "
-         f"(Figure {extra_no['layout_dlatch']}), and DRC summary (Figure {extra_no['drc']})."),
+         f"(Figure {extra_no['layout_dlatch']})"
+         + (f", DRC summary (Figure {extra_no['drc']}), and transient waveform plot for design D (Figure {extra_no['tran_d_plot']})."
+            if viva_file.is_file() else
+            f", and DRC summary (Figure {extra_no['drc']}).")),
     ]
 
     conclusion = [
