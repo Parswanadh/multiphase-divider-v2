@@ -10,6 +10,18 @@ Usage: measure_guest.py <file.raw | dir> [vdd] [settle_ns]
   file: header + one row
   vdd defaults to the tag's last field (<corner>_<temp>_<vdd>, e.g. tt_27_1.0 or tt_27_0p9),
   else 1.0. A bad file prints "<tag>\\tERROR\\t<message>" and processing continues.
+
+divides=1 only if all of these hold after settle_ns:
+  - |f_in / f_out(Q1) - 2| < 0.001
+  - every output (Q1..Q4, Q1b..Q4b) has a mean rising-edge period within 0.1% of 2/f_in
+    (per-output period from its own rising crossings of its own mid-swing)
+  - every output swings >= 0.1 V (max - min); feedthrough glitches alone do not count
+  - every output's rising-edge count is within +-1 of the Q1 count
+Otherwise divides=0 and the last column `reason` lists the failed checks; for divides=1 it is `ok`.
+Columns after swing_hi: phases_deg (name:phase in sorted order, degrees relative to the 3rd Q1
+rising edge), phase_steps_deg (8 adjacent steps, wrap-around included), periods_averaged (output
+periods used for the power average), i_avg_mA (average VDD supply current), reason.
+Non-dividing rows have nan in phases_deg, phase_steps_deg, periods_averaged and i_avg_mA.
 """
 from __future__ import division, print_function
 
@@ -20,9 +32,14 @@ import sys
 from array import array
 
 HEADER = ["tag", "divides", "f_in_GHz", "f_out_MHz", "ratio", "power_mW", "delay_ps",
-          "pdp_fJ", "max_phase_step_err_deg", "swing_lo", "swing_hi"]
+          "pdp_fJ", "max_phase_step_err_deg", "swing_lo", "swing_hi",
+          "phases_deg", "phase_steps_deg", "periods_averaged", "i_avg_mA", "reason"]
 OUTS = ["q1", "q2", "q3", "q4", "q1b", "q2b", "q3b", "q4b"]
 NAN = float("nan")
+RATIO_TOL = 0.001      # |f_in / f_out - 2|
+PERIOD_TOL = 0.001     # relative, per-output mean period vs 2 / f_in
+MIN_SWING = 0.1        # volts, max - min after settling
+EDGE_TOL = 1           # rising-edge count vs Q1
 
 
 def _norm(name):
@@ -160,21 +177,26 @@ def measure(plot, vdd, settle_s):
 
     r = {"divides": 0, "f_in_GHz": NAN, "f_out_MHz": NAN, "ratio": NAN, "power_mW": NAN,
          "delay_ps": NAN, "pdp_fJ": NAN, "max_phase_step_err_deg": NAN,
-         "swing_lo": NAN, "swing_hi": NAN, "reason": ""}
+         "swing_lo": NAN, "swing_hi": NAN, "phases": None, "steps": None,
+         "periods": NAN, "i_avg_mA": NAN, "reason": ""}
 
     ck_edges, _, _ = rising(t, sig("ck"), start)
-    edges = {}
-    for name in OUTS:
-        e, lo, hi = rising(t, sig(name), start)
-        edges[name] = e
-        if name == "q1":
-            r["swing_lo"] = lo
-            r["swing_hi"] = hi
     if len(ck_edges) < 4:
         r["reason"] = "clock not found"
         return r
     fin = (len(ck_edges) - 1) / (ck_edges[-1] - ck_edges[0])
     r["f_in_GHz"] = fin / 1e9
+    t_target = 2.0 / fin                      # expected output period at f_in / 2
+
+    edges = {}
+    swing = {}
+    for name in OUTS:
+        e, lo, hi = rising(t, sig(name), start)
+        edges[name] = e
+        swing[name] = hi - lo
+        if name == "q1":
+            r["swing_lo"] = lo
+            r["swing_hi"] = hi
 
     q1 = edges["q1"]
     if len(q1) < 4:
@@ -185,10 +207,30 @@ def measure(plot, vdd, settle_s):
     ratio = fin / fout
     r["f_out_MHz"] = fout / 1e6
     r["ratio"] = ratio
-    r["divides"] = 1 if abs(ratio - 2.0) < 0.01 else 0
-    if not r["divides"]:
-        r["reason"] = "output at %.1f MHz, ratio %.3f (not 2)" % (fout / 1e6, ratio)
+
+    fails = []
+    if abs(ratio - 2.0) >= RATIO_TOL:
+        fails.append("ratio %.4f not 2 (Q1 %.3f MHz)" % (ratio, fout / 1e6))
+    for name in OUTS:
+        e = edges[name]
+        if swing[name] < MIN_SWING:
+            fails.append("%s swing %.3f V < %.1f V (not toggling)"
+                         % (name, swing[name], MIN_SWING))
+        if len(e) < 4:
+            fails.append("%s has %d rising edges (not toggling)" % (name, len(e)))
+            continue
+        tmean = (e[-1] - e[0]) / (len(e) - 1)
+        if abs(tmean - t_target) >= PERIOD_TOL * t_target:
+            fails.append("%s period %.2f ps vs 2/f_in %.2f ps"
+                         % (name, tmean * 1e12, t_target * 1e12))
+        if abs(len(e) - len(q1)) > EDGE_TOL:
+            fails.append("%s edge count %d vs Q1 %d" % (name, len(e), len(q1)))
+    if fails:
+        r["reason"] = "; ".join(fails)
         return r
+
+    r["divides"] = 1
+    r["reason"] = "ok"
 
     # phases of the 8 outputs relative to the 3rd Q1 rising edge
     ref = q1[2]
@@ -204,6 +246,8 @@ def measure(plot, vdd, settle_s):
     steps = [vals[i + 1] - vals[i] for i in range(7)]
     steps.append(vals[0] + 360.0 - vals[7])
     r["max_phase_step_err_deg"] = max([abs(s - 45.0) for s in steps])
+    r["phases"] = ",".join(["%s:%.2f" % (n, p) for p, n in phases])
+    r["steps"] = ",".join(["%.2f" % s for s in steps])
 
     # average supply power over an integer number of output periods (trapezoid on raw grid)
     if sup is None:
@@ -220,6 +264,8 @@ def measure(plot, vdd, settle_s):
         s += (t[k + 1] - t[k]) * (-cur[k] - cur[k + 1]) * 0.5
     iavg = s / (t1 - ref)
     r["power_mW"] = vdd * iavg * 1e3
+    r["i_avg_mA"] = iavg * 1e3
+    r["periods"] = n_per
 
     # CK rising edge -> next rising edge on any of the 8 outputs
     alle = []
@@ -265,8 +311,9 @@ def process(path, vdd_arg, settle_s):
         vdd = vdd_from_tag(tag)
     plot = pick_plot(parse_plots(path))
     r = measure(plot, vdd, settle_s)
-    if r["reason"]:
+    if not r["divides"]:
         sys.stderr.write("%s: %s\n" % (tag, r["reason"]))
+    reason = r["reason"].replace("\t", " ").replace("\n", " ")
     return [tag,
             "%d" % r["divides"],
             fmt(r["f_in_GHz"], "%.4f"),
@@ -277,7 +324,12 @@ def process(path, vdd_arg, settle_s):
             fmt(r["pdp_fJ"], "%.3f"),
             fmt(r["max_phase_step_err_deg"], "%.3f"),
             fmt(r["swing_lo"], "%.4f"),
-            fmt(r["swing_hi"], "%.4f")]
+            fmt(r["swing_hi"], "%.4f"),
+            r["phases"] or "nan",
+            r["steps"] or "nan",
+            fmt(r["periods"], "%d"),
+            fmt(r["i_avg_mA"], "%.6f"),
+            reason]
 
 
 def main(argv):

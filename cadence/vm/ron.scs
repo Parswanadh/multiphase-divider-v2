@@ -1,0 +1,9 @@
+// Turn-on resistance of the unit gpdk045 NMOS (g45n1svt, W=240n L=45n) for the paper's sizing rule R1 = R_on/2
+simulator lang=spectre
+include "/home/buet/pdk/gpdk045_v_6_0/models/spectre/gpdk045.scs" section=tt
+parameters vd=0.05 vg=1.0
+VD (d 0) vsource dc=vd
+VG (g 0) vsource dc=vg
+M1 (d g 0 0) g45n1svt w=240n l=45n
+dcsweep dc param=vd start=0.01 stop=0.1 step=0.03
+save M1:d d g

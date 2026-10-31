@@ -5,12 +5,13 @@
 //   models/spectre/gpdk045.scs  provides corner sections  tt ff ss fs sf
 //   the 1.0 V standard-Vt NMOS is the subcircuit  g45n1svt (d g s b)  params l w nf multi
 //   (it is what the Virtuoso library cell nmos1v netlists to)
-// Sizes and bias are STARTING VALUES from the 180 nm design, not yet tuned for gpdk045.
+// Sizes and bias are STARTING VALUES; `mult` scales every device in parallel (model param multi) so the
+// unit sizes stay inside the valid model bins (W=240n L=45n bin 30, W=480n L=90n bin 23).
 simulator lang=spectre
 
 include "/home/buet/pdk/gpdk045_v_6_0/models/spectre/gpdk045.scs" section=tt
 
-parameters vdd=1.0 fin=1G tck=1/fin tr=20p cl=10f rl=8k vb=0.8
+parameters vdd=1.0 fin=1G tck=1/fin tr=20p cl=10f rl=8k vb=0.8 mult=1
 simulatorOptions options temp=27 tnom=27
 
 VDD (vdd 0)   vsource dc=vdd
@@ -21,13 +22,13 @@ VCKB (ckb 0) vsource type=pulse val0=0 val1=vdd delay=tck/2   rise=tr fall=tr wi
 subckt DLATCH (D Db CK CKb Q Qb VDD VSS NBIAS)
   R1 (VDD Q)  resistor r=rl
   R2 (VDD Qb) resistor r=rl
-  M1 (Q  D  xs   VSS) g45n1svt w=240n l=45n
-  M2 (Qb Db xs   VSS) g45n1svt w=240n l=45n
-  M5 (xs CK tail VSS) g45n1svt w=240n l=45n
-  M3 (Q  Qb xh   VSS) g45n1svt w=240n l=45n
-  M4 (Qb Q  xh   VSS) g45n1svt w=240n l=45n
-  M6 (xh CKb tail VSS) g45n1svt w=240n l=45n
-  M7 (tail NBIAS VSS VSS) g45n1svt w=480n l=90n
+  M1 (Q  D  xs   VSS) g45n1svt w=240n l=45n multi=mult
+  M2 (Qb Db xs   VSS) g45n1svt w=240n l=45n multi=mult
+  M5 (xs CK tail VSS) g45n1svt w=240n l=45n multi=mult
+  M3 (Q  Qb xh   VSS) g45n1svt w=240n l=45n multi=mult
+  M4 (Qb Q  xh   VSS) g45n1svt w=240n l=45n multi=mult
+  M6 (xh CKb tail VSS) g45n1svt w=240n l=45n multi=mult
+  M7 (tail NBIAS VSS VSS) g45n1svt w=480n l=90n multi=mult
 ends DLATCH
 
 // interconnect: Q1b->D2, Q2->D3, Q3b->D4, Q4->D1b

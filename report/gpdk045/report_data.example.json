@@ -1,0 +1,83 @@
+{
+  "example_only": true,
+  "logo": null,
+  "titles": {
+    "system_design_project": "EXAMPLE TITLE - Multiphase Divide-by-Two CMOS Frequency Divider (GPDK045)"
+  },
+  "paper": {
+    "title": "A Compact Multiphase Divide-by-Two CMOS Frequency Divider",
+    "authors": "Y.-F. Kuo et al.",
+    "journal": "IEEE Microwave and Wireless Technology Letters",
+    "volume": "35",
+    "issue": "5",
+    "pages": "617-620",
+    "date": "May 2025",
+    "doi": "10.1109/LMWT.2025.3528863"
+  },
+  "figures": {
+    "circuit_diagram": {
+      "file": "../figures/fig_a_latch_schematic.png",
+      "caption": "EXAMPLE placeholder image (existing latch schematic), not a simulator result"
+    },
+    "impl_screenshot": null,
+    "waveform_without_sizing": null,
+    "sized_circuit_screenshot": null,
+    "waveform_with_sizing": null,
+    "pvt_screenshot": null,
+    "layout_screenshot": null,
+    "layout_waveform": null,
+    "extra_figures": []
+  },
+  "designs": {
+    "without_sizing": {
+      "description": "EXAMPLE: description of the circuit without the sizing concept goes here.",
+      "devices": [
+        {"device": "M1, M2", "w": "EX-W", "l": "EX-L", "multiplier": 1, "role": "EXAMPLE sampling pair"},
+        {"device": "M7", "w": "EX-W", "l": "EX-L", "multiplier": 1, "role": "EXAMPLE tail current source"}
+      ],
+      "metrics": {
+        "f_in_ghz": null,
+        "f_out_mhz": 111.1,
+        "power_mw": 111.1,
+        "delay_ps": 111.1,
+        "pdp_fj": 111.1,
+        "max_phase_step_err_deg": 111.1,
+        "swing_v": 111.1,
+        "m7_vds_v": 111.1,
+        "m7_vdsat_v": 111.1
+      }
+    },
+    "with_sizing": {
+      "description": "EXAMPLE: description of the circuit based on the sizing concept goes here.",
+      "devices": [
+        {"device": "M1, M2", "w": "EX-W", "l": "EX-L", "multiplier": 1, "role": "EXAMPLE sampling pair"},
+        {"device": "M7", "w": "EX-W", "l": "EX-L", "multiplier": 1, "role": "EXAMPLE tail current source"}
+      ],
+      "metrics": {
+        "f_in_ghz": null,
+        "f_out_mhz": 222.2,
+        "power_mw": 222.2,
+        "delay_ps": 222.2,
+        "pdp_fj": 222.2,
+        "max_phase_step_err_deg": 222.2,
+        "swing_v": 222.2,
+        "m7_vds_v": 222.2,
+        "m7_vdsat_v": 111.1
+      }
+    }
+  },
+  "pvt_rows": [
+    {"corner": "EX-TT", "temp": 27, "vdd": 1.0, "divides": true, "f_out_mhz": 111.1, "delay_ps": 111.1, "power_mw": 111.1, "pdp_fj": 111.1, "note": "EXAMPLE row"},
+    {"corner": "EX-SS", "temp": 125, "vdd": 0.9, "divides": false, "f_out_mhz": null, "delay_ps": null, "power_mw": null, "pdp_fj": null, "note": "EXAMPLE FAIL row, kept on purpose"}
+  ],
+  "other_info": ["EXAMPLE paragraph for ANY OTHER RELEVANT INFORMATION."],
+  "theory": ["EXAMPLE paragraph for THEORY AND WORKING PRINCIPLE."],
+  "tool_technology": ["EXAMPLE paragraph for TOOL & TECHNOLOGY USED."],
+  "conclusion": ["EXAMPLE paragraph for CONCLUSION."],
+  "problems_faced": ["EXAMPLE paragraph for PROBLEMS FACED."],
+  "problems_resolved": ["EXAMPLE paragraph for PROBLEMS RESOLVED."],
+  "other_comment": ["EXAMPLE paragraph for ANY OTHER COMMENT."],
+  "references": [
+    "EXAMPLE reference entry. Y.-F. Kuo et al., \"A Compact Multiphase Divide-by-Two CMOS Frequency Divider,\" IEEE Microw. Wireless Technol. Lett., vol. 35, no. 5, pp. 617-620, May 2025, doi: 10.1109/LMWT.2025.3528863."
+  ]
+}
