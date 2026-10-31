@@ -6,3 +6,5 @@ grep: /home/buet/gpdk_run/ocean_tb/netlist/input.scs: No such file or directory
 # Context: OCEAN (ocean -nograph < run_schematic_tb.ocn) netlisted divider_lib/tb_divider/schematic with Virtuoso's own netlister
 # and ran Spectre 12.1 with gpdk045 tt. Testbench: R=3k, m=4, tbPeriod 1 ns (1 GHz), tbVbias 0.8 V (NOT the 1.0 V used for design D in the standalone runs).
 # Q1 rising edges 2.0 ns apart vs CK period 1.0 ns -> divide by 2 (500 MHz). Iavg = -0.390 mA (supply delivering) -> about 0.39 mW at 1.0 V.
+# Netlist check: Virtuoso's own netlist (results/gpdk045/virtuoso_netlist_tb_divider.scs) has M1-M6 w=240n l=45n m=4, M7 w=480n l=90n m=4, R1=R2=3k,
+# identical to spectre/divider_gpdk45.scs. Differences: Virtuoso adds PDK layout-dependent params (as/ad/ps/pd/sa/sb/sca...) per device.

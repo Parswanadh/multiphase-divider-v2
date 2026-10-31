@@ -1,0 +1,84 @@
+// Generated for: spectre
+// Generated on: Oct 31 16:15:37 2026
+// Design library name: divider_lib
+// Design cell name: tb_divider
+// Design view name: schematic
+simulator lang=spectre
+global 0
+include "/home/buet/pdk/gpdk045_v_6_0/models/spectre/gpdk045.scs" section=tt
+
+// Library name: divider_lib
+// Cell name: DLATCH
+// View name: schematic
+subckt DLATCH CK CKb D Db NBIAS Q Qb VDD VSS
+    R2 (VDD Qb) resistor r=3K
+    R1 (VDD Q) resistor r=3K
+    M7 (tail NBIAS VSS VSS) g45n1svt w=(480n) l=90n nf=1 as=16.8f ad=16.8f \
+        ps=520n pd=520n nrd=1.16667 nrs=1.16667 sa=140n sb=140n sd=160n \
+        sca=226.00151 scb=0.11734 scc=0.02767 m=(4)
+    M6 (xh CKb tail VSS) g45n1svt w=(240n) l=45n nf=1 as=16.8f ad=16.8f \
+        ps=520n pd=520n nrd=1.16667 nrs=1.16667 sa=140n sb=140n sd=160n \
+        sca=226.00151 scb=0.11734 scc=0.02767 m=(4)
+    M4 (Qb Q xh VSS) g45n1svt w=(240n) l=45n nf=1 as=16.8f ad=16.8f \
+        ps=520n pd=520n nrd=1.16667 nrs=1.16667 sa=140n sb=140n sd=160n \
+        sca=226.00151 scb=0.11734 scc=0.02767 m=(4)
+    M3 (Q Qb xh VSS) g45n1svt w=(240n) l=45n nf=1 as=16.8f ad=16.8f \
+        ps=520n pd=520n nrd=1.16667 nrs=1.16667 sa=140n sb=140n sd=160n \
+        sca=226.00151 scb=0.11734 scc=0.02767 m=(4)
+    M5 (xs CK tail VSS) g45n1svt w=(240n) l=45n nf=1 as=16.8f ad=16.8f \
+        ps=520n pd=520n nrd=1.16667 nrs=1.16667 sa=140n sb=140n sd=160n \
+        sca=226.00151 scb=0.11734 scc=0.02767 m=(4)
+    M2 (Qb Db xs VSS) g45n1svt w=(240n) l=45n nf=1 as=16.8f ad=16.8f \
+        ps=520n pd=520n nrd=1.16667 nrs=1.16667 sa=140n sb=140n sd=160n \
+        sca=226.00151 scb=0.11734 scc=0.02767 m=(4)
+    M1 (Q D xs VSS) g45n1svt w=(240n) l=45n nf=1 as=16.8f ad=16.8f ps=520n \
+        pd=520n nrd=1.16667 nrs=1.16667 sa=140n sb=140n sd=160n \
+        sca=226.00151 scb=0.11734 scc=0.02767 m=(4)
+ends DLATCH
+// End of subcircuit definition.
+
+// Library name: divider_lib
+// Cell name: divider_core
+// View name: schematic
+subckt divider_core CK CKb NBIAS Q1 Q1b Q2 Q2b Q3 Q3b Q4 Q4b VDD VSS
+    XD4 (CK CKb Q3b Q3 NBIAS Q4 Q4b VDD VSS) DLATCH
+    XD3 (CKb CK Q2 Q2b NBIAS Q3 Q3b VDD VSS) DLATCH
+    XD2 (CKb CK Q1b Q1 NBIAS Q2 Q2b VDD VSS) DLATCH
+    XD1 (CK CKb Q4b Q4 NBIAS Q1 Q1b VDD VSS) DLATCH
+ends divider_core
+// End of subcircuit definition.
+
+// Library name: divider_lib
+// Cell name: tb_divider
+// View name: schematic
+VB (NBIAS 0) vsource dc=800.0m type=dc
+VDD (VDD 0) vsource dc=1 type=dc
+VCKB (CKb 0) vsource type=pulse val0=0 val1=1 period=1n delay=500p \
+        rise=20p fall=20p width=480.0p
+VCK (CK 0) vsource type=pulse val0=0 val1=1 period=1n delay=0 rise=20p \
+        fall=20p width=480.0p
+XCORE (CK CKb NBIAS Q1 Q1b Q2 Q2b Q3 Q3b Q4 Q4b VDD 0) divider_core
+CL4b (Q4b 0) capacitor c=10f
+CL4 (Q4 0) capacitor c=10f
+CL3b (Q3b 0) capacitor c=10f
+CL3 (Q3 0) capacitor c=10f
+CL2b (Q2b 0) capacitor c=10f
+CL2 (Q2 0) capacitor c=10f
+CL1b (Q1b 0) capacitor c=10f
+CL1 (Q1 0) capacitor c=10f
+ic Q4b=1.0 Q4=0 Q3b=1.0 Q3=0 Q2b=0 Q2=1.0 Q1b=0 Q1=1.0 
+simulatorOptions options reltol=1e-3 vabstol=1e-6 iabstol=1e-12 temp=27 \
+    tnom=27 scalem=1.0 scale=1.0 gmin=1e-12 rforce=1 maxnotes=5 maxwarns=5 \
+    digits=5 cols=80 pivrel=1e-3 \
+    sensfile="../../../../../gpdk_run/ocean_tb/psf/sens.output" \
+    checklimitdest=psf 
+tran tran stop=40n errpreset=conservative maxstep=5p write="spectre.ic" \
+    writefinal="spectre.fc" annotate=status maxiters=5 
+finalTimeOP info what=oppoint where=rawfile
+modelParameter info what=models where=rawfile
+element info what=inst where=rawfile
+outputParameter info what=output where=rawfile
+designParamVals info what=parameters where=rawfile
+primitives info what=primitives where=rawfile
+subckts info what=subckts  where=rawfile
+saveOptions options save=allpub currents=all
