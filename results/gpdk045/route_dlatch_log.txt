@@ -1,0 +1,46 @@
+route_dlatch: batch log excerpts (IC615 6.1.5, Virtuoso -nograph -replay via skill_run.sh)
+Script: cadence/skill/auto/route_dlatch.il    Replay: run_route.il -> routeDlatchMain()
+Result: BLOCKED at preflight. No routed view was written. Nothing in divider_lib was saved or changed by this run.
+
+== 1. Final run of routeDlatchMain() (real output)
+== route_dlatch.il loaded. Run routeDlatchMain().
+== route_dlatch: divider_lib/DLATCH  layout -> layout_routed
+== route_dlatch: leStartRouter callable = t
+== route_dlatch: preflight vcar exit=0
+BLOCKED: router preflight found 0 connections in divider_lib/DLATCH/layout.
+         The placement-only view has no net connectivity on device terminals,
+         so no routing is attempted and layout_routed is not written.
+
+== 2. Preflight router output (vcar -do preflight.vcar, check (type all) + groute, no save; real)
+Virtuoso Framework License (111) was checked out successfully. Total checkout time was 0.01s.
+Virtuoso Chip Assembly Router V6.1.5 made 2012/12/10 at 20:17:57 (32bit addresses)
+Batch File Name: /home/buet/gpdk_run/rt/preflight.vcar
+Nets Processed 9, Net Terminals 9
+Signal Connections Created 0
+CHECK RESULTS: 0 pins are smaller than minimum process width
+CHECK RESULTS: 0 pins are off wire grid
+CHECK RESULTS: 0 pin or I/O port spacing violations
+Nets 9 Connections 0 Unroutes 0
+Percent Connected    0.00
+Routed Length   0.0000 Horizontal   0.0000 Vertical   0.0000
+(* "display packet ... not found" warnings from the display setup omitted.)
+
+== 3. Probe: leStartRouter launch in batch (real)
+*INFO* Starting router: /home/buet/cadence/IC615/tools/iccraft/bin/vcar -lib divider_lib -cell DLATCH -view layout_routed ... -nog -quit -noinit -nodid ...
+RT2 leStartRouter returned t
+RT2 after: layout_routed obj=dd:0x17132584
+*WARNING* Router exited cellview divider_lib DLATCH layout_routed with errors. Please inspect the log file for details.
+(That first probe used a trivial Tcl do-file. vcar then reported "Unrecognized command puts": the do-file language is the Chip Assembly Router command set, not Tcl. The empty layout_routed view it created is still in divider_lib, see ROUTER_NOTES.md section 8.)
+
+== 4. Connectivity test (real, scratch views only)
+Update Components and Nets report:
+  Instances created:             28
+  Instances deleted:             9   (LX-2004 M1..M7, R1, R2 "does not exist in the schematic")
+  Instance connectivity updated: 0
+  Pins created:                  0
+Binder: Schematic instances with corresponding layout instances: 0
+Batch then ended with: "Process was terminated with SIGBUS signal" (crash report under /tmp).
+=> The update path would discard the hand placement. Rejected.
+
+== 5. Placement-only view after all tests (real)
+divider_lib/DLATCH/layout: insts=9 shapes=18 (unchanged)
