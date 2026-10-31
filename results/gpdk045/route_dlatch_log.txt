@@ -1,46 +1,64 @@
-route_dlatch: batch log excerpts (IC615 6.1.5, Virtuoso -nograph -replay via skill_run.sh)
-Script: cadence/skill/auto/route_dlatch.il    Replay: run_route.il -> routeDlatchMain()
-Result: BLOCKED at preflight. No routed view was written. Nothing in divider_lib was saved or changed by this run.
+route_dlatch: batch log excerpts (IC615 6.1.5, Virtuoso -nograph -replay via skill_run.sh; router = vcar)
+Script: cadence/skill/auto/route_dlatch.il    Replay: ~/gpdk_run/rt/run_route.il -> routeDlatchMain()
+Source: divider_lib/DLATCH/layout_lxl (commit 13403a2)   Output: divider_lib/DLATCH/layout_routed
+Result: routed with 136 of 137 connections; 1 open connection; 8 clearance conflicts reported by the router's check.
 
-== 1. Final run of routeDlatchMain() (real output)
-== route_dlatch.il loaded. Run routeDlatchMain().
-== route_dlatch: divider_lib/DLATCH  layout -> layout_routed
-== route_dlatch: leStartRouter callable = t
+== 1. Final run of routeDlatchMain() (real output, skill_run.sh)
+== route_dlatch: divider_lib/DLATCH  layout_lxl -> layout_routed
+== view divider_lib/DLATCH/layout_nets not present
+== view divider_lib/DLATCH/layout_nets2 not present
+== deleted view divider_lib/DLATCH/layout_routed
+== overlap pairs in layout_lxl = 0 (of 28 instances)
 == route_dlatch: preflight vcar exit=0
-BLOCKED: router preflight found 0 connections in divider_lib/DLATCH/layout.
-         The placement-only view has no net connectivity on device terminals,
-         so no routing is attempted and layout_routed is not written.
+== route_dlatch: vcar exit=0 (log /home/buet/gpdk_run/rt/route.log)
+== route_dlatch: layout_routed insts=28 shapes=217
 
-== 2. Preflight router output (vcar -do preflight.vcar, check (type all) + groute, no save; real)
-Virtuoso Framework License (111) was checked out successfully. Total checkout time was 0.01s.
-Virtuoso Chip Assembly Router V6.1.5 made 2012/12/10 at 20:17:57 (32bit addresses)
-Batch File Name: /home/buet/gpdk_run/rt/preflight.vcar
-Nets Processed 9, Net Terminals 9
-Signal Connections Created 0
-CHECK RESULTS: 0 pins are smaller than minimum process width
-CHECK RESULTS: 0 pins are off wire grid
-CHECK RESULTS: 0 pin or I/O port spacing violations
-Nets 9 Connections 0 Unroutes 0
-Percent Connected    0.00
-Routed Length   0.0000 Horizontal   0.0000 Vertical   0.0000
-(* "display packet ... not found" warnings from the display setup omitted.)
+(The three scratch-view lines from the first run of the script read "deleted ..." for layout_nets, layout_nets2 and layout_routed. Those were the only deletions; placement-only `layout` was not touched.)
 
-== 3. Probe: leStartRouter launch in batch (real)
-*INFO* Starting router: /home/buet/cadence/IC615/tools/iccraft/bin/vcar -lib divider_lib -cell DLATCH -view layout_routed ... -nog -quit -noinit -nodid ...
-RT2 leStartRouter returned t
-RT2 after: layout_routed obj=dd:0x17132584
-*WARNING* Router exited cellview divider_lib DLATCH layout_routed with errors. Please inspect the log file for details.
-(That first probe used a trivial Tcl do-file. vcar then reported "Unrecognized command puts": the do-file language is the Chip Assembly Router command set, not Tcl. The empty layout_routed view it created is still in divider_lib, see ROUTER_NOTES.md section 8.)
+== 2. Router command file (route_dlatch.vcar, real)
+groute
+troute
+route
+check (type all)
+save_oa as layout_routed
 
-== 4. Connectivity test (real, scratch views only)
-Update Components and Nets report:
-  Instances created:             28
-  Instances deleted:             9   (LX-2004 M1..M7, R1, R2 "does not exist in the schematic")
-  Instance connectivity updated: 0
-  Pins created:                  0
-Binder: Schematic instances with corresponding layout instances: 0
-Batch then ended with: "Process was terminated with SIGBUS signal" (crash report under /tmp).
-=> The update path would discard the hand placement. Rejected.
+== 3. Router wiring statistics (guest ~/gpdk_run/rt/route.log, real)
+# Wiring Statistics ----------------- ./design
+# Nets 12 Connections 137 Unroutes 1
+# Signal Layers 35
+# Wire Junctions 29, at vias 6 Total Vias 37
+# Percent Connected   94.89
+# Manhattan Length  54.7650 Horizontal  34.7410 Vertical  20.0240
+# Routed Length  81.7500 Horizontal  47.3850 Vertical  34.3650
+# Ratio Actual / Manhattan   1.4927
+# Unconnected Length   0.1150 Horizontal   0.1150 Vertical   0.0000
+# Total Unroutes: 1
+save_oa as layout_routed
+# Total Conflicts: 8 (Cross: 0, Clear: 8, Xtalk: 0, Length: 0, Polygon Clear: 0 )
+# CHECK RESULTS: 4 re-entrant path violations are detected
+# Total weak connection violations: 2
+# Stub Violations:   0
+# Net Order Violations:   0
+# Groute   | 0 | 35 | 0 | 1 | 109 | 38 | ...   (global route: 1 failed net)
+# Troute   | 0 | 0 | 0 | 0 | 109 | 0 | ...      (track route pass 1)
+# Route    | 1 | 0 | 0 | 1 | 1 | 37 | ...      (detail pass: 1 unroute)
+Open connection (groute.fail): Net xs fromto |M5.4-D_right |M2.1-S_left failed.
 
-== 5. Placement-only view after all tests (real)
-divider_lib/DLATCH/layout: insts=9 shapes=18 (unchanged)
+== 4. Saved view counts (SKILL readback of divider_lib/DLATCH/layout_routed, real)
+RT11 shapes by layer and object type:
+   9 Metal1 rect       (pins)
+  73 Metal1 pathSeg    (routing)
+  17 Metal2 pathSeg    (routing)
+  76 Poly pathSeg      (NOT metal; review)
+  13 Oxide pathSeg     (NOT metal; review)
+  29 PWdummy pathSeg   (NOT metal; review)
+ 217 total, 28 instances
+
+== 5. Source and placement-only views after the run (real)
+divider_lib/DLATCH/layout_lxl:   insts=28 shapes=9   (unchanged source)
+divider_lib/DLATCH/layout:       insts=9  shapes=18  (placement-only, untouched)
+
+== 6. Earlier attempts (kept for the record)
+- leStartRouter with the same command list: router started, then `cdsServIpc: connection timeout (local host)`, and the routed view stayed empty (28 instances, 9 shapes). Replaced by standalone vcar + save_oa.
+- do-file with `droute`: rejected ("Unrecognized command droute"). `route` is the detail pass.
+- placement-only `layout` with router preflight: `Nets 9 Connections 0`, so routing is impossible without connectivity.

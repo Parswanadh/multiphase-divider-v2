@@ -1,81 +1,88 @@
 # Built-in automatic routing for divider_lib/DLATCH (IC 6.1.5, gpdk045)
 
-Status: **router is licensed and runs in batch, but DLATCH cannot be routed yet.**
-The placement-only `layout` view has no net connectivity on device terminals, so the
-router has 0 connections to make. `layout_routed` is NOT produced by a real route.
+Status: **DLATCH is routed with the built-in Chip Assembly Router (vcar). Result view:
+`divider_lib/DLATCH/layout_routed`. One connection is still open (net `xs`).**
 Script: `route_dlatch.il` (same dir). Log: `results/gpdk045/route_dlatch_log.txt`.
+Source view: `divider_lib/DLATCH/layout_lxl` (Layout XL generate-from-source, commit 13403a2).
+Placement-only view `divider_lib/DLATCH/layout` is untouched (9 instances, 18 shapes, checked).
 
-Citation keys: `sklayoutref` = `cdsdocs/ic615_doc/sklayoutref/`, `vxlhelp` = `cdsdocs/ic615_doc/vxlhelp/`,
-`vlsgxl` = `cdsdocs/ic615_doc/vlsgxl/` (host). Guest-only books, under `~/cadence/IC615/doc/`:
-`autouser/routedesign.html` (Space-based Router User Guide), `rderef/drouteT.html` (Routing IDE
-AutoRouter command reference), `iccausr/*.html` (Chip Assembly Router user guide).
+Citation keys: `sklayoutref` = `cdsdocs/ic615_doc/sklayoutref/`, `vxlhelp` = `cdsdocs/ic615_doc/vxlhelp/`
+(host). Guest-only books under `~/cadence/IC615/doc/`: `iccausr/*.html` (Chip Assembly Router user
+guide, incl. `save_oa`), `autouser/routedesign.html` (Space-based Router user guide), `rderef/drouteT.html`
+(Routing IDE, Tcl commands; NOT the vcar command set).
 
-## 1. Routing entry points in IC615 6.1.5
+## 1. Routing entry points
 
-| Function / command | What it does | Batch from SKILL? | Doc |
+| Function / command | What it does | Batch? | Doc |
 |---|---|---|---|
-| `leStartRouter(?layoutLCV list(lib cell view) ?layoutRoutedLCV list(lib cell view) ?doFile f ?showGraphics nil ?quitAtFinish t ?statusFile f ...)=> t/nil` | Starts the Chip Assembly Router (`vcar`, `iccraft/bin/vcar`) on the source view, writes the routed result to the routed view, runs the do-file commands. | **Yes, tested.** Returns t, creates the routed view. | `sklayoutref/chap1.html` 'leStartRouter' (Example 1 and 2) |
-| `lxSelectedRoute(b_useWAOverrides)`, `lxSelectedRouteNet(b_useWAOverrides)` | Routes the nets selected in the **layout window**. | No. Needs a selection in a open window. Not usable in `-nograph` batch. | `sklayoutref/chap2.html` |
-| `leHiGuidedRouting([w])`, `leHiP2P([w])`, `leHiCreateWire` | Interactive wire commands. | No (window commands). | `sklayoutref/wire.html` |
-| `rteDeleteRoutedNets`, `rteSearchAndRepair`, `rteOptimizeRoute`, `rteCheckRoutability`, `rteFixViolations` | Post-route clean-up / checks of an existing route. They do not route. | Yes (callable), but need an existing route. | `sklayoutref/chap7.html` (Virtuoso Space-based Router SKILL functions) |
-| `leCreatePath(d_cv l_lpp l_points n_width [t_style] [n_offset] [t_just])=> d_pathId` | Manual path. Used by any hand fallback. | Yes (callable). | `sklayoutref/chap1.html` 'leCreatePath' |
-| `dbCreateVia`, `lxGetValidViaDefs(d_obj [cg] [bottom] [top])`, `lxGetPinNets()` | Via creation, via-definition lookup, pin-net list. | Yes (callable). `lxGetValidViaDefs` in `sklayoutref/chap2.html`. | `sklayoutref/chap2.html` |
-| `leGetValidLayerList`, `leGetEntryLayer`, `leGetValidPurposeList` | Layer / purpose lists from the tech file. | Yes (`leGetValidPurposeList` in `sklayoutref/chap1.html`). | `sklayoutref/chap1.html` |
+| `vcar` (`~/cadence/IC615/tools/iccraft/bin/vcar`), run standalone from `system()` with `-lib -cell -view -do <cmdfile> -nog -nocheck -quit -noinit -nodid` | Runs the Chip Assembly Router command file on a view. Writes results with `save_oa as <view>`. | **Yes. Used for the result.** | `iccausr` (`save_oa [export] [as <new_view>]`) |
+| `leStartRouter(?layoutLCV ?layoutRoutedLCV ?doFile ?showGraphics nil ?quitAtFinish t ...)=> t/nil` | Starts the same router from SKILL. | Starts, but the save back to Virtuoso fails in batch (`cdsServIpc: connection timeout (local host)`). Routes not written. Avoided. | `sklayoutref/chap1.html` 'leStartRouter' |
+| `lxSelectedRoute(b)`, `lxSelectedRouteNet(b)` | Routes selected nets in an open window. | No (needs a window). | `sklayoutref/chap2.html` |
+| `leHiGuidedRouting`, `leHiP2P` | Interactive. | No. | `sklayoutref/wire.html` |
+| `rteDeleteRoutedNets`, `rteSearchAndRepair`, `rteOptimizeRoute`, `rteCheckRoutability` | Clean-up and checks of an existing route. Not a router. | Callable; not used. | `sklayoutref/chap7.html` |
+| `dbCopyCellView(src lib cell view "maskLayout")` | Copy a layout view (warns "version: maskLayout is ignored"). | Yes. | (used in tests only) |
+| `lxSetConnRef`, `lxUpdateComponentsAndNets` | Attach schematic connectivity to a placed layout. | Yes, but **deletes placed instances that the binder does not match** (see section 3). Not used on the final flow. | `sklayoutref/chap2.html` |
 
-NOT FOUND in the docs or the session: `leRouteNets`, `rteRoute*`, `rteAutoRoute`, `lxAutoRoute`,
-`techGetLayerPurposePair` (not callable in this session). Use `leGetValidLayerList` and
-`leGetEntryLayer` to read layers instead.
+## 2. vcar command set accepted (verified by runs)
 
-Router commands (Chip Assembly Router do-file, `iccausr/`; Routing IDE Tcl, `rderef/drouteT.html`):
-- `check (type all)` [D: `iccausr/chap4` example text] - VERIFIED accepted by vcar.
-- `groute` (global route), `troute` (track route; default = `troute (quick)` + `troute (refine)`) [D: `iccausr/chap6`]. VERIFIED accepted by vcar (no error).
-- `droute` (detail route) [D: `iccausr/chap6`, example name "Detail routing" ; VERIFY that the exact name is accepted; the preflight run did not reach it].
-- Routing IDE (`rderef`) names: `global_route`, `local_route`, `detail_route`, `search_and_repair`, `optimize_routes`. These are Tcl commands of the Routing IDE, NOT of vcar. vcar rejected Tcl `puts` ("Unrecognized command puts").
+- `check (type all)`: accepted. Reports clearance conflicts, re-entrant paths, weak connections.
+- `groute`: accepted (global route). `troute` (track route; default quick + refine): accepted.
+- `route`: accepted. This is the **detail route** pass (the Route - Autoroute - Detail Route pass, `iccausr`). `droute`, `detailroute`, `detail_route`, `dr`, `detail`, `dtroute`, `route (detail)`, `route (type all)` are NOT valid. `route` with options gives syntax errors.
+- `save_oa as layout_routed`: writes the routed design to a new view (`iccausr`, save_oa). Verified: the saved view holds the routed shapes.
+- Tcl `puts` is rejected (vcar is not Tcl).
 
-GUI-only automatic route: Route - Automatic Routing form (Selected Set, Global Route, Local Route, Detail Route, Refinement steps). [`autouser/routedesign.html`, guest path above]. Needs a window, not batch.
+## 3. Connectivity and placement facts (measured)
 
-## 2. Licence evidence (this VM, batch)
+- Placement-only `layout`: 9 instances (M1-M7, R1, R2), 18 shapes, **no net connectivity on device terminals** (vcar: `Nets 9 Connections 0`). Not routable.
+- `lxUpdateComponentsAndNets` on a placed copy deleted all 9 placed instances and created 28 unplaced ones. Rejected.
+- Layout XL `layout_lxl` (commit 13403a2): 28 instances (M1..M6 and M7 split x4), 9 pins, connectivity present. vcar preflight: `Nets 12 Connections 137`. Routable. R1/R2 are NOT in this view (no layout master for analogLib `res`), so the routed netlist has no resistors.
+- Overlap check (`rdOverlapReport` in the script): **0 overlapping instance pairs** among 28 instances. No placement step was needed.
 
-- Licence file: `CDS_LIC_FILE=/home/buet/cadence/IC615/ic6151license.dat`. Its FEATURE list includes `Cadence_chip_assembly_router`, `Virtuoso_custom_router`, `Route`, `IC_autoroute`, `Virtuoso_Layout_Suite_XL`, `Virtuoso_Layout_Suite_GXL`. (names only, no secrets printed)
-- `lmstat` cannot run in the guest (`bad ELF interpreter /lib/ld-lsb.so.3`). The licence was tested by running the tool.
-- `vcar` (`iccraft/bin/vcar`) prints `Virtuoso Framework License (111) was checked out successfully` and runs the commands. Its log for the preflight shows `Nets 9 Connections 0`. No licence error for the router was printed.
-- Warning seen: `(icLic-32) vcar: Could not establish MPS-connection to session 'virtuoso16187'`. This is harmless for the run.
-- Conclusion: **the Chip Assembly Router is usable in batch; its licence is not the blocker.** The blocker is connectivity.
+## 4. Routing result (saved view `layout_routed`)
 
-## 3. Why the placement-only DLATCH cannot be routed (measured)
+- Command sequence (`route_dlatch.il`): `groute`, `troute`, `route`, `check (type all)`, `save_oa as layout_routed`.
+- After `groute`+`troute`: Percent Connected 99.27 (136 of 137 connections). After `route` and the final wiring statistics: `Unroutes 1`, Percent Connected 94.89. One open connection: `Net xs fromto |M5.4-D_right |M2.1-S_left failed` (groute.fail), unconnected length 0.115 um.
+- Router `check`: Clear conflicts 8, re-entrant path violations 4, weak connection violations 2, stub violations 0, net order violations 0, wires thinner than min width 0.
+- Vias: 37 total (router wiring statistics). Vias are not counted in the shape list below.
+- Saved view counts: 28 instances, 217 top-level shapes:
+  - Metal1 pathSeg 73, Metal1 rect 9 (pins), Metal2 pathSeg 17 (routing)
+  - Poly pathSeg 76, Oxide pathSeg 13, PWdummy pathSeg 29. These are NOT metal. The router treats these layers as signal layers (tech-derived). They need review in DRC/LVS before use.
 
-- Layout `divider_lib/DLATCH/layout`: 9 instances (M1-M7 `gpdk045/nmos1v`, R1, R2 `gpdk045/resnsnpoly`), 18 shapes, 9 nets (the pin nets). vcar preflight: `Nets 9 Processed, Net Terminals 9, Signal Connections Created 0`, `Nets 9 Connections 0`.
-- The router needs device terminals attached to nets. They are not in the placement-only view.
-- Connectivity from the schematic, tested in batch (`lxSetConnRef` + `lxUpdateComponentsAndNets`, on a scratch copy):
-  - `lxUpdateComponentsAndNets` returned t but **deleted all 9 placed instances** (LX-2004 "does not exist in the schematic") and created 28 new ones (`Instances created: 28`, `Instance connectivity updated: 0`). The hand placement is lost, so this path is rejected.
-  - The schematic's instance names match the layout's names (M1-M7, R1, R2), so the mismatch is in the binder (`Schematic instances with corresponding layout instances: 0`). Cause not found. R1 and R2 also give `no layout master defined` (schematic `analogLib/res` vs layout `gpdk045/resnsnpoly`).
-  - A later batch run in the same session ended with `SIGBUS` (crash report `/tmp/crashReport_103126_1648__buet_cadence.log`).
-- So neither "route the placed view" nor the connectivity-driven hand fallback has the net data. A hand fallback would need device terminal nets assigned from the schematic first, which is a larger job.
+### Router layer parameters (from the vcar log, from the tech file, not literals)
 
-## 4. Route to a routed DLATCH (next step, not done here)
+| Layer | Width (um) | Clearance (um) |
+|---|---|---|
+| Metal1 | 0.060 | 0.060 |
+| Metal2 .. Metal9 | 0.080 | 0.070 |
+| Metal10, Metal11 | 0.220 | 0.200 |
+| Poly | 0.045 | 0.060 |
+| Via1..Via8 | 0.070 | 0.070 |
+| Via9, Via10 | 0.180 | 0.180 |
 
-1. Get a connected layout with the LXL worker's Generate-All-From-Source flow (`auto/lxl_flow.il`) into a NEW view (e.g. `layout_lxl`), not `layout`. That flow re-places the cell, so the routed result will not keep the hand placement. Record which placement is used.
-2. Then run `route_dlatch.il` with `rdSrcView` set to that view. The preflight then sees connections and `leStartRouter` writes `rdRoutedView`.
-3. Check the do-file: confirm `droute` accepted (VERIFY in the log).
+Signal layers: 35. Constraint group: `virtuosoDefaultSetup`.
+DRC rules from `PDK_FACTS.md`: `METAL1.W.1` >= 0.06, `METAL1.SP.1.2` >= 0.1 um (the router uses 0.06 clearance on Metal1, so **Metal1 spacing may be below the Assura rule of 0.1 um**; verify with Assura).
 
-## 5. Layer and spacing values (for the routing step, not used yet)
+## 5. Next steps / caveats
 
-From `cadence/skill/PDK_FACTS.md`: Metal1 `Metal1` (7/0), Metal2 `Metal2` (9/0), Metal3 `Metal3` (11/0); DRC: `METAL1.W.1` width >= 0.06 um, `METAL1.SP.1.2` spacing >= 0.1 um, `VIA1.E.1` enclosure >= 0.005 um. The router uses the tech file rules through the constraint group `virtuosoDefaultSetup` (`leStartRouter` log: `virtuosoDefaultSetup is the effective constraint group`). The router log lists 35 signal layers. These values were NOT taken from routing output.
+- The one open connection (`xs`) and the 8 clearance conflicts must be fixed or accepted before the routed view is used for LVS/DRC.
+- The 118 non-metal path segments (Poly, Oxide, PWdummy) need checking. They may be router-created signal wires on layers that should not carry routes.
+- R1/R2 are missing from the layout (no layout master for analogLib `res`). LVS will not match the schematic until resistors are added.
 
-## 6. Assura DRC/LVS (not run here; owned by the verify worker)
+## 6. Assura (not run here; owned by the verify worker)
 
-Exact command for DLATCH after the routed view exists (from memory file `cadence-vm-gpdk045-workflow`, and `cadence/skill/run_drc.rsf`):
+Cell/view for the routed result: `divider_lib` / `DLATCH` / `layout_routed`. Placement-only: `divider_lib` / `DLATCH` / `layout`. Source for routing: `layout_lxl`.
+Exact avParameters form (from the workflow memory file, not verified in this session):
 ```
 avParameters(?inputLayout ("df2" "divider_lib") ?cellName "DLATCH" ?viewName "layout_routed" ?rulesFile <assura rules> ?workingDirectory <dir> ?runName "DLATCH_routed" ?avrpt t)
 ```
-then run `assura <file>.rsf`. The current `run_drc.rsf` is a template and is NOT verified. Use the verify worker's flow.
+then `assura <file>.rsf`. `cadence/skill/run_drc.rsf` is an unverified template.
 
 ## 7. Batch invocation used
 
-Replay file (guest `~/gpdk_run/skill/run_route.il`): `load("/home/buet/gpdk_run/skill/route_dlatch.il")` then `routeDlatchMain()`. Launched with `flock /home/parshu/vm/vm.lock skill_run.sh run_route.il route_dlatch.il`. Virtuoso writes the router log through its own path, so the log in results/ was built from the Virtuoso output and the preflight log.
+Replay file (`~/gpdk_run/rt/run_route.il`): `load("/home/buet/gpdk_run/skill/route_dlatch.il")` then `routeDlatchMain()`. Launched with
+`flock /home/parshu/vm/vm.lock skill_run.sh run_route.il route_dlatch.il`. Router logs: guest `~/gpdk_run/rt/route.log` (run) and `preflight.log`.
 
-## 8. Scratch artifacts left in divider_lib (for cleanup by the owner; nothing deleted)
+## 8. Scratch views
 
-- `DLATCH/layout_routed`: empty view created by an early `leStartRouter` probe. It is not a routed result. Delete it before using `layout_routed` for real.
-- `DLATCH/layout_nets`, `DLATCH/layout_nets2`: copies made by the `lxUpdateComponentsAndNets` test. They hold the wrong 28-instance layout. Do not use them.
-- The placement-only `DLATCH/layout` was not saved or changed by this work (shape and instance counts unchanged, 18 and 9).
+- Deleted by the script (literal names, with `ddDeleteObj`): `DLATCH/layout_nets`, `DLATCH/layout_nets2`, `DLATCH/layout_routed` (old empty view). The first run deleted all three. `layout_nets` and `layout_nets2` were absent on later runs.
+- Other views left in divider_lib by this work: none from the routing flow. `DLATCH/layout_routed` is now the routed result (not empty).
