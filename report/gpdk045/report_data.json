@@ -1,12 +1,12 @@
 {
   "example_only": false,
-  "logo": null,
+  "logo": "assets/amrita_logo.jpeg",
   "titles": {
     "system_design_project": "Implementation of a Compact Multiphase Divide-by-Two CMOS Frequency Divider in 45 nm CMOS (Cadence GPDK045)"
   },
   "paper": {
     "title": "A Compact Multiphase Divide-by-Two CMOS Frequency Divider",
-    "authors": "Y.-F. Kuo et al.",
+    "authors": "Yue-Fang Kuo, Shih-Hung Lin, Bo-Yi Chen and Liang-Chen Liu",
     "journal": "IEEE Microwave and Wireless Technology Letters",
     "volume": "35",
     "issue": "5",
@@ -17,37 +17,43 @@
   "figures": {
     "circuit_diagram": {
       "file": "figures/fig_circuit_latch.png",
-      "caption": "Circuit diagram of one differential DLATCH of design D (M1 to M7, R1, R2), drawn by scripts/draw_gpdk45_circuits.py from spectre/divider_gpdk45.scs. Labels: M1 to M6 W = 240 nm, L = 45 nm; M7 W = 480 nm, L = 90 nm; m = 4; R1 = R2 = 3 kOhm. Generated drawing, not a Cadence screenshot."
+      "caption": "Circuit diagram of one differential DLATCH (M1 to M7, R1, R2), drawn by scripts/draw_gpdk45_circuits.py. Topology and W, L are read from spectre/divider_gpdk45.scs (M1 to M6 W = 240 nm, L = 45 nm; M7 W = 480 nm, L = 90 nm); the labels m = 4 and R1 = R2 = 3 kOhm are those of design D, set per run (the baseline has m = 1, R = 8 kOhm). Generated drawing, not a Cadence screenshot."
     },
     "impl_screenshot": {
       "file": "screens/crops/schematic_core_crop.png",
-      "caption": "Virtuoso schematic of the divider core (design D library): four DLATCH instances XD1 to XD4 with the ring connections (Cadence GUI screenshot). Device sizes are in Tables 1 and 2."
+      "caption": "Virtuoso schematic of the divider core (design D library): four DLATCH instances XD1 to XD4 with the ring connections (Cadence GUI screenshot). The top level is the same for every design; the baseline and design D differ only in m and R (Tables 1 and 2). No separate schematic of the baseline was captured. schCheck errors/warnings: DLATCH 0/0, divider_core 0/0, tb_divider 0/1; connectivity in the schematics is by net labels."
     },
     "waveform_without_sizing": {
-      "file": "figures/fig_tran_unsized.png",
-      "caption": "Transient waveforms of the circuit without sizing (m = 1, R1 = R2 = 1.15 kOhm) at 1.4 GHz, plotted from Spectre output (not a simulator screenshot). Q1 swings between 0.975 V and 0.991 V (15.3 mV), so the outputs do not divide. DC operating point (analysis, t = 0, CK low): M7 region triode, Vds = 56.3 nV, Ids = 35.6 pA, Vgs = 1 V."
+      "file": "figures/fig_tran_U8k.png",
+      "caption": "Transient waveforms of the baseline without sizing, U8k (m = 1, R1 = R2 = 8 kOhm, vb = 1 V) at 1.4 GHz, plotted from Spectre output (not a simulator screenshot). All eight outputs divide: 700.0 MHz, Q1 between 0.749 V and 0.978 V. The non-dividing paper-rule circuit is Figure 9."
     },
     "sized_circuit_screenshot": {
       "file": "screens/crops/schematic_dlatch_crop.png",
-      "caption": "Virtuoso schematic of the DLATCH of design D with sizing: m = 4, R1 = R2 = 3 kOhm (Cadence GUI screenshot, cropped). Device parameters read back from the Virtuoso database are given in the Tool and Technology section and agree with Table 2."
+      "caption": "Virtuoso schematic of the DLATCH of design D with sizing: m = 4, R1 = R2 = 3 kOhm (Cadence GUI screenshot, cropped). Device parameters read back from the Virtuoso database are given in the Tool and Technology section and agree with Table 2. schCheck errors/warnings: DLATCH 0/0, divider_core 0/0, tb_divider 0/1; connectivity in the schematics is by net labels."
     },
     "waveform_with_sizing": {
       "file": "figures/fig_tran_D_1p4.png",
-      "caption": "Transient waveforms of design D (m = 4, R1 = R2 = 3 kOhm) at 1.4 GHz, plotted from Spectre output (not a simulator screenshot). Q1 swings between 0.583 V and 1.017 V; output 700.0 MHz; tail voltage stays between 8.1 mV and 66.9 mV."
+      "caption": "Transient waveforms of design D (m = 4, R1 = R2 = 3 kOhm) at 1.4 GHz, plotted from Spectre output (not a simulator screenshot). Q1 swings between 0.583 V and 1.017 V; output 700.0 MHz; the tail voltage V(XD1.tail) stays between 8.1 mV and 66.9 mV (XD2 up to 68.2 mV)."
     },
     "pvt_screenshot": {
       "file": "figures/fig_pvt_heatmap_D_1p4.png",
-      "caption": "PVT pass/fail map of design D at 1.4 GHz (5 corners x -40/27/125 C x 0.9/1.0/1.1 V), plotted from pvt_D.tsv, not a Cadence screenshot. 41 of 45 points pass."
+      "caption": "PVT pass/fail map of design D at 1.4 GHz (5 corners x -40/27/125 C x 0.9/1/1.1 V), plotted from pvt_D.tsv, not a Cadence screenshot. 41 of 45 points pass."
     },
     "layout_screenshot": {
       "file": "screens/crops/layout_core_crop.png",
-      "caption": "Virtuoso layout of divider_core: four DLATCH instances (XD1 to XD4) placed in a 2x2 arrangement, placement only (Virtuoso Layout Suite screenshot, cropped to the layout canvas). Routing is not drawn."
+      "caption": "Virtuoso layout of divider_core: four DLATCH instances (XD1 to XD4) placed in a 2x2 arrangement, placement only (Virtuoso Layout Suite screenshot, cropped to the layout canvas; cell outlines only). Routing is not drawn."
     },
-    "layout_waveform": null,
+    "layout_waveform": {
+      "note": "Post-layout simulation was not performed. The layout is placement only (not routed, not extracted), so no post-layout waveform exists; every result in this report is a pre-layout simulation."
+    },
     "extra_figures": [
       {
         "file": "figures/fig_circuit_ring.png",
-        "caption": "Ring interconnection of the four DLATCH instances XD1 to XD4 (alternating cross-connections, CK and CKb swapped on XD2 and XD3), drawn by scripts/draw_gpdk45_circuits.py from spectre/divider_gpdk45.scs with design D labels (m = 4, R = 3 kOhm). Generated drawing, not a Cadence screenshot."
+        "caption": "Ring interconnection of the four DLATCH instances XD1 to XD4 (alternating cross-connections, CK and CKb swapped on XD2 and XD3), drawn by scripts/draw_gpdk45_circuits.py from spectre/divider_gpdk45.scs (topology and W, L); the m and R labels are those of design D (m = 4, R = 3 kOhm). Generated drawing, not a Cadence screenshot."
+      },
+      {
+        "file": "figures/fig_tran_unsized.png",
+        "caption": "Paper-rule circuit (m = 1, R1 = R2 = 1.15 kOhm = Ron/2) at 1.4 GHz, plotted from Spectre output (not a simulator screenshot). It does not divide: Q1 follows the clock at 2799.8 MHz and swings only 15.3 mV (0.975 V to 0.991 V)."
       },
       {
         "file": "figures/fig_tran_B_6g.png",
@@ -55,15 +61,23 @@
       },
       {
         "file": "figures/fig_phase_steps.png",
-        "caption": "Phase steps between the eight outputs for designs D (1.4 GHz) and B (6 GHz), plotted from the nominal Spectre results."
+        "caption": "Phase steps between the eight outputs for the baseline U8k (1.4 GHz), design D (1.4 GHz) and design B (6 GHz), plotted from the nominal Spectre results."
+      },
+      {
+        "file": "figures/fig_tail_saturation_U8k.png",
+        "caption": "Tail (M7) drain voltage of the baseline U8k compared with Vdsat = 0.358 V, plotted from Spectre output. M7 has the same W, L and Vgs as in design D, and the multiplier only places devices in parallel, so the Vdsat extracted for D is used."
       },
       {
         "file": "figures/fig_tail_saturation_D_1p4.png",
         "caption": "Tail (M7) drain voltage of design D at 1.4 GHz compared with the M7 saturation voltage Vdsat = 0.358 V, plotted from Spectre output."
       },
       {
+        "file": "figures/fig_tail_saturation_B_6g.png",
+        "caption": "Tail (M7) drain voltage of design B at 6 GHz compared with Vdsat = 0.358 V (the value extracted for design D; B has the same M7 sizing and bias and the same t = 0 operating point), plotted from Spectre output."
+      },
+      {
         "file": "figures/fig_supply_current.png",
-        "caption": "Supply current drawn from VDD, plotted from Spectre output; the table power is VDD times the mean over whole output periods."
+        "caption": "Supply current drawn from VDD for U8k, D and B, plotted from Spectre output; the table power is VDD times the mean over whole output periods."
       },
       {
         "file": "figures/fig_fsweep.png",
@@ -71,7 +85,7 @@
       },
       {
         "file": "figures/fig_pvt_delay_power_D_1p4.png",
-        "caption": "Delay and power over the PVT matrix of design D at 1.4 GHz, plotted from pvt_D.tsv (passing points only)."
+        "caption": "Delay and power over the PVT matrix of design D at 1.4 GHz, plotted from pvt_D.tsv. Passing points are drawn as lines; a red cross at the foot of each plot marks the failing points at that supply voltage, with their count."
       },
       {
         "file": "figures/fig_pvt_heatmap_B_6g.png",
@@ -79,23 +93,19 @@
       },
       {
         "file": "figures/fig_pvt_delay_power_B_6g.png",
-        "caption": "Delay and power over the PVT matrix of design B at 6 GHz, plotted from pvt_B6.tsv (passing points only)."
+        "caption": "Delay and power over the PVT matrix of design B at 6 GHz, plotted from pvt_B6.tsv. Passing points are drawn as lines; a red cross at the foot of each plot marks the failing points at that supply voltage, with their count."
       },
       {
         "file": "screens/crops/schematic_tb_crop.png",
-        "caption": "Virtuoso schematic of the testbench tb_divider (Cadence GUI screenshot, cropped to the schematic window)."
+        "caption": "Virtuoso schematic of the testbench tb_divider (Cadence GUI screenshot, cropped to the schematic window). schCheck errors/warnings: DLATCH 0/0, divider_core 0/0, tb_divider 0/1; connectivity in the schematics is by net labels."
       },
       {
         "file": "screens/crops/virtuoso_ciw_crop.png",
         "caption": "Virtuoso 6.1.5 session with the gpdk045 PDK loaded (CIW log, Cadence GUI screenshot)."
       },
       {
-        "file": "screens/library_manager.png",
-        "caption": "Virtuoso Library Manager showing the cells (Cadence GUI screenshot)."
-      },
-      {
         "file": "screens/crops/layout_dlatch_crop.png",
-        "caption": "Virtuoso layout of the DLATCH: 7 nmos1v pcells, 2 resnsnpoly poly resistors and pin markers (Virtuoso Layout Suite screenshot, cropped to the layout canvas). Placement only; not routed."
+        "caption": "Virtuoso layout of the DLATCH: 7 unit-size (m = 1) nmos1v pcells, 2 resnsnpoly poly resistors and pin markers (Virtuoso Layout Suite screenshot, cropped to the layout canvas; cell outlines only). Placement only; not routed."
       },
       {
         "file": "screens/drc_result.png",
@@ -105,7 +115,12 @@
   },
   "designs": {
     "without_sizing": {
-      "description": "Unit devices (m = 1) with the paper's rule applied literally: R1 = R2 = Ron/2 = 1.15 kOhm, where Ron = 2.3 kOhm is the measured on-resistance of the unit nMOS (LEDGER.md; the Vds sweep gives 2.28 to 2.73 kOhm). Device sizes are read from spectre/divider_gpdk45.scs. At 1.4 GHz the eight outputs follow the clock: the period-measured Q1 frequency is 2799.8 MHz (about twice f_in) but the Q1 swing is only 15.3 mV, so these are not toggling logic outputs and the circuit does not divide. Delay, PDP and phase error are therefore n/a, and the power of a non-dividing circuit is not reported as a result.",
+      "description": [
+        "Baseline without sizing (U8k): unit devices (m = 1), load R1 = R2 = 8 kOhm, tail bias vb = 1 V, input 1.4 GHz, tt corner, 27 C, VDD = 1 V, simulated in Cadence Spectre (U8k.tsv, U8k.raw). W and L are read from spectre/divider_gpdk45.scs; m, R, vb and f_in are per-run overrides recorded in the run tag (g_1.4G_8k_1.0_10f_m1). All eight outputs divide (700.0 MHz, Q1 swing 0.749 to 0.978 V).",
+        "How R was chosen: the unit-size circuit was searched over R = 5 to 12 kOhm at vb = 0.8 V and 1 V (12 runs, unsized_baseline.tsv). At vb = 1 V R up to 6 kOhm fails and R from 7 kOhm divides; at vb = 0.8 V R up to 7 kOhm fails and R from 8 kOhm divides. 8 kOhm at 1 V is the smallest round value of the table that divides at both biases.",
+        "Finding, paper-rule circuit: applying the paper's rule literally (m = 1, R1 = R2 = Ron/2 = 1.15 kOhm, Ron = 2.3 kOhm from LEDGER.md) does not divide at 1.4 GHz. Q1 runs at 2799.8 MHz (2.0 x f_in) with a swing of only 15.3 mV (Figure 9), so these are not toggling logic outputs. Its supply power is 0.165 mW (VDD times the mean supply current in analysis.json), which is not comparable with a dividing circuit; delay, PDP and phase error are not defined for it.",
+        "Why: the output pull-down is a stack of three devices (M1, M5, M7), about 3 Ron = 6.90 kOhm for m = 1, and regeneration needs R1 of at least about 1.1 x 3 Ron = 7.59 kOhm. The measured threshold is between 6 and 7 kOhm at vb = 1 V and between 7 and 8 kOhm at vb = 0.8 V, so 7 to 8 kOhm is the working range of the threshold. The margined rule is conservative at vb = 1 V, where 7 kOhm already divides."
+      ],
       "devices": [
         {
           "device": "M1, M2",
@@ -147,23 +162,26 @@
           "w": null,
           "l": null,
           "multiplier": null,
-          "role": "load resistors, 1.15 kOhm each"
+          "role": "load resistors, 8 kOhm each"
         }
       ],
       "metrics": {
         "f_in_ghz": 1.4,
-        "f_out_mhz": null,
-        "power_mw": null,
-        "delay_ps": null,
-        "pdp_fj": null,
-        "max_phase_step_err_deg": null,
-        "swing_v": 0.0153,
-        "m7_vds_v": 0.0763,
-        "m7_vdsat_v": null
+        "f_out_mhz": 700.0,
+        "power_mw": 0.1375,
+        "delay_ps": 62.21,
+        "pdp_fj": 8.557,
+        "max_phase_step_err_deg": 26.42,
+        "swing_v": 0.2289,
+        "m7_vds_v": 0.0671,
+        "m7_vdsat_v": 0.3578
       }
     },
     "with_sizing": {
-      "description": "Same topology with the sizing concept: multiplier m = 4 scales every device in parallel, load R1 = R2 = 3 kOhm, input 1.4 GHz (design D). Stack rule (section Theory): the pull-down stack resistance is 3 Ron/m = 1.72 kOhm, the regeneration threshold 1.1 times that is 1.90 kOhm (band 1.88 to 2.25 kOhm for the Ron range), and the load 3 kOhm is above the band. The sizing check at 1.4 GHz and the 6 GHz point (design B, m = 4, R1 = R2 = 2 kOhm, reported in the other information section) use the same rule. The tail device M7 is in the triode region in the DC analysis (Vds stays below Vdsat), see the other information section.",
+      "description": [
+        "Same topology with the sizing concept: multiplier m = 4 scales every device in parallel, load R1 = R2 = 3 kOhm, input 1.4 GHz (design D). Stack rule (section Theory): the pull-down stack resistance is 3 Ron/m = 1.72 kOhm, the regeneration threshold 1.1 times that is 1.90 kOhm (band 1.88 to 2.25 kOhm for the Ron range), and the load 3 kOhm is above the band. The sizing check at 1.4 GHz and the 6 GHz point (design B, m = 4, R1 = R2 = 2 kOhm, reported in the other information section) use the same rule. The tail device M7 is in the triode region: in the transient its drain voltage stays below Vdsat (see the other information section).",
+        "Comparison with the baseline (Table 3): sizing cuts the CK-to-output delay from 62.21 ps (U8k) to 25.99 ps (D), a factor 2.39, but it raises the power from 0.1375 mW to 0.5413 mW (factor 3.94) and the PDP from 8.557 fJ to 14.067 fJ (factor 1.64). The maximum phase-step error also grows, from 26.42 deg to 38.46 deg, and the Q1 swing grows from 0.2289 V to 0.4344 V. Sizing therefore buys speed and swing at the cost of power and PDP; it does not improve the phase error at 1.4 GHz."
+      ],
       "devices": [
         {
           "device": "M1, M2",
@@ -221,16 +239,29 @@
       }
     }
   },
+  "values_proof": {
+    "power_mw": "Fig. 15 (supply current, both columns)",
+    "delay_ps": "no figure: analysis.json (ck_to_any_output_mean_delay_ps), see note",
+    "pdp_fj": "power x delay (rows above)",
+    "f_in_ghz": "Fig. 3 (without), Fig. 5 (with)",
+    "f_out_mhz": "Fig. 3 (without), Fig. 5 (with)",
+    "max_phase_step_err_deg": "Fig. 11",
+    "swing_v": "Fig. 3 (without), Fig. 5 (with)",
+    "sat": "Fig. 12 (without), Fig. 13 (with)"
+  },
+  "values_notes": [
+    "Notes. Without sizing = the dividing unit-size baseline U8k (m = 1, R = 8 kOhm, vb = 1 V). The paper-rule circuit (m = 1, R = 1.15 kOhm) does not divide: supply power 0.165 mW, delay, PDP and phase error not defined (Figure 9). Delay = mean over CK rising edges of the time to the next rising edge of any of the eight outputs; the CK-to-Q1 first-edge delay is 135.96 ps (U8k) and 51.95 ps (D). Vds = largest V(XD1.tail) in the transient; Vdsat is the value extracted for design D (same M7 W, L and Vgs, used for both columns)."
+  ],
   "pvt_rows": [
     {
       "corner": "D tt",
       "temp": -40,
       "vdd": 0.9,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 24.61,
-      "power_mw": 0.4356,
-      "pdp_fj": 10.72,
+      "f_out_mhz": "700.0",
+      "delay_ps": "24.61",
+      "power_mw": "0.4356",
+      "pdp_fj": "10.72",
       "note": ""
     },
     {
@@ -238,10 +269,10 @@
       "temp": -40,
       "vdd": 1.0,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 24.01,
-      "power_mw": 0.6892,
-      "pdp_fj": 16.54,
+      "f_out_mhz": "700.0",
+      "delay_ps": "24.01",
+      "power_mw": "0.6892",
+      "pdp_fj": "16.54",
       "note": ""
     },
     {
@@ -249,10 +280,10 @@
       "temp": -40,
       "vdd": 1.1,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 24.19,
-      "power_mw": 0.9714,
-      "pdp_fj": 23.5,
+      "f_out_mhz": "700.0",
+      "delay_ps": "24.19",
+      "power_mw": "0.9714",
+      "pdp_fj": "23.50",
       "note": ""
     },
     {
@@ -260,10 +291,10 @@
       "temp": 27,
       "vdd": 0.9,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 27.7,
-      "power_mw": 0.3387,
-      "pdp_fj": 9.38,
+      "f_out_mhz": "700.0",
+      "delay_ps": "27.70",
+      "power_mw": "0.3387",
+      "pdp_fj": "9.38",
       "note": ""
     },
     {
@@ -271,10 +302,10 @@
       "temp": 27,
       "vdd": 1.0,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 25.99,
-      "power_mw": 0.5413,
-      "pdp_fj": 14.07,
+      "f_out_mhz": "700.0",
+      "delay_ps": "25.99",
+      "power_mw": "0.5413",
+      "pdp_fj": "14.07",
       "note": ""
     },
     {
@@ -282,10 +313,10 @@
       "temp": 27,
       "vdd": 1.1,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 25.38,
-      "power_mw": 0.7769,
-      "pdp_fj": 19.72,
+      "f_out_mhz": "700.0",
+      "delay_ps": "25.38",
+      "power_mw": "0.7769",
+      "pdp_fj": "19.72",
       "note": ""
     },
     {
@@ -293,21 +324,21 @@
       "temp": 125,
       "vdd": 0.9,
       "divides": false,
-      "f_out_mhz": null,
+      "f_out_mhz": "2799.7",
       "delay_ps": null,
       "power_mw": null,
       "pdp_fj": null,
-      "note": "ratio 0.5001 not 2"
+      "note": "outputs at 2 f_in, swing 0.034 V < 0.1 V"
     },
     {
       "corner": "D tt",
       "temp": 125,
       "vdd": 1.0,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 29.81,
-      "power_mw": 0.3898,
-      "pdp_fj": 11.62,
+      "f_out_mhz": "700.0",
+      "delay_ps": "29.81",
+      "power_mw": "0.3898",
+      "pdp_fj": "11.62",
       "note": ""
     },
     {
@@ -315,10 +346,10 @@
       "temp": 125,
       "vdd": 1.1,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 28.3,
-      "power_mw": 0.5648,
-      "pdp_fj": 15.98,
+      "f_out_mhz": "700.0",
+      "delay_ps": "28.30",
+      "power_mw": "0.5648",
+      "pdp_fj": "15.98",
       "note": ""
     },
     {
@@ -326,10 +357,10 @@
       "temp": -40,
       "vdd": 0.9,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 24.65,
-      "power_mw": 0.5512,
-      "pdp_fj": 13.59,
+      "f_out_mhz": "700.0",
+      "delay_ps": "24.65",
+      "power_mw": "0.5512",
+      "pdp_fj": "13.59",
       "note": ""
     },
     {
@@ -337,10 +368,10 @@
       "temp": -40,
       "vdd": 1.0,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 24.66,
-      "power_mw": 0.8104,
-      "pdp_fj": 19.99,
+      "f_out_mhz": "700.0",
+      "delay_ps": "24.66",
+      "power_mw": "0.8104",
+      "pdp_fj": "19.99",
       "note": ""
     },
     {
@@ -348,10 +379,10 @@
       "temp": -40,
       "vdd": 1.1,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 25.2,
-      "power_mw": 1.0784,
-      "pdp_fj": 27.17,
+      "f_out_mhz": "700.0",
+      "delay_ps": "25.20",
+      "power_mw": "1.0784",
+      "pdp_fj": "27.17",
       "note": ""
     },
     {
@@ -359,10 +390,10 @@
       "temp": 27,
       "vdd": 0.9,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 26.94,
-      "power_mw": 0.4303,
-      "pdp_fj": 11.59,
+      "f_out_mhz": "700.0",
+      "delay_ps": "26.94",
+      "power_mw": "0.4303",
+      "pdp_fj": "11.59",
       "note": ""
     },
     {
@@ -370,10 +401,10 @@
       "temp": 27,
       "vdd": 1.0,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 25.97,
-      "power_mw": 0.6467,
-      "pdp_fj": 16.8,
+      "f_out_mhz": "700.0",
+      "delay_ps": "25.97",
+      "power_mw": "0.6467",
+      "pdp_fj": "16.80",
       "note": ""
     },
     {
@@ -381,10 +412,10 @@
       "temp": 27,
       "vdd": 1.1,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 25.81,
-      "power_mw": 0.891,
-      "pdp_fj": 23.0,
+      "f_out_mhz": "700.0",
+      "delay_ps": "25.81",
+      "power_mw": "0.8910",
+      "pdp_fj": "23.00",
       "note": ""
     },
     {
@@ -392,10 +423,10 @@
       "temp": 125,
       "vdd": 0.9,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 31.05,
-      "power_mw": 0.3074,
-      "pdp_fj": 9.55,
+      "f_out_mhz": "700.0",
+      "delay_ps": "31.05",
+      "power_mw": "0.3074",
+      "pdp_fj": "9.55",
       "note": ""
     },
     {
@@ -403,10 +434,10 @@
       "temp": 125,
       "vdd": 1.0,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 29.11,
-      "power_mw": 0.4677,
-      "pdp_fj": 13.61,
+      "f_out_mhz": "700.0",
+      "delay_ps": "29.11",
+      "power_mw": "0.4677",
+      "pdp_fj": "13.61",
       "note": ""
     },
     {
@@ -414,10 +445,10 @@
       "temp": 125,
       "vdd": 1.1,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 28.04,
-      "power_mw": 0.6547,
-      "pdp_fj": 18.36,
+      "f_out_mhz": "700.0",
+      "delay_ps": "28.04",
+      "power_mw": "0.6547",
+      "pdp_fj": "18.36",
       "note": ""
     },
     {
@@ -425,10 +456,10 @@
       "temp": -40,
       "vdd": 0.9,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 25.6,
-      "power_mw": 0.3147,
-      "pdp_fj": 8.06,
+      "f_out_mhz": "700.0",
+      "delay_ps": "25.60",
+      "power_mw": "0.3147",
+      "pdp_fj": "8.06",
       "note": ""
     },
     {
@@ -436,10 +467,10 @@
       "temp": -40,
       "vdd": 1.0,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 23.84,
-      "power_mw": 0.5483,
-      "pdp_fj": 13.07,
+      "f_out_mhz": "700.0",
+      "delay_ps": "23.84",
+      "power_mw": "0.5483",
+      "pdp_fj": "13.07",
       "note": ""
     },
     {
@@ -447,10 +478,10 @@
       "temp": -40,
       "vdd": 1.1,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 23.54,
-      "power_mw": 0.8217,
-      "pdp_fj": 19.34,
+      "f_out_mhz": "700.0",
+      "delay_ps": "23.54",
+      "power_mw": "0.8217",
+      "pdp_fj": "19.34",
       "note": ""
     },
     {
@@ -458,10 +489,10 @@
       "temp": 27,
       "vdd": 0.9,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 29.71,
-      "power_mw": 0.2463,
-      "pdp_fj": 7.32,
+      "f_out_mhz": "700.0",
+      "delay_ps": "29.71",
+      "power_mw": "0.2463",
+      "pdp_fj": "7.32",
       "note": ""
     },
     {
@@ -469,10 +500,10 @@
       "temp": 27,
       "vdd": 1.0,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 26.54,
-      "power_mw": 0.4288,
-      "pdp_fj": 11.38,
+      "f_out_mhz": "700.0",
+      "delay_ps": "26.54",
+      "power_mw": "0.4288",
+      "pdp_fj": "11.38",
       "note": ""
     },
     {
@@ -480,10 +511,10 @@
       "temp": 27,
       "vdd": 1.1,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 25.27,
-      "power_mw": 0.6476,
-      "pdp_fj": 16.37,
+      "f_out_mhz": "700.0",
+      "delay_ps": "25.27",
+      "power_mw": "0.6476",
+      "pdp_fj": "16.37",
       "note": ""
     },
     {
@@ -491,21 +522,21 @@
       "temp": 125,
       "vdd": 0.9,
       "divides": false,
-      "f_out_mhz": null,
+      "f_out_mhz": "2799.7",
       "delay_ps": null,
       "power_mw": null,
       "pdp_fj": null,
-      "note": "ratio 0.5001 not 2"
+      "note": "outputs at 2 f_in, swing 0.029 V < 0.1 V"
     },
     {
       "corner": "D ss",
       "temp": 125,
       "vdd": 1.0,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 30.93,
-      "power_mw": 0.3095,
-      "pdp_fj": 9.57,
+      "f_out_mhz": "700.0",
+      "delay_ps": "30.93",
+      "power_mw": "0.3095",
+      "pdp_fj": "9.57",
       "note": ""
     },
     {
@@ -513,10 +544,10 @@
       "temp": 125,
       "vdd": 1.1,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 28.94,
-      "power_mw": 0.4688,
-      "pdp_fj": 13.57,
+      "f_out_mhz": "700.0",
+      "delay_ps": "28.94",
+      "power_mw": "0.4688",
+      "pdp_fj": "13.57",
       "note": ""
     },
     {
@@ -524,10 +555,10 @@
       "temp": -40,
       "vdd": 0.9,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 24.25,
-      "power_mw": 0.5072,
-      "pdp_fj": 12.3,
+      "f_out_mhz": "700.0",
+      "delay_ps": "24.25",
+      "power_mw": "0.5072",
+      "pdp_fj": "12.30",
       "note": ""
     },
     {
@@ -535,10 +566,10 @@
       "temp": -40,
       "vdd": 1.0,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 24.08,
-      "power_mw": 0.7669,
-      "pdp_fj": 18.46,
+      "f_out_mhz": "700.0",
+      "delay_ps": "24.08",
+      "power_mw": "0.7669",
+      "pdp_fj": "18.46",
       "note": ""
     },
     {
@@ -546,10 +577,10 @@
       "temp": -40,
       "vdd": 1.1,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 24.52,
-      "power_mw": 1.0436,
-      "pdp_fj": 25.59,
+      "f_out_mhz": "700.0",
+      "delay_ps": "24.52",
+      "power_mw": "1.0436",
+      "pdp_fj": "25.59",
       "note": ""
     },
     {
@@ -557,10 +588,10 @@
       "temp": 27,
       "vdd": 0.9,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 26.74,
-      "power_mw": 0.3971,
-      "pdp_fj": 10.62,
+      "f_out_mhz": "700.0",
+      "delay_ps": "26.74",
+      "power_mw": "0.3971",
+      "pdp_fj": "10.62",
       "note": ""
     },
     {
@@ -568,10 +599,10 @@
       "temp": 27,
       "vdd": 1.0,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 25.59,
-      "power_mw": 0.6098,
-      "pdp_fj": 15.61,
+      "f_out_mhz": "700.0",
+      "delay_ps": "25.59",
+      "power_mw": "0.6098",
+      "pdp_fj": "15.61",
       "note": ""
     },
     {
@@ -579,10 +610,10 @@
       "temp": 27,
       "vdd": 1.1,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 25.29,
-      "power_mw": 0.8525,
-      "pdp_fj": 21.56,
+      "f_out_mhz": "700.0",
+      "delay_ps": "25.29",
+      "power_mw": "0.8525",
+      "pdp_fj": "21.56",
       "note": ""
     },
     {
@@ -590,21 +621,21 @@
       "temp": 125,
       "vdd": 0.9,
       "divides": false,
-      "f_out_mhz": null,
+      "f_out_mhz": "700.0",
       "delay_ps": null,
       "power_mw": null,
       "pdp_fj": null,
-      "note": "q1 swing 0.093 V < 0.1 V"
+      "note": "divides, swing 0.093 V < 0.1 V"
     },
     {
       "corner": "D fs",
       "temp": 125,
       "vdd": 1.0,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 28.89,
-      "power_mw": 0.4423,
-      "pdp_fj": 12.78,
+      "f_out_mhz": "700.0",
+      "delay_ps": "28.89",
+      "power_mw": "0.4423",
+      "pdp_fj": "12.78",
       "note": ""
     },
     {
@@ -612,10 +643,10 @@
       "temp": 125,
       "vdd": 1.1,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 27.72,
-      "power_mw": 0.6259,
-      "pdp_fj": 17.35,
+      "f_out_mhz": "700.0",
+      "delay_ps": "27.72",
+      "power_mw": "0.6259",
+      "pdp_fj": "17.35",
       "note": ""
     },
     {
@@ -623,10 +654,10 @@
       "temp": -40,
       "vdd": 0.9,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 25.38,
-      "power_mw": 0.3632,
-      "pdp_fj": 9.22,
+      "f_out_mhz": "700.0",
+      "delay_ps": "25.38",
+      "power_mw": "0.3632",
+      "pdp_fj": "9.22",
       "note": ""
     },
     {
@@ -634,10 +665,10 @@
       "temp": -40,
       "vdd": 1.0,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 24.16,
-      "power_mw": 0.6055,
-      "pdp_fj": 14.63,
+      "f_out_mhz": "700.0",
+      "delay_ps": "24.16",
+      "power_mw": "0.6055",
+      "pdp_fj": "14.63",
       "note": ""
     },
     {
@@ -645,10 +676,10 @@
       "temp": -40,
       "vdd": 1.1,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 24.03,
-      "power_mw": 0.8837,
-      "pdp_fj": 21.23,
+      "f_out_mhz": "700.0",
+      "delay_ps": "24.03",
+      "power_mw": "0.8837",
+      "pdp_fj": "21.23",
       "note": ""
     },
     {
@@ -656,10 +687,10 @@
       "temp": 27,
       "vdd": 0.9,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 29.2,
-      "power_mw": 0.2811,
-      "pdp_fj": 8.21,
+      "f_out_mhz": "700.0",
+      "delay_ps": "29.20",
+      "power_mw": "0.2811",
+      "pdp_fj": "8.21",
       "note": ""
     },
     {
@@ -667,10 +698,10 @@
       "temp": 27,
       "vdd": 1.0,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 26.63,
-      "power_mw": 0.4713,
-      "pdp_fj": 12.55,
+      "f_out_mhz": "700.0",
+      "delay_ps": "26.63",
+      "power_mw": "0.4713",
+      "pdp_fj": "12.55",
       "note": ""
     },
     {
@@ -678,10 +709,10 @@
       "temp": 27,
       "vdd": 1.1,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 25.65,
-      "power_mw": 0.6964,
-      "pdp_fj": 17.86,
+      "f_out_mhz": "700.0",
+      "delay_ps": "25.65",
+      "power_mw": "0.6964",
+      "pdp_fj": "17.86",
       "note": ""
     },
     {
@@ -689,21 +720,21 @@
       "temp": 125,
       "vdd": 0.9,
       "divides": false,
-      "f_out_mhz": null,
+      "f_out_mhz": "2799.7",
       "delay_ps": null,
       "power_mw": null,
       "pdp_fj": null,
-      "note": "ratio 0.5001 not 2"
+      "note": "outputs at 2 f_in, swing 0.031 V < 0.1 V"
     },
     {
       "corner": "D sf",
       "temp": 125,
       "vdd": 1.0,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 30.89,
-      "power_mw": 0.3375,
-      "pdp_fj": 10.43,
+      "f_out_mhz": "700.0",
+      "delay_ps": "30.89",
+      "power_mw": "0.3375",
+      "pdp_fj": "10.43",
       "note": ""
     },
     {
@@ -711,10 +742,10 @@
       "temp": 125,
       "vdd": 1.1,
       "divides": true,
-      "f_out_mhz": 700.0,
-      "delay_ps": 29.09,
-      "power_mw": 0.5023,
-      "pdp_fj": 14.61,
+      "f_out_mhz": "700.0",
+      "delay_ps": "29.09",
+      "power_mw": "0.5023",
+      "pdp_fj": "14.61",
       "note": ""
     },
     {
@@ -722,10 +753,10 @@
       "temp": -40,
       "vdd": 0.9,
       "divides": true,
-      "f_out_mhz": 3000.0,
-      "delay_ps": 19.09,
-      "power_mw": 0.3881,
-      "pdp_fj": 7.41,
+      "f_out_mhz": "3000.0",
+      "delay_ps": "19.09",
+      "power_mw": "0.3881",
+      "pdp_fj": "7.41",
       "note": ""
     },
     {
@@ -733,10 +764,10 @@
       "temp": -40,
       "vdd": 1.0,
       "divides": true,
-      "f_out_mhz": 3000.0,
-      "delay_ps": 16.42,
-      "power_mw": 0.6424,
-      "pdp_fj": 10.55,
+      "f_out_mhz": "3000.0",
+      "delay_ps": "16.42",
+      "power_mw": "0.6424",
+      "pdp_fj": "10.55",
       "note": ""
     },
     {
@@ -744,10 +775,10 @@
       "temp": -40,
       "vdd": 1.1,
       "divides": true,
-      "f_out_mhz": 3000.0,
-      "delay_ps": 15.79,
-      "power_mw": 0.9453,
-      "pdp_fj": 14.92,
+      "f_out_mhz": "3000.0",
+      "delay_ps": "15.79",
+      "power_mw": "0.9453",
+      "pdp_fj": "14.92",
       "note": ""
     },
     {
@@ -755,21 +786,21 @@
       "temp": 27,
       "vdd": 0.9,
       "divides": false,
-      "f_out_mhz": null,
+      "f_out_mhz": "11999.3",
       "delay_ps": null,
       "power_mw": null,
       "pdp_fj": null,
-      "note": "ratio 0.5000 not 2"
+      "note": "outputs at 2 f_in, swing 0.041 V < 0.1 V"
     },
     {
       "corner": "B6 tt",
       "temp": 27,
       "vdd": 1.0,
       "divides": true,
-      "f_out_mhz": 3000.0,
-      "delay_ps": 27.94,
-      "power_mw": 0.4929,
-      "pdp_fj": 13.77,
+      "f_out_mhz": "3000.0",
+      "delay_ps": "27.94",
+      "power_mw": "0.4929",
+      "pdp_fj": "13.77",
       "note": ""
     },
     {
@@ -777,10 +808,10 @@
       "temp": 27,
       "vdd": 1.1,
       "divides": true,
-      "f_out_mhz": 3000.0,
-      "delay_ps": 19.15,
-      "power_mw": 0.7327,
-      "pdp_fj": 14.03,
+      "f_out_mhz": "3000.0",
+      "delay_ps": "19.15",
+      "power_mw": "0.7327",
+      "pdp_fj": "14.03",
       "note": ""
     },
     {
@@ -788,43 +819,43 @@
       "temp": 125,
       "vdd": 0.9,
       "divides": false,
-      "f_out_mhz": null,
+      "f_out_mhz": "11999.2",
       "delay_ps": null,
       "power_mw": null,
       "pdp_fj": null,
-      "note": "ratio 0.5000 not 2"
+      "note": "outputs at 2 f_in, swing 0.032 V < 0.1 V"
     },
     {
       "corner": "B6 tt",
       "temp": 125,
       "vdd": 1.0,
       "divides": false,
-      "f_out_mhz": null,
+      "f_out_mhz": "11999.2",
       "delay_ps": null,
       "power_mw": null,
       "pdp_fj": null,
-      "note": "ratio 0.5000 not 2"
+      "note": "outputs at 2 f_in, swing 0.041 V < 0.1 V"
     },
     {
       "corner": "B6 tt",
       "temp": 125,
       "vdd": 1.1,
       "divides": false,
-      "f_out_mhz": null,
+      "f_out_mhz": "11999.2",
       "delay_ps": null,
       "power_mw": null,
       "pdp_fj": null,
-      "note": "ratio 0.5000 not 2"
+      "note": "outputs at 2 f_in, swing 0.049 V < 0.1 V"
     },
     {
       "corner": "B6 ff",
       "temp": -40,
       "vdd": 0.9,
       "divides": true,
-      "f_out_mhz": 3000.0,
-      "delay_ps": 17.36,
-      "power_mw": 0.5147,
-      "pdp_fj": 8.93,
+      "f_out_mhz": "3000.0",
+      "delay_ps": "17.36",
+      "power_mw": "0.5147",
+      "pdp_fj": "8.93",
       "note": ""
     },
     {
@@ -832,10 +863,10 @@
       "temp": -40,
       "vdd": 1.0,
       "divides": true,
-      "f_out_mhz": 3000.0,
-      "delay_ps": 16.28,
-      "power_mw": 0.7959,
-      "pdp_fj": 12.96,
+      "f_out_mhz": "3000.0",
+      "delay_ps": "16.28",
+      "power_mw": "0.7959",
+      "pdp_fj": "12.96",
       "note": ""
     },
     {
@@ -843,10 +874,10 @@
       "temp": -40,
       "vdd": 1.1,
       "divides": true,
-      "f_out_mhz": 3000.0,
-      "delay_ps": 16.06,
-      "power_mw": 1.1231,
-      "pdp_fj": 18.04,
+      "f_out_mhz": "3000.0",
+      "delay_ps": "16.06",
+      "power_mw": "1.1231",
+      "pdp_fj": "18.04",
       "note": ""
     },
     {
@@ -854,21 +885,21 @@
       "temp": 27,
       "vdd": 0.9,
       "divides": false,
-      "f_out_mhz": null,
+      "f_out_mhz": "11999.3",
       "delay_ps": null,
       "power_mw": null,
       "pdp_fj": null,
-      "note": "ratio 0.5000 not 2"
+      "note": "outputs at 2 f_in, swing 0.048 V < 0.1 V"
     },
     {
       "corner": "B6 ff",
       "temp": 27,
       "vdd": 1.0,
       "divides": true,
-      "f_out_mhz": 3000.0,
-      "delay_ps": 20.52,
-      "power_mw": 0.6124,
-      "pdp_fj": 12.57,
+      "f_out_mhz": "3000.0",
+      "delay_ps": "20.52",
+      "power_mw": "0.6124",
+      "pdp_fj": "12.57",
       "note": ""
     },
     {
@@ -876,10 +907,10 @@
       "temp": 27,
       "vdd": 1.1,
       "divides": true,
-      "f_out_mhz": 3000.0,
-      "delay_ps": 18.42,
-      "power_mw": 0.8744,
-      "pdp_fj": 16.1,
+      "f_out_mhz": "3000.0",
+      "delay_ps": "18.42",
+      "power_mw": "0.8744",
+      "pdp_fj": "16.10",
       "note": ""
     },
     {
@@ -887,54 +918,54 @@
       "temp": 125,
       "vdd": 0.9,
       "divides": false,
-      "f_out_mhz": null,
+      "f_out_mhz": "11999.1",
       "delay_ps": null,
       "power_mw": null,
       "pdp_fj": null,
-      "note": "ratio 0.5000 not 2"
+      "note": "outputs at 2 f_in, swing 0.037 V < 0.1 V"
     },
     {
       "corner": "B6 ff",
       "temp": 125,
       "vdd": 1.0,
       "divides": false,
-      "f_out_mhz": null,
+      "f_out_mhz": "11999.1",
       "delay_ps": null,
       "power_mw": null,
       "pdp_fj": null,
-      "note": "ratio 0.5000 not 2"
+      "note": "outputs at 2 f_in, swing 0.045 V < 0.1 V"
     },
     {
       "corner": "B6 ff",
       "temp": 125,
       "vdd": 1.1,
       "divides": false,
-      "f_out_mhz": null,
+      "f_out_mhz": "11999.1",
       "delay_ps": null,
       "power_mw": null,
       "pdp_fj": null,
-      "note": "ratio 0.5000 not 2"
+      "note": "outputs at 2 f_in, swing 0.052 V < 0.1 V"
     },
     {
       "corner": "B6 ss",
       "temp": -40,
       "vdd": 0.9,
       "divides": false,
-      "f_out_mhz": null,
+      "f_out_mhz": "11999.3",
       "delay_ps": null,
       "power_mw": null,
       "pdp_fj": null,
-      "note": "ratio 0.5000 not 2"
+      "note": "outputs at 2 f_in, swing 0.040 V < 0.1 V"
     },
     {
       "corner": "B6 ss",
       "temp": -40,
       "vdd": 1.0,
       "divides": true,
-      "f_out_mhz": 3000.0,
-      "delay_ps": 17.46,
-      "power_mw": 0.4902,
-      "pdp_fj": 8.56,
+      "f_out_mhz": "3000.0",
+      "delay_ps": "17.46",
+      "power_mw": "0.4902",
+      "pdp_fj": "8.56",
       "note": ""
     },
     {
@@ -942,10 +973,10 @@
       "temp": -40,
       "vdd": 1.1,
       "divides": true,
-      "f_out_mhz": 3000.0,
-      "delay_ps": 15.87,
-      "power_mw": 0.7623,
-      "pdp_fj": 12.1,
+      "f_out_mhz": "3000.0",
+      "delay_ps": "15.87",
+      "power_mw": "0.7623",
+      "pdp_fj": "12.10",
       "note": ""
     },
     {
@@ -953,32 +984,32 @@
       "temp": 27,
       "vdd": 0.9,
       "divides": false,
-      "f_out_mhz": null,
+      "f_out_mhz": "11999.3",
       "delay_ps": null,
       "power_mw": null,
       "pdp_fj": null,
-      "note": "ratio 0.5000 not 2"
+      "note": "outputs at 2 f_in, swing 0.033 V < 0.1 V"
     },
     {
       "corner": "B6 ss",
       "temp": 27,
       "vdd": 1.0,
       "divides": false,
-      "f_out_mhz": null,
+      "f_out_mhz": "11999.3",
       "delay_ps": null,
       "power_mw": null,
       "pdp_fj": null,
-      "note": "ratio 0.5000 not 2"
+      "note": "outputs at 2 f_in, swing 0.046 V < 0.1 V"
     },
     {
       "corner": "B6 ss",
       "temp": 27,
       "vdd": 1.1,
       "divides": true,
-      "f_out_mhz": 3000.0,
-      "delay_ps": 21.78,
-      "power_mw": 0.5899,
-      "pdp_fj": 12.85,
+      "f_out_mhz": "3000.0",
+      "delay_ps": "21.78",
+      "power_mw": "0.5899",
+      "pdp_fj": "12.85",
       "note": ""
     },
     {
@@ -986,43 +1017,43 @@
       "temp": 125,
       "vdd": 0.9,
       "divides": false,
-      "f_out_mhz": null,
+      "f_out_mhz": "11999.2",
       "delay_ps": null,
       "power_mw": null,
       "pdp_fj": null,
-      "note": "ratio 0.5000 not 2"
+      "note": "outputs at 2 f_in, swing 0.026 V < 0.1 V"
     },
     {
       "corner": "B6 ss",
       "temp": 125,
       "vdd": 1.0,
       "divides": false,
-      "f_out_mhz": null,
+      "f_out_mhz": "11999.2",
       "delay_ps": null,
       "power_mw": null,
       "pdp_fj": null,
-      "note": "ratio 0.5000 not 2"
+      "note": "outputs at 2 f_in, swing 0.036 V < 0.1 V"
     },
     {
       "corner": "B6 ss",
       "temp": 125,
       "vdd": 1.1,
       "divides": false,
-      "f_out_mhz": null,
+      "f_out_mhz": "11999.3",
       "delay_ps": null,
       "power_mw": null,
       "pdp_fj": null,
-      "note": "ratio 0.5000 not 2"
+      "note": "outputs at 2 f_in, swing 0.044 V < 0.1 V"
     },
     {
       "corner": "B6 fs",
       "temp": -40,
       "vdd": 0.9,
       "divides": true,
-      "f_out_mhz": 3000.0,
-      "delay_ps": 17.48,
-      "power_mw": 0.4638,
-      "pdp_fj": 8.11,
+      "f_out_mhz": "3000.0",
+      "delay_ps": "17.48",
+      "power_mw": "0.4638",
+      "pdp_fj": "8.11",
       "note": ""
     },
     {
@@ -1030,10 +1061,10 @@
       "temp": -40,
       "vdd": 1.0,
       "divides": true,
-      "f_out_mhz": 3000.0,
-      "delay_ps": 16.04,
-      "power_mw": 0.735,
-      "pdp_fj": 11.79,
+      "f_out_mhz": "3000.0",
+      "delay_ps": "16.04",
+      "power_mw": "0.7350",
+      "pdp_fj": "11.79",
       "note": ""
     },
     {
@@ -1041,10 +1072,10 @@
       "temp": -40,
       "vdd": 1.1,
       "divides": true,
-      "f_out_mhz": 3000.0,
-      "delay_ps": 15.73,
-      "power_mw": 1.0534,
-      "pdp_fj": 16.57,
+      "f_out_mhz": "3000.0",
+      "delay_ps": "15.73",
+      "power_mw": "1.0534",
+      "pdp_fj": "16.57",
       "note": ""
     },
     {
@@ -1052,21 +1083,21 @@
       "temp": 27,
       "vdd": 0.9,
       "divides": false,
-      "f_out_mhz": null,
+      "f_out_mhz": "11999.3",
       "delay_ps": null,
       "power_mw": null,
       "pdp_fj": null,
-      "note": "ratio 0.5000 not 2"
+      "note": "outputs at 2 f_in, swing 0.046 V < 0.1 V"
     },
     {
       "corner": "B6 fs",
       "temp": 27,
       "vdd": 1.0,
       "divides": true,
-      "f_out_mhz": 3000.0,
-      "delay_ps": 20.89,
-      "power_mw": 0.5681,
-      "pdp_fj": 11.87,
+      "f_out_mhz": "3000.0",
+      "delay_ps": "20.89",
+      "power_mw": "0.5681",
+      "pdp_fj": "11.87",
       "note": ""
     },
     {
@@ -1074,10 +1105,10 @@
       "temp": 27,
       "vdd": 1.1,
       "divides": true,
-      "f_out_mhz": 3000.0,
-      "delay_ps": 18.3,
-      "power_mw": 0.8222,
-      "pdp_fj": 15.04,
+      "f_out_mhz": "3000.0",
+      "delay_ps": "18.30",
+      "power_mw": "0.8222",
+      "pdp_fj": "15.04",
       "note": ""
     },
     {
@@ -1085,54 +1116,54 @@
       "temp": 125,
       "vdd": 0.9,
       "divides": false,
-      "f_out_mhz": null,
+      "f_out_mhz": "11999.2",
       "delay_ps": null,
       "power_mw": null,
       "pdp_fj": null,
-      "note": "ratio 0.5000 not 2"
+      "note": "outputs at 2 f_in, swing 0.035 V < 0.1 V"
     },
     {
       "corner": "B6 fs",
       "temp": 125,
       "vdd": 1.0,
       "divides": false,
-      "f_out_mhz": null,
+      "f_out_mhz": "11999.2",
       "delay_ps": null,
       "power_mw": null,
       "pdp_fj": null,
-      "note": "ratio 0.5000 not 2"
+      "note": "outputs at 2 f_in, swing 0.044 V < 0.1 V"
     },
     {
       "corner": "B6 fs",
       "temp": 125,
       "vdd": 1.1,
       "divides": false,
-      "f_out_mhz": null,
+      "f_out_mhz": "11999.2",
       "delay_ps": null,
       "power_mw": null,
       "pdp_fj": null,
-      "note": "ratio 0.5000 not 2"
+      "note": "outputs at 2 f_in, swing 0.052 V < 0.1 V"
     },
     {
       "corner": "B6 sf",
       "temp": -40,
       "vdd": 0.9,
       "divides": false,
-      "f_out_mhz": null,
+      "f_out_mhz": "6019.8",
       "delay_ps": null,
       "power_mw": null,
       "pdp_fj": null,
-      "note": "ratio 0.9967 not 2"
+      "note": "outputs at about f_in (ratio 0.9967), swing 0.092 V < 0.1 V"
     },
     {
       "corner": "B6 sf",
       "temp": -40,
       "vdd": 1.0,
       "divides": true,
-      "f_out_mhz": 3000.0,
-      "delay_ps": 17.17,
-      "power_mw": 0.5509,
-      "pdp_fj": 9.46,
+      "f_out_mhz": "3000.0",
+      "delay_ps": "17.17",
+      "power_mw": "0.5509",
+      "pdp_fj": "9.46",
       "note": ""
     },
     {
@@ -1140,10 +1171,10 @@
       "temp": -40,
       "vdd": 1.1,
       "divides": true,
-      "f_out_mhz": 3000.0,
-      "delay_ps": 15.99,
-      "power_mw": 0.8357,
-      "pdp_fj": 13.37,
+      "f_out_mhz": "3000.0",
+      "delay_ps": "15.99",
+      "power_mw": "0.8357",
+      "pdp_fj": "13.37",
       "note": ""
     },
     {
@@ -1151,32 +1182,32 @@
       "temp": 27,
       "vdd": 0.9,
       "divides": false,
-      "f_out_mhz": null,
+      "f_out_mhz": "11999.3",
       "delay_ps": null,
       "power_mw": null,
       "pdp_fj": null,
-      "note": "ratio 0.5000 not 2"
+      "note": "outputs at 2 f_in, swing 0.036 V < 0.1 V"
     },
     {
       "corner": "B6 sf",
       "temp": 27,
       "vdd": 1.0,
       "divides": false,
-      "f_out_mhz": null,
+      "f_out_mhz": "11999.3",
       "delay_ps": null,
       "power_mw": null,
       "pdp_fj": null,
-      "note": "ratio 0.5000 not 2"
+      "note": "outputs at 2 f_in, swing 0.049 V < 0.1 V"
     },
     {
       "corner": "B6 sf",
       "temp": 27,
       "vdd": 1.1,
       "divides": true,
-      "f_out_mhz": 3000.0,
-      "delay_ps": 20.79,
-      "power_mw": 0.6435,
-      "pdp_fj": 13.38,
+      "f_out_mhz": "3000.0",
+      "delay_ps": "20.79",
+      "power_mw": "0.6435",
+      "pdp_fj": "13.38",
       "note": ""
     },
     {
@@ -1184,87 +1215,90 @@
       "temp": 125,
       "vdd": 0.9,
       "divides": false,
-      "f_out_mhz": null,
+      "f_out_mhz": "11999.2",
       "delay_ps": null,
       "power_mw": null,
       "pdp_fj": null,
-      "note": "ratio 0.5000 not 2"
+      "note": "outputs at 2 f_in, swing 0.028 V < 0.1 V"
     },
     {
       "corner": "B6 sf",
       "temp": 125,
       "vdd": 1.0,
       "divides": false,
-      "f_out_mhz": null,
+      "f_out_mhz": "11999.2",
       "delay_ps": null,
       "power_mw": null,
       "pdp_fj": null,
-      "note": "ratio 0.5000 not 2"
+      "note": "outputs at 2 f_in, swing 0.037 V < 0.1 V"
     },
     {
       "corner": "B6 sf",
       "temp": 125,
       "vdd": 1.1,
       "divides": false,
-      "f_out_mhz": null,
+      "f_out_mhz": "11999.3",
       "delay_ps": null,
       "power_mw": null,
       "pdp_fj": null,
-      "note": "ratio 0.5000 not 2"
+      "note": "outputs at 2 f_in, swing 0.046 V < 0.1 V"
     }
   ],
   "theory": [
     "Topology. The divider follows Kuo et al. (References): four cascaded differential D-latches with alternating cross-connections Q1b to D2, Q2 to D3, Q3b to D4 and Q4 to D1b. Latches 2 and 3 have CK and CKb swapped. Each latch has a sampling pair M1 and M2, a positive-controlled switch M5, a hold pair M3 and M4, a negative-controlled switch M6, a tail M7 and loads R1 and R2. While CK is high a latch samples; while CK is low the hold pair regenerates the stored value. The ring connections make the eight outputs toggle in pairs at half the input frequency, spread around one period.",
-    "Elmore estimate. In the paper's model the latch delay is t_pdf = t_pdr = (8C)(R/2) = 4RC with R1 = R/2, so R = 2 R1, and C is the node capacitance; node b is grounded because M7 is on. The paper requires T_CK/2 > 2 Td. With the 10 fF output load, Td = 240 ps for design D against T_CK/2 = 357 ps at 1.4 GHz (bound not met), and Td = 160 ps for design B against T_CK/2 = 83 ps at 6 GHz (bound not met). Both designs divide in simulation, so this bound is not the limit that decides division here. The Elmore expression is used only for the trend of the sizing, not as a sufficient design rule.",
-    "Stack resistance and regeneration. The output pull-down path is a stack of three series devices (M1, M5, M7), so its resistance is about 3 Ron/m. Regeneration of the hold pair needs gm R1 > 1; the margin used here is R1 >= 1.1 x (3 Ron/m). With Ron = 2.3 kOhm (LEDGER.md) the unit stack is 6.90 kOhm, far above the unsized load of 1.15 kOhm, which is why the unsized circuit does not divide. For m = 4 the threshold is 1.90 kOhm (band 1.88 to 2.25 kOhm), so design D at 3 kOhm passes, while design B at 2 kOhm lies inside the band and its margin depends on the Ron value used. The recorded division results in LEDGER.md agree with this rule for 5 of 5 numeric (m, R) pairs.",
-    "Phase-step law. Outputs come in pairs. The steps between neighbouring outputs alternate between a and 90 - a degrees, with a = 360 t_pair f_in. At 1.4 GHz the measured steps are 83.46 and 6.54 deg (a = 6.54 deg, t_pair = 13.0 ps); at 6 GHz the steps are 48.78 and 41.22 deg (a = 41.22 deg, t_pair = 19.1 ps). Equal 45 deg steps need T_CK = 8 t_pair. Because t_pair differs between the two designs, the phase error is a property of each design at a given f_in; in the frequency sweeps it falls as f_in rises and is small only near each design's frequency limit. The paper's 3.75 deg is reproduced in magnitude only by design B at 6 GHz.",
-    "Delay and power definitions. Delay is the mean over CK rising edges of the time to the next rising edge on any of the eight outputs. Power is VDD times the mean supply current over whole output periods. PDP is power times delay (mW times ps gives fJ). A division is accepted only when all eight outputs run at f_in/2 within 0.1 percent and each swings at least 0.1 V."
+    "Elmore estimate. In the paper's model the latch delay is t_pdf = t_pdr = (8C)(R/2) = 4RC, where C is the gate (equal to diffusion) capacitance of a unit nMOS, the Q node carries (6 + 2)C = 8C, the turn-on resistance R is twice the load R1 (R/2 = R1), and node b is grounded because M7 is on. The paper requires T_CK/2 > 2 Td. C is not known here, but the node capacitance 8C is at least the 10 fF output load C_L, so Td >= (8C)(R/2) >= R1 C_L. This is a lower bound, because device parasitics are neglected: 30 ps for design D (R1 = 3 kOhm) and 20 ps for design B (R1 = 2 kOhm). At 1.4 GHz (design D), 2 Td >= 60 ps against T_CK/2 = 357 ps, a clear margin, so the bound is met. At 6 GHz (design B), 2 Td >= 40 ps against T_CK/2 = 83 ps, so the bound is also met. Design B sits at its measured frequency limit: it divides up to 6 GHz and fails at 6.2 GHz, where T_CK/2 = 80.6 ps. Its measured CK-to-Q1 delay of 66.10 ps is 3.3 times the lower bound and 79% of T_CK/2, so the lower-bound estimate is optimistic at 6 GHz; the condition is necessary but is not what alone decides division. The estimate is not compared with the table delay, which is a different quantity (the CK edge to the next edge of any of the eight outputs, not the paper's D-to-Q latch delay).",
+    "Stack resistance and regeneration. The output pull-down path is a stack of three series devices (M1, M5, M7), so its resistance is about 3 Ron/m. Regeneration of the hold pair needs gm R1 > 1; the margin used here is R1 >= 1.1 x (3 Ron/m). With Ron = 2.3 kOhm (LEDGER.md) the unit stack is 6.90 kOhm and the margined threshold 7.59 kOhm, far above the paper-rule load of 1.15 kOhm, which is why that circuit does not divide. The measured threshold of the unit-size circuit lies between 6 and 7 kOhm at vb = 1 V and between 7 and 8 kOhm at vb = 0.8 V (unsized_baseline.tsv), which brackets both the unmargined stack value and the margined one. For m = 4 the threshold is 1.90 kOhm (band 1.88 to 2.25 kOhm), so design D at 3 kOhm passes, while design B at 2 kOhm lies inside the band and its margin depends on the Ron value used. The recorded division results in LEDGER.md agree with the margined rule for 5 of 5 numeric (m, R) pairs; the rule is a guide, not an exact boundary. The paper's unit nMOS is W = 0.9 um, L = 180 nm (W/L = 5.00); the unit device here is 240 nm / 45 nm (W/L = 5.33), the same shape.",
+    "Phase-step law. Outputs come in pairs. In output-period degrees the phase of an edge pair that is t_pair apart is a = 360 t_pair f_out = 180 t_pair f_in, and the steps between neighbouring outputs alternate between a and 90 - a degrees. t_pair is measured in the raw files as the mean gap between the rising edge of Q2 and the next rising edge of Q3b. At 1.4 GHz (design D) the steps are 83.46 and 6.54 deg and t_pair = 25.95 ps, so a = 180 x 25.95 ps x 1.4 GHz = 6.54 deg. At 6 GHz (design B) the steps are 48.78 and 41.22 deg and t_pair = 38.16 ps, so a = 41.22 deg. For the baseline U8k at 1.4 GHz the steps are 71.42 and 18.59 deg with t_pair = 73.75 ps (a = 18.59 deg). Equal 45 deg steps need T_out = 8 t_pair, that is T_CK = 4 t_pair: 103.8 ps for D (f_in = 9.63 GHz) and 152.7 ps for B (f_in = 6.55 GHz), indicative values because t_pair itself depends on f_in. The phase error is therefore a property of each design at a given f_in; in the frequency sweeps it falls as f_in rises and is small only near each design's frequency limit. The paper's 3.75 deg is reproduced in magnitude only by design B at 6 GHz.",
+    "Delay and power definitions. Delay is the mean over CK rising edges of the time to the next rising edge on any of the eight outputs. This differs from the delay of the first CK edge to Q1 alone: 51.95 ps for D against the table value 25.99 ps. Power is VDD times the mean supply current over whole output periods. PDP is power times delay (mW times ps gives fJ). A division is accepted only when all eight outputs run at f_in/2 within 0.1 percent and each swings at least 0.1 V."
   ],
   "tool_technology": [
     "Simulator: Cadence Spectre 12.1.0 (MMSIM121), run on a 32-bit CentOS 6.5 virtual machine. Layout and DRC tools in the flow: Virtuoso IC615 and Assura 4.1.",
+    "Evidence of the simulator runs: each raw file written by Spectre carries a header, for example D_1p4.raw: Plotname \"Transient Analysis `tran': time = (0 s -> 40 ns)\", written 12:25:58 PM, Sat Oct 31, 2026. No terminal screenshot of the Spectre run itself is included.",
     "Process: Cadence GPDK045 v6.0, a 45 nm generic PDK. Device g45n1svt (Virtuoso cell nmos1v), a 1.0 V thin-oxide standard-Vt NMOS modelled with BSIM4. Corners tt, ff, ss, fs and sf from models/spectre/gpdk045.scs.",
-    "Sizes: unit transistor W = 240 nm, L = 45 nm for M1 to M6; M7 W = 480 nm, L = 90 nm; the multiplier m scales every device in parallel.",
-    "Stimulus and conditions: VDD = 1.0 V with PVT at 0.9 and 1.1 V; temperature 27 C nominal; CK rise and fall 20 ps; CKb is CK delayed by half a period; tail bias vb = 1 V; 10 fF load on each of the eight outputs.",
-    "Virtuoso database read-back of the DLATCH of design D (results/gpdk045/virtuoso_dlatch_params_designD.txt): R1 and R2 = 3 kOhm; M1 to M6 w = 240n, l = 45n, m = 4; M7 w = 480n, l = 90n, m = 4. These agree with the Spectre netlist sizes and with Tables 1 and 2.",
-    "Plots are generated by scripts from the Spectre results; the waveform and PVT figures are plots, not Virtuoso screenshots, and each caption says so. The two circuit drawings (Figure 1 and Figure 9) are generated by scripts/draw_gpdk45_circuits.py from spectre/divider_gpdk45.scs."
+    "Sizes: unit transistor W = 240 nm, L = 45 nm for M1 to M6; M7 W = 480 nm, L = 90 nm; the multiplier m scales every device in parallel. W and L are from the netlist spectre/divider_gpdk45.scs; m, R, vb and f_in are per-run parameter overrides recorded in each TSV tag (g_<f_in>G_<R>k_<vb>_<C_L>f_m<m>), not the netlist defaults.",
+    "Stimulus and conditions: VDD = 1 V with PVT at 0.9 and 1.1 V; temperature 27 C nominal; CK rise and fall 20 ps; CKb is CK delayed by half a period; tail bias vb = 1 V; 10 fF load on each of the eight outputs.",
+    "Virtuoso database read-back of the DLATCH of design D (results/gpdk045/virtuoso_dlatch_params_designD.txt): R1 and R2 = 3 kOhm; M1 to M6 w = 240n, l = 45n, m = 4; M7 w = 480n, l = 90n, m = 4. These agree with Table 2, and with the W and L of Table 1 (the netlist W and L).",
+    "Plots are generated by scripts from the Spectre results; the waveform and PVT figures are plots, not Virtuoso screenshots, and each caption says so. The two circuit drawings (Figure 1 and Figure 8) are generated by scripts/draw_gpdk45_circuits.py from spectre/divider_gpdk45.scs."
   ],
   "other_info": [
-    "Layout: what was done (placement only). The layout was generated by the SKILL script cadence/skill/build_layout_v2.il in Virtuoso 6.1.5 (IC615). The DLATCH uses the PDK pcells nmos1v (two-finger, fw = 120 nm per unit; M7 has four fingers) and resnsnpoly for the two poly resistors R1 and R2 (about 2 kOhm at 200 ohm/sq, segW 0.8 um, segL 7.855 um). This resistor size is a placeholder: the simulated design D uses 3 kOhm, so the layout resistor is not the simulated value. The DLATCH box is 4.875 x 20.28 um. divider_core places XD1 R0, XD2 MY, XD3 MX and XD4 R180 with a 1 um gap, and the clock-star lengths are equal (98.62 um each, difference 0). Figure 7 shows the divider_core layout and Figure 21 the DLATCH layout.",
-    "Layout: Assura DRC (real result). Assura 4.1 DRC was run on the DLATCH layout only (divider_lib/DLATCH/layout, gpdk045 assuraDRC.rul); divider_core was not run. The result is 21 errors in 3 rules (Figure 22). Rule 220 psubstrate_StampErrorMult (1) and Rule 221 psubstrate_StampErrorConnect (6) give 7 substrate-stamp connectivity errors, because no tap or substrate connection is routed. Rule 595 METAL1.A.1, Metal1 area must be at least 0.02 um (14), gives 14 Metal1 minimum-area errors on the pin shapes. The DLATCH layout is therefore not DRC clean.",
-    "Layout: what was not done. The layout is placement only. Intra-latch metal routing, vias, clock trunks and substrate taps or connections are not drawn. LVS, parasitic extraction and post-layout simulation were not run, so the simulated results in this report are pre-layout results and the layout is not complete.",
+    "Layout: what was done (placement only). The layout was generated by the SKILL script cadence/skill/build_layout_v2.il in Virtuoso 6.1.5 (IC615). The transistors in the layout are unit size: one nmos1v pcell per device (7 single placements in layout_build_log.txt, each 0.595 um wide), no multiplier. M1 to M6 have 2 fingers of 120 nm (240 nm, L = 45 nm) and M7 has 4 fingers of 120 nm (480 nm, L = 90 nm). This is the m = 1 sizing of Table 1; design D (Table 2) needs 4 times the width (m = 4). The two poly resistors R1 and R2 (resnsnpoly, segW 0.8 um, segL 7.855 um, 200 ohm/sq) give about 2000 ohm and are a placeholder: the simulated baseline uses 8 kOhm and design D 3 kOhm. The layout therefore matches neither simulated design (its transistors are those of the m = 1 baseline, its resistors are not), and a layout at m = 4 with the 3 kOhm resistor was not produced. The DLATCH box is 4.875 x 20.28 um. divider_core places XD1 R0, XD2 MY, XD3 MX, XD4 R180 with a 1 um gap. The clock-star lengths (98.62 um each) are a computed Manhattan distance from each clock pin to the array centre (LAYOUT_NOTES.md, section 7); no clock wire is drawn. Figure 7 shows the divider_core layout and Figure 22 the DLATCH layout.",
+    "Layout: Assura DRC (real result). Assura 4.1 DRC was run on the DLATCH layout only (divider_lib/DLATCH/layout, gpdk045 assuraDRC.rul); divider_core was not run. The result is 21 errors in 3 rules (Figure 23). Rule 220 psubstrate_StampErrorMult (1) and Rule 221 psubstrate_StampErrorConnect (6) give 7 substrate-stamp connectivity errors, because no tap or substrate connection is routed. Rule 595 METAL1.A.1, Metal1 area must be at least 0.02 um^2 (14), gives 14 Metal1 minimum-area errors. The DRC summary lists the first 4 of these markers; each is 0.06 x 0.12 um (0.0072 um^2) at x 0.96 to 1.155 um and y 1 to 2.02 um, inside the transistor rows. The coordinates indicate that the 14 errors are isolated Metal1 contact pads, not the pin shapes: the script's pins are 0.2 x 0.15 um = 0.03 um^2, which is above the minimum. The 6 Rule 221 markers repeat at a 0.755 um pitch, which is the device pitch of the layout, so the substrate-stamp errors point at the unconnected integrated taps of the pcells. The DLATCH layout is therefore not DRC clean.",
+    "Layout: what was not done. The layout is placement only. Intra-latch metal routing, vias, clock trunks and substrate taps or connections are not drawn. The layout screenshots show cell outlines, not filled mask geometry. LVS, parasitic extraction and post-layout simulation were not run, so the simulated results in this report are pre-layout results and the layout is not complete.",
     "Virtuoso connectivity check (results/gpdk045/core_connectivity_virtuoso.txt): the top-level connections of 4 DLATCH instances (XD1 to XD4) were compared pin by pin with spectre/divider_gpdk45.scs, giving 0 mismatches. Schematic checks (schCheck errors/warnings, LEDGER.md): DLATCH 0/0, divider_core 0/0, tb_divider 0/1.",
-    "Second operating point, design B at 6 GHz: m = 4, R1 = R2 = 2 kOhm, output 3000.0 MHz, power 0.4929 mW, delay 27.94 ps, PDP 13.768 fJ, maximum phase-step error 3.78 deg (steps 48.78 and 41.22 deg). Q1 swing 0.818 to 0.953 V. The M7 tail voltage reaches 66.2 mV at most. Vdsat of M7 was not extracted for this point, so its saturation check is n/a. The metrics of this point are given here, not in Table 3; its PVT matrix is listed in Table 4 under the rows labelled B6.",
-    "DC operating point (analysis at t = 0, CK low, no tail current). Unsized: M7 triode, Vds = 56.3 nV, Ids = 35.6 pA. Design D: M7 triode, Vds = 54.4 nV, Ids = 137.4 pA. Design B: M7 triode, Vds = 54.4 nV, Ids = 137.4 pA (the same as design D, because both designs have m = 4 and vb = 1 V and no tail current flows at t = 0). Vgs = 1 V in all three.",
-    "Tail device M7 (honest finding). In the transient, the tail voltage of design D stays between 8.1 mV and 66.9 mV, while Vdsat = 357.8 mV (Vth = 527.5 mV, gm = 200.9 pS, gds = 2.531 mS at the bias). Vds never reaches Vdsat, so M7 operates in the triode region. The paper's tail is a saturated current source; this circuit's tail is not, and the report states this deviation openly (see Figure 12).",
-    "Frequency sweeps (fs_B, fs_D, fs_E). Design B divides from 1.4 to 6 GHz and fails at 6.2 GHz, where the output ratio is not 2. Design D (m = 4, R = 3 kOhm) divides from 3 to 5.5 GHz and fails at 6 GHz. Design E (m = 6, R = 2 kOhm) divides from 3 to 7 GHz and fails at 8 GHz. The maximum phase-step error at the top of each dividing range is 3.78 deg (B), 13.82 deg (D) and 15.24 deg (E); at the bottom of the range it is 38.68, 30.89 and 34.32 deg. The error falls with input frequency in all three sweeps (Figure 14).",
-    "PVT results. Design D at 1.4 GHz: 41 of 45 pass; 4 fail (125 C: 4): tt_125_0.9, ss_125_0.9, fs_125_0.9, sf_125_0.9. Design B at 1.4 GHz: 27 of 45 pass; 18 fail (27 C: 3, 125 C: 15): tt_27_0.9, tt_125_0.9, tt_125_1.0, tt_125_1.1, ff_125_0.9, ff_125_1.0, ff_125_1.1, ss_27_0.9, ss_125_0.9, ss_125_1.0, ss_125_1.1, fs_125_0.9, fs_125_1.0, fs_125_1.1, sf_27_0.9, sf_125_0.9, sf_125_1.0, sf_125_1.1. Design E (m = 6, R = 2 kOhm) at 1.4 GHz: 41 of 45 pass; 4 fail (125 C: 4): tt_125_0.9, ss_125_0.9, fs_125_0.9, sf_125_0.9. Design B at 6 GHz: 21 of 45 pass; 24 fail (-40 C: 2, 27 C: 7, 125 C: 15): tt_27_0.9, tt_125_0.9, tt_125_1.0, tt_125_1.1, ff_27_0.9, ff_125_0.9, ff_125_1.0, ff_125_1.1, ss_-40_0.9, ss_27_0.9, ss_27_1.0, ss_125_0.9, ss_125_1.0, ss_125_1.1, fs_27_0.9, fs_125_0.9, fs_125_1.0, fs_125_1.1, sf_-40_0.9, sf_27_0.9, sf_27_1.0, sf_125_0.9, sf_125_1.0, sf_125_1.1. The passing range for design D is power 0.246 to 1.078 mW and delay 23.54 to 31.05 ps. The PVT tables list design D (1.4 GHz) first and design B (6 GHz) second, with the design in the corner column.",
-    "Delay cross-check. The single-edge CK-to-Q1 delay in analysis.json is 51.95 ps for design D and 66.10 ps for design B. That is a different quantity (first edge of one output), so it is a cross-check only. The table delay is the mean over all eight outputs, which agrees with analysis.json to within 0.01 ps (25.99 ps for D). Q1 rise and fall times (10 to 90 percent) for D are 134.6 ps and 102.6 ps.",
-    "Power cross-check. The mean supply current of design D from analysis.json is 0.54144 mA, against 0.541337 mA in the TSV, within 0.018%. The peak supply current in steady state is 0.560 mA.",
+    "Second operating point, design B at 6 GHz: m = 4, R1 = R2 = 2 kOhm, output 3000.0 MHz, power 0.4929 mW, delay 27.94 ps, PDP 13.768 fJ, maximum phase-step error 3.78 deg (steps 48.78 and 41.22 deg). Q1 swing 0.818 to 0.953 V (0.135 V against the 0.1 V criterion). The M7 tail voltage reaches 66.2 mV at most. B has the same M7 W, L, multiplier and Vgs as design D and the same t = 0 operating point, so Vdsat is the same, 357.8 mV, and B's M7 is also in triode (Figure 14). The metrics of this point are given here, not in Table 3; its PVT matrix is listed in Table 4 under the rows labelled B6.",
+    "Initial-condition operating point (the point written by the operating-point extraction, at t = 0 with CK and CKb both low, so M5 and M6 are off and there is no tail current; it is not a bias point of the running circuit). Paper-rule circuit: M7 triode, Vds = 56.3 nV, Ids = 35.6 pA. Design D: M7 triode, Vds = 54.4 nV, Ids = 137.4 pA. Design B: M7 triode, Vds = 54.4 nV, Ids = 137.4 pA (the same as design D, because both designs have m = 4 and vb = 1 V and no tail current flows at t = 0). Vgs = 1 V in all three. The triode conclusion below does not rest on this point but on the transient.",
+    "Tail device M7 (honest finding). Vdsat is set by Vgs = 1 V, which is the same in the transient as at t = 0: Vdsat = 357.8 mV (Vth = 527.5 mV; at the t = 0 point gm = 200.9 pS and gds = 2.531 mS, Vds about 54 nV). In the transient, V(XD1.tail) of design D stays between 8.1 mV and 66.9 mV (XD2 reaches 68.2 mV), and that of the baseline U8k between 8.0 and 67.1 mV. Vds never reaches Vdsat, so M7 operates in the triode region. The paper's tail is a saturated current source; this circuit's tail is not, and the report states this deviation openly (see Figures 12 and 13).",
+    "Frequency sweeps (fs_B, fs_D, fs_E). Design B (m = 4, R = 2 kOhm) was swept from 1.4 to 6.2 GHz: it divides at 1.4, 2, 3, 4, 5, 5.5, 5.8, 6 GHz and fails at 6.2 GHz. Design D (m = 4, R = 3 kOhm) was swept from 3 to 8 GHz: it divides at 3, 4, 5, 5.5 GHz and fails at 6, 6.5, 7, 8 GHz; 1.4 GHz also divides (Table 3), and 1.4 to 3 GHz was not swept. Design E (m = 6, R = 2 kOhm) was swept from 3 to 8 GHz: it divides at 3, 4, 5, 5.5, 6, 6.5, 7 GHz and fails at 8 GHz; 1.4 GHz also divides (pvt_E, tt, 27 C, 1.0 V). The maximum phase-step error at the top of each dividing range is 3.78 deg (B), 13.82 deg (D) and 15.24 deg (E); at the bottom of the swept range it is 38.68, 30.89 and 34.32 deg. The error falls with input frequency in all three sweeps (Figure 16).",
+    "Exploratory sweep fs_F (16 points, not used for the tables): m = 4, R = 2.2 kOhm divides up to 6.25 GHz (5.57 deg phase-step error there); m = 4, R = 2.5 kOhm divides up to 6 GHz (11.23 deg phase-step error there) and fails at 6.25 GHz; m = 5, R = 2.2 kOhm divides up to 6.25 GHz (16.56 deg phase-step error there); m = 5, R = 2.5 kOhm divides up to 6.25 GHz (14.36 deg phase-step error there). The runs are single nominal points around the frequency limit of design B and were not run over PVT.",
+    "PVT results. Design D at 1.4 GHz: 41 of 45 pass; 4 fail (125 C: 4): tt_125_0.9, ss_125_0.9, fs_125_0.9, sf_125_0.9. Design B at 1.4 GHz: 27 of 45 pass; 18 fail (27 C: 3, 125 C: 15): tt_27_0.9, tt_125_0.9, tt_125_1.0, tt_125_1.1, ff_125_0.9, ff_125_1.0, ff_125_1.1, ss_27_0.9, ss_125_0.9, ss_125_1.0, ss_125_1.1, fs_125_0.9, fs_125_1.0, fs_125_1.1, sf_27_0.9, sf_125_0.9, sf_125_1.0, sf_125_1.1. Design E (m = 6, R = 2 kOhm) at 1.4 GHz: 41 of 45 pass; 4 fail (125 C: 4): tt_125_0.9, ss_125_0.9, fs_125_0.9, sf_125_0.9. Design B at 6 GHz: 21 of 45 pass; 24 fail (-40 C: 2, 27 C: 7, 125 C: 15): tt_27_0.9, tt_125_0.9, tt_125_1.0, tt_125_1.1, ff_27_0.9, ff_125_0.9, ff_125_1.0, ff_125_1.1, ss_-40_0.9, ss_27_0.9, ss_27_1.0, ss_125_0.9, ss_125_1.0, ss_125_1.1, fs_27_0.9, fs_125_0.9, fs_125_1.0, fs_125_1.1, sf_-40_0.9, sf_27_0.9, sf_27_1.0, sf_125_0.9, sf_125_1.0, sf_125_1.1. The passing range for design D is power 0.246 to 1.078 mW and delay 23.54 to 31.05 ps. The PVT tables list design D (1.4 GHz) first and design B (6 GHz) second, with the design in the corner column. In Table 4 the ratio is f_in/f_out (a division needs 2); a ratio of 0.5 means the outputs run at 2 f_in.",
+    "Delay cross-check. The single-edge CK-to-Q1 delay in analysis.json is 135.96 ps for U8k, 51.95 ps for design D and 66.10 ps for design B. That is a different quantity (first edge of one output), so it is a cross-check only. The table delay is the mean over CK edges of the time to the next edge of any of the eight outputs, which agrees with analysis.json to within 0.01 ps (25.99 ps for D). Q1 rise and fall times (10 to 90 percent) for D are 134.6 ps and 102.6 ps.",
+    "Power cross-check. The mean supply current of design D from analysis.json is 0.54144 mA, against 0.541337 mA in the TSV, within 0.018%. The peak supply current in steady state is 0.560 mA (Figure 15).",
     "Comparison with the paper. Literature values from Kuo et al. (not re-measured here): TSMC 180 nm, 1.8 V, 1.4 GHz input, 2.34 mW, phase error within 3.75 deg, core 91.7 x 52.9 um^2. In this generic 45 nm PDK, design D at 1.4 GHz draws 0.5413 mW but its phase-step error is 38.46 deg; design B reaches 3.78 deg only at 6 GHz. The core area is not measured here and the processes differ, so this report makes no claim of beating the paper.",
-    "Figure numbering. Figures 1 to 8 are the named slots. Figures 9 onwards are additional figures: the ring diagram (Figure 9), the 6 GHz waveforms (Figure 10), phase steps (Figure 11), tail voltage (Figure 12), supply current (Figure 13), the frequency sweep (Figure 14) and the PVT plots for design D and B (Figures 15, 16 and 17), the testbench schematic (Figure 18), the Virtuoso session log (Figure 19), the Library Manager (Figure 20), the DLATCH layout (Figure 21) and the Assura DRC tally (Figure 22)."
+    "Figure numbering. Figures 1 to 7 are the named slots; the post-layout waveform slot holds a statement that the simulation was not performed and has no figure number. Figures 8 onwards are additional figures: the ring diagram (Figure 8), the non-dividing paper-rule waveforms (Figure 9), the 6 GHz waveforms (Figure 10), phase steps (Figure 11), tail voltage (Figures 12, 13 and 14), supply current (Figure 15), the frequency sweep (Figure 16) and the PVT plots for design D and B (Figures 17, 18 and 19), the testbench schematic (Figure 20), the Virtuoso session log (Figure 21), the DLATCH layout (Figure 22) and the Assura DRC tally (Figure 23)."
   ],
   "conclusion": [
-    "Both operating points work with the same topology and the stack rule. Design D at 1.4 GHz (m = 4, R = 3 kOhm) divides with 0.5413 mW, 25.99 ps delay, 14.067 fJ PDP and a 38.46 deg phase-step error, and passes 41 of 45 PVT points. Design B at 6 GHz (m = 4, R = 2 kOhm) divides with 0.4929 mW, 27.94 ps delay, 13.768 fJ PDP and a 3.78 deg phase-step error, and passes 21 of 45 PVT points.",
-    "The unsized circuit with R1 = Ron/2 does not divide at 1.4 GHz, which is consistent with the stack-resistance rule (its load is far below the threshold).",
+    "Both operating points work with the same topology and the stack rule. Design D at 1.4 GHz (m = 4, R = 3 kOhm) divides with 0.5413 mW, 25.99 ps delay, 14.067 fJ PDP and a 38.46 deg phase-step error, and passes 41 of 45 PVT points. Design B at 6 GHz (m = 4, R = 2 kOhm) divides with 0.4929 mW, 27.94 ps delay, 13.768 fJ PDP and a 3.78 deg phase-step error, and passes 21 of 45 PVT points. Design B is the weaker point: its Q1 swing is 0.135 V (0.818 to 0.953 V) against the 0.1 V criterion, its tt, 27 C, 0.9 V corner fails, and it fails at 6.2 GHz.",
+    "Sizing against the baseline. Sizing cuts the CK-to-output delay from 62.21 ps (U8k) to 25.99 ps (D), a factor 2.39, but it raises the power from 0.1375 mW to 0.5413 mW (factor 3.94) and the PDP from 8.557 fJ to 14.067 fJ (factor 1.64). The maximum phase-step error also grows, from 26.42 deg to 38.46 deg, and the Q1 swing grows from 0.2289 V to 0.4344 V. Sizing therefore buys speed and swing at the cost of power and PDP; it does not improve the phase error at 1.4 GHz.",
+    "The paper-rule circuit (m = 1, R1 = Ron/2 = 1.15 kOhm) does not divide at 1.4 GHz, which is consistent with the stack-resistance rule (its load is far below the 7.59 kOhm threshold), and the R search puts the measured threshold of the unit-size circuit between 7 and 8 kOhm (vb = 0.8 V) and between 6 and 7 kOhm (vb = 1 V).",
     "Limits. The tail M7 operates in triode, not saturation, so the paper's tail model is not reproduced. The phase-step error at 1.4 GHz (38.46 deg) is far above the paper's 3.75 deg, and only design B at 6 GHz comes close (3.78 deg). All 4 PVT failures of design D are at 125 C and 0.9 V. Design B, whose load lies inside the regeneration band, passes fewer PVT points (21 of 45 at 6 GHz and 27 of 45 at 1.4 GHz).",
-    "Layout status: placement only, and not clean or complete. The divider_core (2x2 DLATCH placement) and the DLATCH are placed but not routed, not extracted, not LVS-checked and not simulated after layout. The DLATCH Assura DRC gives 21 errors in 3 rules (7 substrate-stamp connectivity, 14 Metal1 minimum area). The post-layout waveform is not available: post-layout simulation not performed (layout not routed/extracted)."
+    "Layout status: placement only, and not clean or complete. The divider_core (2x2 DLATCH placement) and the DLATCH are placed but not routed, not extracted, not LVS-checked and not simulated after layout. The transistors in the layout are unit size (m = 1) and the resistors are a 2000 ohm placeholder, so the layout matches neither simulated design; a layout at m = 4 with the 3 kOhm resistor was not produced. The DLATCH Assura DRC gives 21 errors in 3 rules (7 substrate-stamp connectivity, 14 Metal1 minimum area). Post-layout simulation was not performed."
   ],
   "problems_faced": [
     "Spectre aborted with ERROR (VACOMP-1008): Cannot compile ahdlcmi module library, and then a segmentation fault, for the gate-resistance Verilog-A style sub-model inside the gpdk045 device.",
     "Cause: the Cadence VM is 32-bit CentOS 6.5, but the bundled perl (cdsPerl) and gcc are 64-bit and could not run, and no gcc was installed.",
     "The guest disk had only about 100 MB free, so a sweep failed with No space left on device.",
-    "The unit-size circuit with R1 = Ron/2 does not divide at 1, 1.4 or 2 GHz.",
-    "The first division check counted false passes: outputs at 2 or 2.8 times the expected frequency with only 15 to 20 mV of swing.",
+    "The unit-size circuit with R1 = Ron/2 does not divide at 1, 1.4 or 2 GHz; a dividing unit-size baseline needed a search over R.",
+    "The first division check counted false passes: outputs at 2 x f_in (2.8 GHz for a 1.4 GHz input) with only 13 to 20 mV of swing.",
     "The Spectre ASCII raw layout (first variable on the Variables line, several values per line) broke the first parser.",
     "The 125 C corners failed for the marginal sizing.",
     "The VM had no guest tools, so files were moved by virtual CD images and a virtual serial port with MD5 checks.",
     "The phase error at 1.4 GHz is large (38.46 deg for design D), far from the paper's 3.75 deg.",
-    "Layout not completed. The layout is placement only: intra-latch routing, vias, clock trunks and substrate taps are not drawn. The DLATCH DRC gives 21 errors (7 substrate-stamp, 14 Metal1 minimum area), LVS and extraction were not run, and post-layout simulation was not performed."
+    "Layout not completed. The layout is placement only: intra-latch routing, vias, clock trunks and substrate taps are not drawn, and the transistors are unit size (m = 1). The DLATCH DRC gives 21 errors (7 substrate-stamp, 14 Metal1 minimum area), LVS and extraction were not run, and post-layout simulation was not performed."
   ],
   "problems_resolved": [
     "Installed gcc 4.4.7 and glibc-devel from the CentOS 6.5 vault RPMs, replaced the bundled perl wrapper by the system perl, and pointed the bundled gcc and ld symlinks at /usr/bin.",
     "The measured values were stored as TSV and JSON files (nominal, sweep, PVT and analysis files), so each number in this report is read from one of those files.",
-    "The unsized design was replaced by the sizing concept: the load was set from the stack-resistance rule, giving design D (41 of 45 PVT points).",
+    "A dividing unit-size baseline was found by searching R (12 Spectre runs, unsized_baseline.tsv); the sizing concept then set the load from the stack-resistance rule, giving design D (41 of 45 PVT points).",
     "The division test was made strict: all eight outputs at f_in/2 within 0.1 percent, each swinging at least 0.1 V.",
     "The parsers were fixed for the Spectre ASCII raw layout, and the PVT and sweep results were checked against their summary files.",
     "Two operating points were chosen: 1.4 GHz, the paper's input frequency, and 6 GHz, the point with the smallest phase-step error. Each has its own PVT matrix.",
@@ -1277,7 +1311,7 @@
     "The paper's constants are literature values, and the title-page register and name fields are left blank by design."
   ],
   "references": [
-    "Y.-F. Kuo et al., \"A Compact Multiphase Divide-by-Two CMOS Frequency Divider,\" IEEE Microw. Wireless Technol. Lett., vol. 35, no. 5, pp. 617-620, May 2025, doi: 10.1109/LMWT.2025.3528863.",
+    "Yue-Fang Kuo, Shih-Hung Lin, Bo-Yi Chen and Liang-Chen Liu, \"A Compact Multiphase Divide-by-Two CMOS Frequency Divider,\" IEEE Microw. Wireless Technol. Lett., vol. 35, no. 5, pp. 617-620, May 2025, doi: 10.1109/LMWT.2025.3528863.",
     "Cadence Design Systems, Cadence GPDK045 v6.0 documentation (45 nm generic process design kit).",
     "Cadence Design Systems, Spectre Circuit Simulator Reference, MMSIM 12.1."
   ]

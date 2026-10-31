@@ -35,12 +35,13 @@ HEADING_PT = 14
 RED = RGBColor(0xC0, 0x00, 0x00)
 BLACK = RGBColor(0x00, 0x00, 0x00)
 MAX_FIG_W_IN = 6.0
-MAX_FIG_H_IN = 7.5
+MAX_FIG_H_IN = 7.0
 TEXT_W_IN = 6.5  # Letter width 8.5 in minus two 1 in margins
 DOCX_NAME = "23ECE383_System_Design_Report.docx"
 
-# Figure slots in the order they appear in the document. Figure numbers are
-# fixed by this order so that proof references stay stable when slots fill in.
+# Figure slots in the order they appear in the document. A slot holding a figure (or a
+# NOT YET AVAILABLE marker) takes the next figure number; a slot holding only a {"note": ...}
+# (an explanatory sentence, for example "not performed") takes no number.
 FIG_SLOTS = [
     ("circuit_diagram", "circuit diagram of the divider"),
     ("impl_screenshot", "simulator screenshot of the circuit implementation (without sizing)"),
@@ -51,8 +52,7 @@ FIG_SLOTS = [
     ("layout_screenshot", "layout screenshot"),
     ("layout_waveform", "simulator waveform screenshot of the layout"),
 ]
-FIG_NO = {key: i for i, (key, _) in enumerate(FIG_SLOTS, start=1)}
-EXTRA_FIG_START = len(FIG_SLOTS) + 1
+
 
 METRIC_UNITS = {
     "f_in_ghz": "GHz",
@@ -97,6 +97,19 @@ class Builder:
         self.doc = Document()
         self.tab_no = 0
         self.missing = []
+        figs = self.d.get("figures") or {}
+        self.fig_no = {}
+        n = 0
+        for key, _ in FIG_SLOTS:
+            if self._is_note(figs.get(key)):
+                continue
+            n += 1
+            self.fig_no[key] = n
+        self.extra_start = n + 1
+
+    @staticmethod
+    def _is_note(slot):
+        return isinstance(slot, dict) and slot.get("note") and not slot.get("file")
 
     # ------------------------------------------------------------------ low level
     @staticmethod
@@ -172,15 +185,15 @@ class Builder:
         else:
             self.need(what)
 
-    def body(self, items, what):
+    def body(self, items, what, keep_together=False):
         if isinstance(items, str):
             items = [items]
         if not items:
             self.need(what)
             return
-        for item in items:
-            if item:
-                self.para(str(item), after=6)
+        items = [item for item in items if item]
+        for i, item in enumerate(items):
+            self.para(str(item), after=6, keep=keep_together and i < len(items) - 1)
 
     def _field(self, p, instr):
         def run_with(element=None, text=None):
@@ -225,7 +238,9 @@ class Builder:
         header_flag = OxmlElement("w:tblHeader")
         trpr.append(header_flag)
         for row in rows:
-            cells = t.add_row().cells
+            new_row = t.add_row()
+            new_row._tr.get_or_add_trPr().append(OxmlElement("w:cantSplit"))
+            cells = new_row.cells
             for i, value in enumerate(row):
                 if isinstance(value, tuple):
                     self._cell(cells[i], value[0], bold=True, color=value[1])
@@ -239,6 +254,9 @@ class Builder:
         return t
 
     def figure(self, n, slot, what):
+        if self._is_note(slot):
+            self.para(str(slot["note"]), after=8)
+            return
         if not slot:
             self.need(f"Figure {n} - {what}")
             return
@@ -348,6 +366,7 @@ class Builder:
 
         self.para("Submitted by", bold=True, align="c", before=8, after=6)
         sub = self.doc.add_table(rows=5, cols=3)
+        sub.style = self.doc.styles["Table Grid"]
         sub.autofit = False
         headers = ["REGISTER NUMBER", "NAME", "SIGNATURE WITH DATE"]
         for i, h in enumerate(headers):
@@ -394,7 +413,7 @@ class Builder:
 
     def sec_circuit(self):
         self.heading("CIRCUIT DIAGRAM:")
-        self.figure(FIG_NO["circuit_diagram"], self._slot("circuit_diagram"),
+        self.figure(self.fig_no["circuit_diagram"], self._slot("circuit_diagram"),
                     dict(FIG_SLOTS)["circuit_diagram"])
 
     def sec_theory_tools(self):
@@ -429,11 +448,11 @@ class Builder:
         self.body(design.get("description"),
                   "description of the circuit without sizing (designs.without_sizing.description)")
         self._device_table("without_sizing", "Device list, circuit without the sizing concept")
-        self.figure(FIG_NO["impl_screenshot"], self._slot("impl_screenshot"),
+        self.figure(self.fig_no["impl_screenshot"], self._slot("impl_screenshot"),
                     dict(FIG_SLOTS)["impl_screenshot"])
 
         self.heading("SCREENSHOT OF THE OUTPUT WAVEFORM OBTAINED FROM THE SIMULATOR (DC AND TRANSIENT):")
-        self.figure(FIG_NO["waveform_without_sizing"], self._slot("waveform_without_sizing"),
+        self.figure(self.fig_no["waveform_without_sizing"], self._slot("waveform_without_sizing"),
                     dict(FIG_SLOTS)["waveform_without_sizing"])
 
     def sec_sizing(self):
@@ -442,12 +461,12 @@ class Builder:
         self.body(design.get("description"),
                   "description of the circuit with sizing (designs.with_sizing.description)")
         self._device_table("with_sizing", "Device list, circuit based on the sizing concept")
-        self.figure(FIG_NO["sized_circuit_screenshot"], self._slot("sized_circuit_screenshot"),
+        self.figure(self.fig_no["sized_circuit_screenshot"], self._slot("sized_circuit_screenshot"),
                     dict(FIG_SLOTS)["sized_circuit_screenshot"])
 
         self.heading("SCREENSHOT OF THE OUTPUT WAVEFORM OBTAINED FROM THE SIMULATOR FOR THE CIRCUIT "
                      "WITH SIZING CONCEPT (DC AND TRANSIENT):")
-        self.figure(FIG_NO["waveform_with_sizing"], self._slot("waveform_with_sizing"),
+        self.figure(self.fig_no["waveform_with_sizing"], self._slot("waveform_with_sizing"),
                     dict(FIG_SLOTS)["waveform_with_sizing"])
 
     def _sat_text(self, m):
@@ -456,26 +475,29 @@ class Builder:
         if vds is None or vdsat is None:
             return "n/a"
         saturated = vds >= vdsat
-        text = f"Vds = {vds} V, Vdsat = {vdsat} V: " + ("saturated" if saturated else "NOT saturated")
-        return text if saturated else (text, RED)
+        text = f"Vds = {vds} V, Vdsat = {vdsat} V: " + ("saturated" if saturated else "NOT saturated (triode)")
+        return text if saturated else (text, BLACK)
 
     def sec_values(self):
         self.heading("PROVIDE THE VALUES FOR THE FOLLOWING ALONG WITH THE SCREENSHOTS AS PROOF:")
         m_wo = self._design("without_sizing").get("metrics") or {}
         m_w = self._design("with_sizing").get("metrics") or {}
-        proof = (f"Fig. {FIG_NO['waveform_without_sizing']} (without), "
-                 f"Fig. {FIG_NO['waveform_with_sizing']} (with)")
+        proofs = self.d.get("values_proof") or {}
+        default_proof = (f"Fig. {self.fig_no['waveform_without_sizing']} (without), "
+                         f"Fig. {self.fig_no['waveform_with_sizing']} (with)")
         rows = []
         for label, key in VALUE_ROWS:
             if key is None:
                 left, right = self._sat_text(m_wo), self._sat_text(m_w)
             else:
                 left, right = metric_text(m_wo, key), metric_text(m_w, key)
-            rows.append([label, left, right, proof])
+            rows.append([label, left, right, proofs.get(key or "sat", default_proof)])
         self.table(["Parameter", "Value without Sizing", "Value with Sizing", "Proof (figure)"],
                    rows, [1.9, 1.6, 1.6, 1.4],
                    "Performance values with and without the sizing concept, "
                    "with the proof figures for each row")
+        for note in self.d.get("values_notes") or []:
+            self.para(str(note), size=10, after=4)
 
     def sec_pvt_layout(self):
         self.heading("SCREENSHOT OF THE PVT ANALYSIS:")
@@ -499,17 +521,17 @@ class Builder:
                 ])
             self.table(["Corner", "Temp (C)", "VDD (V)", "Divides", "f_out (MHz)",
                         "Delay (ps)", "Power (mW)", "PDP (fJ)", "Note"],
-                       rows, [0.8, 0.65, 0.55, 0.7, 0.75, 0.65, 0.7, 0.6, 1.1],
-                       "PVT analysis results (FAIL rows are kept)")
-        self.figure(FIG_NO["pvt_screenshot"], self._slot("pvt_screenshot"),
+                       rows, [0.7, 0.55, 0.55, 0.75, 0.75, 0.6, 0.65, 0.55, 1.4],
+                       "PVT analysis results (FAIL rows are kept; ratio = f_in / f_out, a division needs 2)")
+        self.figure(self.fig_no["pvt_screenshot"], self._slot("pvt_screenshot"),
                     dict(FIG_SLOTS)["pvt_screenshot"])
 
         self.heading("SCREENSHOT OF THE LAYOUT:")
-        self.figure(FIG_NO["layout_screenshot"], self._slot("layout_screenshot"),
+        self.figure(self.fig_no["layout_screenshot"], self._slot("layout_screenshot"),
                     dict(FIG_SLOTS)["layout_screenshot"])
 
         self.heading("SCREENSHOT OF THE OUTPUT WAVEFORM OBTAINED FROM THE SIMULATOR FOR THE LAYOUT:")
-        self.figure(FIG_NO["layout_waveform"], self._slot("layout_waveform"),
+        self.figure(self.fig_no.get("layout_waveform"), self._slot("layout_waveform"),
                     dict(FIG_SLOTS)["layout_waveform"])
 
     def sec_rest(self):
@@ -518,7 +540,7 @@ class Builder:
         self.body(d.get("other_info"), "other relevant information text (other_info)")
         extras = self._slot_list("extra_figures")
         for i, item in enumerate(extras):
-            self.figure(EXTRA_FIG_START + i, item, f"additional figure {i + 1}")
+            self.figure(self.extra_start + i, item, f"additional figure {i + 1}")
 
         self.heading("CONCLUSION:")
         self.body(d.get("conclusion"), "conclusion text (conclusion)")
@@ -533,7 +555,7 @@ class Builder:
         self.body(d.get("other_comment"), "other comment text (other_comment)")
 
         self.heading("REFERENCES:")
-        self.body(d.get("references"), "references (references)")
+        self.body(d.get("references"), "references (references)", keep_together=True)
 
     def _slot_list(self, key):
         items = (self.d.get("figures") or {}).get(key)

@@ -2,14 +2,17 @@
 """Figures and analysis.json for the final gpdk045 Spectre runs of the 8-phase divider.
 
 Inputs (all measured by Spectre 12.1 inside the Cadence VM):
-  FINALS/{unsized,D_1p4,B_6g}.raw   nutmeg ASCII transient (read with spectre_raw._parse_plot)
-  FINALS/{unsized,D_1p4,B_6g}.tsv   one-row summary per design (the numbers quoted in the report)
+  FINALS/{unsized,U8k,D_1p4,B_6g}.raw   nutmeg ASCII transient (read with spectre_raw._parse_plot)
+  FINALS/{unsized,U8k,D_1p4,B_6g}.tsv   one-row summary per design (the numbers quoted in the report)
+  FINALS/D_1p4.m7vdsat.txt              extracted Vdsat of M7 (drawn in the tail plots)
+  unsized = paper-rule circuit (m = 1, R = Ron/2, does not divide); U8k = dividing unit-size baseline
 
 Outputs (OUTDIR):
-  fig_tran_D_1p4.png, fig_tran_B_6g.png     CK + 8 outputs, sorted by measured phase, 3 output periods
+  fig_tran_U8k.png, fig_tran_D_1p4.png, fig_tran_B_6g.png
+                                            CK + 8 outputs, sorted by measured phase, 3 output periods
   fig_tran_unsized.png                      CK, Q1, Q1b of the non-dividing unsized design
   fig_phase_steps.png                       8 adjacent phase steps vs the ideal 45 deg
-  fig_tail_saturation_D_1p4.png / _B_6g.png V(XD1.tail) over 3 output periods, optional Vdsat line
+  fig_tail_saturation_{U8k,D_1p4,B_6g}.png V(XD1.tail) over 3 output periods, optional Vdsat line
   fig_supply_current.png                    supply current drawn, 2 output periods per design
   JSON                                      FINALS/analysis.json (or --json)
 
@@ -20,6 +23,7 @@ Conventions:
   Nothing is hard-coded from the measurements: every plotted or printed number comes from the data.
 
 Usage: gpdk45_final_figs.py [--finals DIR] [--outdir DIR] [--vdsat V] [--json PATH]
+(Vdsat is read from FINALS/D_1p4.m7vdsat.txt unless --vdsat is given.)
 """
 import argparse
 import csv
@@ -47,13 +51,31 @@ ROOT = os.path.dirname(HERE)
 DEFAULT_FINALS = os.path.join(ROOT, "results", "gpdk045", "final")
 DEFAULT_OUTDIR = os.path.join(ROOT, "report", "gpdk045", "figures")
 
-DESIGNS = ["unsized", "D_1p4", "B_6g"]
-DIVIDERS = ["D_1p4", "B_6g"]
-DESC = {
-    "unsized": "unsized: unit devices m = 1, R = 1.15 kΩ, 1.4 GHz in",
-    "D_1p4": "D_1p4: m = 4, R = 3 kΩ, vb = 1.0 V, 1.4 GHz in",
-    "B_6g": "B_6g: m = 4, R = 2 kΩ, vb = 1.0 V, 6 GHz in",
+DESIGNS = ["unsized", "U8k", "D_1p4", "B_6g"]
+DIVIDERS = ["U8k", "D_1p4", "B_6g"]
+LABEL = {
+    "unsized": "unsized (paper rule)",
+    "U8k": "U8k (unit-size baseline)",
+    "D_1p4": "D_1p4",
+    "B_6g": "B_6g",
 }
+GRID_TAG = re.compile(r"^g_(?P<f>[\d.]+)G_(?P<r>[\d.]+)k_(?P<vb>[\d.]+)_(?P<cl>[\d.]+)f_m(?P<m>\d+)$")
+
+
+def tag_params(tag):
+    """f_in (GHz), R (kOhm), vb (V), CL (fF) and m from a run tag g_<f>G_<R>k_<vb>_<CL>f_m<m>."""
+    m = GRID_TAG.match(tag)
+    if m is None:
+        raise ValueError(f"tag not recognised: {tag}")
+    return {"f": float(m["f"]), "r": float(m["r"]), "vb": float(m["vb"]),
+            "cl": float(m["cl"]), "m": int(m["m"])}
+
+
+def desc(name, tsv):
+    """Description of a design built from its own tsv tag (no typed sizes)."""
+    p = tag_params(tsv["tag"])
+    return (f"{LABEL[name]}: m = {p['m']}, R = {p['r']:g} kΩ, vb = {p['vb']:g} V, "
+            f"{p['f']:g} GHz in")
 OUT_NODES = ["q1", "q2", "q3", "q4", "q1b", "q2b", "q3b", "q4b"]
 ORANGE, BLUE, GREEN = "#d97757", "#3b6ea5", "#4d7a4f"
 SETTLE_S = 10e-9
@@ -260,6 +282,20 @@ def measure_design(name, finals):
         if tsv["delay_ps"] is not None and abs(delay_any - tsv["delay_ps"]) > 0.05:
             raise RuntimeError(f"{name}: CK->any-output delay {delay_any:.3f} ps vs tsv "
                                f"{tsv['delay_ps']:.3f} ps")
+        # Paired-edge gap: the two outputs bounding the smallest phase step (the pair of edges
+        # that sit close together); t_pair = mean gap from a rising edge of the first to the next
+        # rising edge of the second. Phase a (output-period degrees) = 360 t_pair / T_out.
+        steps = tsv["phase_steps_deg"]
+        smallest = [k for k, v in enumerate(steps) if v <= min(steps) + 0.05]
+        k_small = next((k for k in smallest if order[k] == "q2"), smallest[0])
+        pair = (order[k_small], order[(k_small + 1) % 8])
+        e_a = steady_edges(t, cols[pair[0]], *lo_hi[pair[0]], True)
+        e_b = steady_edges(t, cols[pair[1]], *lo_hi[pair[1]], True)
+        gaps = [e_b[np.searchsorted(e_b, ea)] - ea for ea in e_a if np.searchsorted(e_b, ea) < len(e_b)]
+        t_pair_ps = float(np.mean(gaps) * 1e12)
+        t_pair_expect = min(steps) / 360.0 * tper * 1e12
+        if abs(t_pair_ps - t_pair_expect) > 0.01 * t_pair_expect:
+            raise RuntimeError(f"{name}: t_pair {t_pair_ps:.3f} ps vs phase-step value {t_pair_expect:.3f} ps")
         rise, fall = transition_times(t, cols["q1"], *lo_hi["q1"], tper,
                                       q1r, q1f)
         m.update({
@@ -273,6 +309,10 @@ def measure_design(name, finals):
             "q1_rise_10_90_ps": float(np.mean(rise) * 1e12),
             "q1_fall_10_90_ps": float(np.mean(fall) * 1e12),
             "q1_rise_fall_edges": [len(rise), len(fall)],
+            "t_pair_ps": t_pair_ps,
+            "t_pair_outputs": [pair[0], pair[1]],
+            "t_pair_smallest_step_deg": float(min(steps)),
+            "f_out_period_ps": float(tper * 1e12),
         })
         ctx["phases"] = phases
         ctx["order"] = order
@@ -283,7 +323,8 @@ def measure_design(name, finals):
                                     "ck_to_q1_first_edge_delay_ps", "ck_to_q1_mean_delay_ps",
                                     "ck_to_any_output_mean_delay_ps",
                                     "q1_rise_10_90_ps", "q1_fall_10_90_ps",
-                                    "q1_rise_fall_edges"]})
+                                    "q1_rise_fall_edges", "t_pair_ps", "t_pair_outputs",
+                                    "t_pair_smallest_step_deg", "f_out_period_ps"]})
 
     # Current checks against the tsv average (the tsv average is the authority for the report).
     if tsv["i_avg_mA"] is not None:
@@ -341,7 +382,7 @@ def plot_tran_divider(name, m, ctx, outdir):
     axes[-1].set_xlabel("time (ns)")
     axes[-1].set_xlim(t0 * 1e9, t1 * 1e9)
     fig.suptitle(
-        f"Transient of the gpdk045 8-phase divider, {DESC[name]}, VDD = {VDD:.1f} V.\n"
+        f"Transient of the gpdk045 8-phase divider, {desc(name, m['tsv'])}, VDD = {VDD:.1f} V.\n"
         f"Output {m['tsv']['f_out_MHz']:.1f} MHz; three output periods after settle "
         f"(start {t0*1e9:.2f} ns). Traces sorted by measured phase; dashed lines: ideal 45° grid.",
         fontsize=9, y=0.985)
@@ -378,7 +419,7 @@ def plot_tran_unsized(m, ctx, outdir):
     axes[-1].set_xlabel("time (ns)")
     axes[-1].set_xlim(t0 * 1e9, t1 * 1e9)
     fig.suptitle(
-        f"Unsized divider, {DESC['unsized']}, VDD = {VDD:.1f} V: the outputs do not divide.\n"
+        f"Unsized divider, {desc('unsized', m['tsv'])}, VDD = {VDD:.1f} V: the outputs do not divide.\n"
         f"Q1 follows the clock at {m['tsv']['f_out_MHz']:.1f} MHz with a steady swing of "
         f"{swing_mv:.1f} mV (Q1 zoomed; {PLOT_PERIODS} output periods shown).",
         fontsize=9, y=0.985)
@@ -389,8 +430,9 @@ def plot_phase_steps(all_m, outdir):
     fig, ax = plt.subplots(figsize=(7.2, 5.4))
     fig.subplots_adjust(left=0.12, right=0.97, top=0.92, bottom=0.31)
     x = np.arange(8)
-    width = 0.38
-    colors = {"D_1p4": BLUE, "B_6g": GREEN}
+    n_des = len(DIVIDERS)
+    width = 0.8 / n_des
+    colors = {"U8k": ORANGE, "D_1p4": BLUE, "B_6g": GREEN}
     labels = None
     for j, name in enumerate(DIVIDERS):
         tsv = all_m[name]["tsv"]
@@ -400,13 +442,15 @@ def plot_phase_steps(all_m, outdir):
         order = [p for p, _ in tsv["phases_deg"]]
         if labels is None:
             labels = [f"{order[k].upper()}→{order[(k + 1) % 8].upper()}" for k in range(8)]
-        xs = x + (j - 0.5) * width
+        elif [f"{order[k].upper()}→{order[(k + 1) % 8].upper()}" for k in range(8)] != labels:
+            raise RuntimeError(f"{name}: phase order differs from the first design")
+        xs = x + (j - (n_des - 1) / 2) * width
         bars = ax.bar(xs, steps, width, color=colors[name], label=(
             f"{name} ({tsv['f_in_GHz']:.1f} GHz in, {tsv['f_out_MHz']:.0f} MHz out), "
             f"max error {tsv['max_phase_step_err_deg']:.2f}°"))
         for b, v in zip(bars, steps):
-            ax.text(b.get_x() + b.get_width() / 2, v + 1.2, f"{v:.2f}", ha="center",
-                    va="bottom", fontsize=7)
+            ax.text(b.get_x() + b.get_width() / 2, v + 1.2, f"{v:.1f}", ha="center",
+                    va="bottom", fontsize=6)
     ax.axhline(45, color=ORANGE, lw=1.4, ls="--", label="ideal 45°")
     ax.set_xticks(x)
     ax.set_xticklabels(labels, fontsize=8)
@@ -422,6 +466,15 @@ def plot_phase_steps(all_m, outdir):
     save(fig, os.path.join(outdir, "fig_phase_steps.png"))
 
 
+def read_vdsat(finals):
+    """Vdsat (V) of M7 from the extraction file of D_1p4 ('vdsat = 357.843 mV')."""
+    with open(os.path.join(finals, "D_1p4.m7vdsat.txt")) as f:
+        m = re.search(r"vdsat = ([\d.eE+-]+) mV", f.read())
+    if m is None:
+        raise ValueError("vdsat not found in D_1p4.m7vdsat.txt")
+    return float(m.group(1)) / 1000.0
+
+
 def plot_tail(name, ctx, m, vdsat, outdir):
     t, cols, t0, t1 = ctx["t"], ctx["cols"], ctx["t0"], ctx["t1"]
     win = (t >= t0) & (t <= t1)
@@ -431,26 +484,29 @@ def plot_tail(name, ctx, m, vdsat, outdir):
             label=f"V(XD1.tail), steady state min {m['xd1_tail_min_v']*1e3:.2f} mV, "
                   f"max {m['xd1_tail_max_v']*1e3:.2f} mV")
     if vdsat is not None:
-        ax.axhline(vdsat, color=ORANGE, lw=1.3, ls="--", label=f"Vdsat = {vdsat:.3f} V")
+        src = ("extracted at the t = 0 point" if name == "D_1p4"
+               else "D_1p4 extraction; same M7 W, L and Vgs")
+        ax.axhline(vdsat, color=ORANGE, lw=1.3, ls="--", label=f"Vdsat = {vdsat:.3f} V ({src})")
         title_v = f"Vdsat = {vdsat:.3f} V (dashed line)"
     else:
         title_v = "Vdsat not provided"
     ax.set_xlim(t0 * 1e9, t1 * 1e9)
     ax.set_xlabel("time (ns)")
     ax.set_ylabel("V(XD1.tail) (V)")
-    ax.legend(fontsize=8, frameon=False, loc="upper right")
+    ax.legend(fontsize=8, frameon=False, loc="center right")
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
     fig.suptitle(
-        f"Tail node V(XD1.tail) of {DESC[name]}, three output periods after settle; {title_v}.",
+        f"Tail node V(XD1.tail) of {desc(name, m['tsv'])},\n"
+        f"three output periods after settle; {title_v}.",
         fontsize=9, y=0.975)
     save(fig, os.path.join(outdir, f"fig_tail_saturation_{name}.png"))
 
 
 def plot_supply(all_m, all_ctx, outdir):
-    fig, axes = plt.subplots(2, 1, sharex=True, sharey=True, figsize=(7.2, 6.0))
-    fig.subplots_adjust(left=0.14, right=0.97, top=0.86, bottom=0.11, hspace=0.25)
-    for ax, name, color in zip(axes, DIVIDERS, [BLUE, GREEN]):
+    fig, axes = plt.subplots(len(DIVIDERS), 1, sharex=False, sharey=True, figsize=(7.2, 8.0))
+    fig.subplots_adjust(left=0.14, right=0.97, top=0.89, bottom=0.08, hspace=0.38)
+    for ax, name, color in zip(axes, DIVIDERS, [ORANGE, BLUE, GREEN]):
         ctx = all_ctx[name]
         m = all_m[name]
         t, t0, tper = ctx["t"], ctx["t0"], ctx["tper"]
@@ -461,20 +517,20 @@ def plot_supply(all_m, all_ctx, outdir):
         ax.plot(rel, y, color=color, lw=1.1)
         mean2 = m["supply_avg_ma_2_periods"] * 1e-3
         ax.axhline(mean2, color=ORANGE, lw=1.3, ls="--")
-        ax.text(0.99, 0.95,
+        ax.text(0.99, 0.55,
                 f"mean {mean2*1e3:.4f} mA (tsv i_avg {m['tsv']['i_avg_mA']:.4f} mA), "
                 f"peak {m['supply_peak_ma_steady']:.3f} mA",
-                transform=ax.transAxes, ha="right", va="top", fontsize=8,
+                transform=ax.transAxes, ha="right", va="center", fontsize=8,
                 bbox=dict(facecolor="white", edgecolor="none", alpha=0.85, pad=1.5))
         ax.set_ylabel(f"{name}\nI(VDD) (A)")
         ax.yaxis.set_major_locator(MaxNLocator(nbins=4))
         ax.ticklabel_format(axis="y", style="sci", scilimits=(-3, -3))
+        ax.set_xlim(0, CURRENT_PERIODS * tper * 1e9)
+        ax.set_xlabel(f"time after window start (ns), {CURRENT_PERIODS} output periods")
         ax.spines["top"].set_visible(False)
         ax.spines["right"].set_visible(False)
-    axes[-1].set_xlabel(f"time after window start (ns), {CURRENT_PERIODS} output periods")
-    axes[-1].set_xlim(0, CURRENT_PERIODS * tper * 1e9)
     fig.suptitle("Supply current drawn from VDD (positive = drawn) after settle, "
-                 f"D_1p4 vs B_6g, {CURRENT_PERIODS} output periods each; dashed: mean over window.",
+                 f"{', '.join(DIVIDERS)}, {CURRENT_PERIODS} output periods each; dashed: mean over window.",
                  fontsize=9, y=0.975)
     save(fig, os.path.join(outdir, "fig_supply_current.png"))
 
@@ -513,6 +569,13 @@ def main(argv=None):
     for name in DESIGNS:
         all_m[name], all_ctx[name] = measure_design(name, args.finals)
 
+    # One Vdsat is drawn for all designs: M7 has the same W, L and gate voltage in all of them and
+    # the multiplier m only puts devices in parallel. Check the gate bias (vb) really is equal.
+    vbs = {n: tag_params(all_m[n]["tag"])["vb"] for n in DESIGNS}
+    if len(set(vbs.values())) != 1:
+        raise RuntimeError(f"tail bias differs between designs: {vbs}")
+    if args.vdsat is None:
+        args.vdsat = read_vdsat(args.finals)
     for name in DIVIDERS:
         plot_tran_divider(name, all_m[name], all_ctx[name], args.outdir)
         plot_tail(name, all_ctx[name], all_m[name], args.vdsat, args.outdir)
@@ -540,7 +603,9 @@ def main(argv=None):
         print(f"{n}: Q1 {m['q1_min_v']:.4f}..{m['q1_max_v']:.4f} V; "
               f"tail1 {m['xd1_tail_min_v']*1e3:.2f}..{m['xd1_tail_max_v']*1e3:.2f} mV; "
               f"I_avg steady {m['supply_avg_ma_steady']:.5f} mA (tsv {m['tsv']['i_avg_mA']}); "
-              f"I_avg 2-period {m['supply_avg_ma_2_periods']:.5f} mA")
+              f"I_avg 2-period {m['supply_avg_ma_2_periods']:.5f} mA"
+              + (f"; t_pair {m['t_pair_ps']:.2f} ps ({m['t_pair_outputs'][0]}->{m['t_pair_outputs'][1]})"
+                 if m.get("t_pair_ps") is not None else ""))
     return 0
 
 
