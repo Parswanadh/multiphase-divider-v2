@@ -38,3 +38,6 @@ All numbers below come from Cadence Spectre 12.1 (MMSIM121) runs inside the Cent
 
 - Ruling: layout reported as placement-only with the real DRC count (21), because routing/LVS-clean layout was not achievable in the available time — if wrong, the layout section needs a routed layout; the report states the limitation.
 - Assura batch RSF that works: avParameters(?inputLayout ("df2" "divider_lib") ?cellName ?viewName ?rulesFile ?workingDirectory ?runName ?avrpt t); run `assura file.rsf` (no avDRC call).
+
+- Ruling (after independent review): 'without sizing' = dividing unit-size baseline m=1, R=8k, vb=1.0 at 1.4 GHz (Cadence run; 0.138 mW, 62.2 ps, 8.56 fJ, 26.4 deg); the paper-rule m=1/R1=1.15k circuit stays as the non-dividing finding. Threshold: R >= ~7k (stack rule predicts 7.6k). — if wrong, the baseline can be replaced by any other m=1 row of results/gpdk045/final/unsized_baseline.tsv.
+- Review (REVIEW.md): 4 critical / 11 important / 13 minor; single fix pass dispatched (FIXLOG.md records outcomes).
