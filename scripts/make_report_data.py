@@ -727,7 +727,7 @@ def build_data():
     # ---------------------------------------------------------- figure numbers
     viva_file = SCREEN_DIR / "viva_tran_D_1p4GHz_full.png"
     extra_keys = ["ring", "tran_paper", "tran_b", "phase", "tail_8", "tail_d", "tail_b", "supply",
-                  "fsweep", "pvt_dp_d", "pvt_hm_b6", "pvt_dp_b6", "tb", "ciw", "layout_dlatch", "drc"]
+                  "fsweep", "pvt_dp_d", "pvt_hm_b6", "pvt_dp_b6", "ciw", "layout_dlatch", "drc"]
     if viva_file.is_file():
         extra_keys.append("tran_d_plot")
     extra_no = {key: EXTRA_FIG_START + i for i, key in enumerate(extra_keys)}
@@ -747,11 +747,11 @@ def build_data():
     tb_e, tb_w = schc["tb_divider"].split("/")
     if (dl_e, dl_w) == (core_e, core_w):
         sch_text = (f"Schematic checks: {dl_e} errors and {dl_w} warnings for DLATCH and divider_core; "
-                    f"{tb_e} errors and {tb_w} warning for tb_divider.")
+                    f"{tb_e} errors and {tb_w} warnings for tb_divider. The warnings are floating-net notices at net-label stubs; the netlist is unchanged by the wiring.")
     else:
         sch_text = (f"Schematic checks: {dl_e} errors and {dl_w} warnings for DLATCH; "
                     f"{core_e} errors and {core_w} warnings for divider_core; "
-                    f"{tb_e} errors and {tb_w} warning for tb_divider.")
+                    f"{tb_e} errors and {tb_w} warnings for tb_divider. The warnings are floating-net notices at net-label stubs; the netlist is unchanged by the wiring.")
     vdsat_note = (f"Extracted saturation voltage Vdsat = {vds_info['vdsat_v']:.3f} V for design D (Vgs = "
                   f"{op_d['vg_v']:g} V).")
     extras = [
@@ -789,8 +789,6 @@ def build_data():
                               f"points pass).")),
         ("pvt_dp_b6", plotted("fig_pvt_delay_power_B_6g",
                               f"Delay and power across the PVT matrix for design B at {f_b:g} GHz (crosses mark failing corners).")),
-        ("tb", screen("schematic_tb_cadence",
-                      f"Virtuoso schematic editor window showing testbench tb_divider. {sch_text}")),
         ("ciw", screen("virtuoso_ciw_gpdk045_loaded",
                        "Virtuoso Command Interpreter Window (CIW) log confirming gpdk045 library initialization.")),
         ("layout_dlatch", screen("layout_dlatch_cadence",
@@ -1143,7 +1141,6 @@ def build_data():
         "heading": sch_heading,
         "paragraphs": sch_paras,
         "figure": None,  # the testbench schematic is already shown as an extra figure
-        "figure_ref": f"The testbench schematic is shown in Figure {extra_no['tb']}.",
     }
     references = [
         f"{LITERATURE['authors']}, \"A Compact Multiphase Divide-by-Two CMOS Frequency Divider,\" IEEE Microw. "

@@ -715,8 +715,8 @@ class Builder:
         if not pvt_rows:
             self.need("PVT corner sweep rows (pvt_rows)")
         else:
-            self._build_pvt_summary_table("D", "design D at 1.4 GHz (41 of 45 pass; FAIL at 125 °C, 0.9 V for tt, ss, fs, sf)")
-            self._build_pvt_summary_table("B6", "design B at 6.0 GHz (21 of 45 pass)")
+            self._build_pvt_summary_table("D", "design D at 1.4 GHz")
+            self._build_pvt_summary_table("B6", "design B at 6.0 GHz")
 
         self.figure(self.fig_no["pvt_screenshot"], self._slot("pvt_screenshot"),
                     dict(FIG_SLOTS)["pvt_screenshot"])
