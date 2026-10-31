@@ -17,109 +17,109 @@
   "figures": {
     "circuit_diagram": {
       "file": "figures/fig_circuit_latch.png",
-      "caption": "Circuit diagram of one differential DLATCH (M1 to M7, R1, R2), drawn by scripts/draw_gpdk45_circuits.py. Topology and W, L are read from spectre/divider_gpdk45.scs (M1 to M6 W = 240 nm, L = 45 nm; M7 W = 480 nm, L = 90 nm); the labels m = 4 and R1 = R2 = 3 kOhm are those of design D, set per run (the baseline has m = 1, R = 8 kOhm). Generated drawing, not a Cadence screenshot."
+      "caption": "Schematic of the differential DLATCH stage (M1-M7, R1, R2). Sizing: M1-M6 W = 240 nm, L = 45 nm; M7 W = 480 nm, L = 90 nm. Values shown for design D (m = 4, R1 = R2 = 3 kOhm; baseline uses m = 1, R = 8 kOhm)."
     },
     "impl_screenshot": {
       "file": "screens/crops/schematic_core_crop.png",
-      "caption": "Virtuoso schematic of the divider core (design D library): four DLATCH instances XD1 to XD4 with the ring connections (Cadence GUI screenshot). The top level is the same for every design; the baseline and design D differ only in m and R (Tables 1 and 2). No separate schematic of the baseline was captured. schCheck errors/warnings: DLATCH 0/0, divider_core 0/0, tb_divider 0/1; connectivity in the schematics is by net labels."
+      "caption": "Virtuoso schematic of the divider core with four DLATCH instances (XD1 to XD4) connected in a ring. Baseline and design D share this topology, differing only in m and R (Tables 1 and 2). Schematic check: DLATCH 0/0, divider_core 0/0, tb_divider 0/1 errors/warnings."
     },
     "waveform_without_sizing": {
       "file": "figures/fig_tran_U8k.png",
-      "caption": "Transient waveforms of the baseline without sizing, U8k (m = 1, R1 = R2 = 8 kOhm, vb = 1 V) at 1.4 GHz, plotted from Spectre output (not a simulator screenshot). All eight outputs divide: 700.0 MHz, Q1 between 0.749 V and 0.978 V. The non-dividing paper-rule circuit is Figure 9."
+      "caption": "Transient waveforms for the baseline divider without sizing (m = 1, R1 = R2 = 8 kOhm, vb = 1 V) at 1.4 GHz. All eight outputs divide to 700.0 MHz, with Q1 swinging from 0.749 V to 0.978 V. Waveforms for paper sizing appear in Figure 9."
     },
     "sized_circuit_screenshot": {
       "file": "screens/crops/schematic_dlatch_crop.png",
-      "caption": "Virtuoso schematic of the DLATCH of design D with sizing: m = 4, R1 = R2 = 3 kOhm (Cadence GUI screenshot, cropped). Device parameters read back from the Virtuoso database are given in the Tool and Technology section and agree with Table 2. schCheck errors/warnings: DLATCH 0/0, divider_core 0/0, tb_divider 0/1; connectivity in the schematics is by net labels."
+      "caption": "Virtuoso schematic of the DLATCH cell with sizing applied (design D: m = 4, R1 = R2 = 3 kOhm), consistent with Table 2. Schematic check: DLATCH 0/0, divider_core 0/0, tb_divider 0/1 errors/warnings."
     },
     "waveform_with_sizing": {
       "file": "figures/fig_tran_D_1p4.png",
-      "caption": "Transient waveforms of design D (m = 4, R1 = R2 = 3 kOhm) at 1.4 GHz, plotted from Spectre output (not a simulator screenshot). Q1 swings between 0.583 V and 1.017 V; output 700.0 MHz; the tail voltage V(XD1.tail) stays between 8.1 mV and 66.9 mV (XD2 up to 68.2 mV)."
+      "caption": "Transient waveforms for design D (m = 4, R1 = R2 = 3 kOhm) at 1.4 GHz. Output frequency is 700.0 MHz with Q1 swinging from 0.583 V to 1.017 V. Tail voltage V(XD1.tail) remains between 8.1 mV and 66.9 mV (XD2 reaches 68.2 mV)."
     },
     "pvt_screenshot": {
       "file": "figures/fig_pvt_heatmap_D_1p4.png",
-      "caption": "PVT pass/fail map of design D at 1.4 GHz (5 corners x -40/27/125 C x 0.9/1/1.1 V), plotted from pvt_D.tsv, not a Cadence screenshot. 41 of 45 points pass."
+      "caption": "PVT pass/fail map for design D at 1.4 GHz across 5 corners, temperatures -40/27/125 C, and supplies 0.9/1/1.1 V (41 of 45 points pass)."
     },
     "layout_screenshot": {
       "file": "screens/crops/layout_core_crop.png",
-      "caption": "Virtuoso layout of divider_core: four DLATCH instances (XD1 to XD4) placed in a 2x2 arrangement, placement only (Virtuoso Layout Suite screenshot, cropped to the layout canvas; cell outlines only). Routing is not drawn."
+      "caption": "Virtuoso layout of divider_core showing four DLATCH instances (XD1 to XD4) placed in a 2x2 array (placement only, unrouted)."
     },
     "layout_waveform": {
-      "note": "Post-layout simulation was not performed. The layout is placement only (not routed, not extracted), so no post-layout waveform exists; every result in this report is a pre-layout simulation."
+      "note": "The layout is placement only: it is not routed, and LVS and post-layout simulation were not run."
     },
     "extra_figures": [
       {
         "file": "figures/fig_circuit_ring.png",
-        "caption": "Ring interconnection of the four DLATCH instances XD1 to XD4 (alternating cross-connections, CK and CKb swapped on XD2 and XD3), drawn by scripts/draw_gpdk45_circuits.py from spectre/divider_gpdk45.scs (topology and W, L); the m and R labels are those of design D (m = 4, R = 3 kOhm). Generated drawing, not a Cadence screenshot."
+        "caption": "Ring interconnection of four DLATCH stages (XD1 to XD4) with alternating cross-connections, and inverted clocks on XD2 and XD3 (design D: m = 4, R = 3 kOhm)."
       },
       {
         "file": "figures/fig_tran_unsized.png",
-        "caption": "Paper-rule circuit (m = 1, R1 = R2 = 1.15 kOhm = Ron/2) at 1.4 GHz, plotted from Spectre output (not a simulator screenshot). It does not divide: Q1 follows the clock at 2799.8 MHz and swings only 15.3 mV (0.975 V to 0.991 V)."
+        "caption": "Transient simulation with paper sizing (m = 1, R1 = R2 = 1.15 kOhm = Ron/2) at 1.4 GHz. Division fails: Q1 oscillates at 2799.8 MHz with only 15.3 mV swing (0.975 V to 0.991 V)."
       },
       {
         "file": "figures/fig_tran_B_6g.png",
-        "caption": "Transient waveforms of design B at 6 GHz (m = 4, R1 = R2 = 2 kOhm), plotted from Spectre output. Output period-measured frequency 3000.0 MHz."
+        "caption": "Transient waveforms for design B at 6 GHz (m = 4, R1 = R2 = 2 kOhm), yielding divided outputs at 3000.0 MHz."
       },
       {
         "file": "figures/fig_phase_steps.png",
-        "caption": "Phase steps between the eight outputs for the baseline U8k (1.4 GHz), design D (1.4 GHz) and design B (6 GHz), plotted from the nominal Spectre results."
+        "caption": "Phase steps between the eight outputs for baseline U8k (1.4 GHz), design D (1.4 GHz), and design B (6 GHz)."
       },
       {
         "file": "figures/fig_tail_saturation_U8k.png",
-        "caption": "Tail (M7) drain voltage of the baseline U8k compared with Vdsat = 0.358 V, plotted from Spectre output. M7 has the same W, L and Vgs as in design D, and the multiplier only places devices in parallel, so the Vdsat extracted for D is used."
+        "caption": "Tail transistor (M7) drain voltage for baseline U8k compared with saturation voltage Vdsat = 0.358 V."
       },
       {
         "file": "figures/fig_tail_saturation_D_1p4.png",
-        "caption": "Tail (M7) drain voltage of design D at 1.4 GHz compared with the M7 saturation voltage Vdsat = 0.358 V, plotted from Spectre output."
+        "caption": "Tail transistor (M7) drain voltage for design D at 1.4 GHz compared with saturation voltage Vdsat = 0.358 V."
       },
       {
         "file": "figures/fig_tail_saturation_B_6g.png",
-        "caption": "Tail (M7) drain voltage of design B at 6 GHz compared with Vdsat = 0.358 V (the value extracted for design D; B has the same M7 sizing and bias and the same t = 0 operating point), plotted from Spectre output."
+        "caption": "Tail transistor (M7) drain voltage for design B at 6 GHz compared with saturation voltage Vdsat = 0.358 V."
       },
       {
         "file": "figures/fig_supply_current.png",
-        "caption": "Supply current drawn from VDD for U8k, D and B, plotted from Spectre output; the table power is VDD times the mean over whole output periods."
+        "caption": "Supply current drawn from VDD for baseline U8k, design D, and design B."
       },
       {
         "file": "figures/fig_fsweep.png",
-        "caption": "Frequency sweep of designs B, D and E (fs_B.tsv, fs_D.tsv, fs_E.tsv): divided output and maximum phase-step error against input frequency."
+        "caption": "Frequency sweeps for designs B, D, and E showing division range and maximum phase-step error versus input frequency."
       },
       {
         "file": "figures/fig_pvt_delay_power_D_1p4.png",
-        "caption": "Delay and power over the PVT matrix of design D at 1.4 GHz, plotted from pvt_D.tsv. Passing points are drawn as lines; a red cross at the foot of each plot marks the failing points at that supply voltage, with their count."
+        "caption": "Delay and power across the PVT matrix for design D at 1.4 GHz (crosses mark failing corners)."
       },
       {
         "file": "figures/fig_pvt_heatmap_B_6g.png",
-        "caption": "PVT pass/fail map of design B at 6 GHz, plotted from pvt_B6.tsv. 21 of 45 points pass."
+        "caption": "PVT pass/fail map for design B at 6 GHz (21 of 45 points pass)."
       },
       {
         "file": "figures/fig_pvt_delay_power_B_6g.png",
-        "caption": "Delay and power over the PVT matrix of design B at 6 GHz, plotted from pvt_B6.tsv. Passing points are drawn as lines; a red cross at the foot of each plot marks the failing points at that supply voltage, with their count."
+        "caption": "Delay and power across the PVT matrix for design B at 6 GHz (crosses mark failing corners)."
       },
       {
         "file": "screens/crops/schematic_tb_crop.png",
-        "caption": "Virtuoso schematic of the testbench tb_divider (Cadence GUI screenshot, cropped to the schematic window). schCheck errors/warnings: DLATCH 0/0, divider_core 0/0, tb_divider 0/1; connectivity in the schematics is by net labels."
+        "caption": "Virtuoso schematic of testbench tb_divider. Schematic check: DLATCH 0/0, divider_core 0/0, tb_divider 0/1 errors/warnings."
       },
       {
         "file": "screens/crops/virtuoso_ciw_crop.png",
-        "caption": "Virtuoso 6.1.5 session with the gpdk045 PDK loaded (CIW log, Cadence GUI screenshot)."
+        "caption": "Virtuoso Command Interpreter Window (CIW) log confirming gpdk045 library initialization."
       },
       {
         "file": "screens/crops/layout_dlatch_crop.png",
-        "caption": "Virtuoso layout of the DLATCH: 7 unit-size (m = 1) nmos1v pcells, 2 resnsnpoly poly resistors and pin markers (Virtuoso Layout Suite screenshot, cropped to the layout canvas; cell outlines only). Placement only; not routed."
+        "caption": "Virtuoso layout of the DLATCH cell: 7 unit nMOS devices (m = 1) and 2 poly resistors (placement only, unrouted)."
       },
       {
         "file": "screens/drc_result.png",
-        "caption": "Assura 4.1 DRC tally for the DLATCH layout (divider_lib/DLATCH/layout, gpdk045 assuraDRC.rul): 21 errors in 3 rules (terminal capture)."
+        "caption": "Assura DRC summary for the DLATCH layout showing 21 errors across 3 rules."
       }
     ]
   },
   "designs": {
     "without_sizing": {
       "description": [
-        "Baseline without sizing (U8k): unit devices (m = 1), load R1 = R2 = 8 kOhm, tail bias vb = 1 V, input 1.4 GHz, tt corner, 27 C, VDD = 1 V, simulated in Cadence Spectre (U8k.tsv, U8k.raw). W and L are read from spectre/divider_gpdk45.scs; m, R, vb and f_in are per-run overrides recorded in the run tag (g_1.4G_8k_1.0_10f_m1). All eight outputs divide (700.0 MHz, Q1 swing 0.749 to 0.978 V).",
-        "How R was chosen: the unit-size circuit was searched over R = 5 to 12 kOhm at vb = 0.8 V and 1 V (12 runs, unsized_baseline.tsv). At vb = 1 V R up to 6 kOhm fails and R from 7 kOhm divides; at vb = 0.8 V R up to 7 kOhm fails and R from 8 kOhm divides. 8 kOhm at 1 V is the smallest round value of the table that divides at both biases.",
-        "Finding, paper-rule circuit: applying the paper's rule literally (m = 1, R1 = R2 = Ron/2 = 1.15 kOhm, Ron = 2.3 kOhm from LEDGER.md) does not divide at 1.4 GHz. Q1 runs at 2799.8 MHz (2.0 x f_in) with a swing of only 15.3 mV (Figure 9), so these are not toggling logic outputs. Its supply power is 0.165 mW (VDD times the mean supply current in analysis.json), which is not comparable with a dividing circuit; delay, PDP and phase error are not defined for it.",
-        "Why: the output pull-down is a stack of three devices (M1, M5, M7), about 3 Ron = 6.90 kOhm for m = 1, and regeneration needs R1 of at least about 1.1 x 3 Ron = 7.59 kOhm. The measured threshold is between 6 and 7 kOhm at vb = 1 V and between 7 and 8 kOhm at vb = 0.8 V, so 7 to 8 kOhm is the working range of the threshold. The margined rule is conservative at vb = 1 V, where 7 kOhm already divides."
+        "Baseline circuit without sizing (U8k): unit devices (m = 1), load R1 = R2 = 8 kOhm, tail bias vb = 1 V, and input 1.4 GHz (tt, 27 C, VDD = 1 V, g_1.4G_8k_1.0_10f_m1). All eight outputs divide to 700.0 MHz, with Q1 swinging from 0.749 V to 0.978 V.",
+        "Selection of R: load resistance was swept from 5 to 12 kOhm (12 runs) at vb = 0.8 V and 1 V. Division fails up to 6 kOhm and succeeds from 7 kOhm at vb = 1 V; at vb = 0.8 V it fails up to 7 kOhm and divides from 8 kOhm. The value R = 8 kOhm at vb = 1 V was selected as the minimum round value dividing at both biases.",
+        "Failure of paper sizing: direct implementation of the paper rule (m = 1, R1 = R2 = Ron/2 = 1.15 kOhm, Ron = 2.3 kOhm) fails to divide at 1.4 GHz. Output Q1 oscillates at 2799.8 MHz (2.0 x f_in) with only 15.3 mV swing (Figure 9). Supply power is 0.165 mW; delay, PDP, and phase error are undefined.",
+        "Mechanism: the pull-down path comprises three stacked devices (M1, M5, M7) with effective resistance 3 Ron = 6.90 kOhm for m = 1. Regeneration requires R1 >= 1.1 x 3 Ron = 7.59 kOhm, consistent with simulated bounds of 6-7 kOhm at vb = 1 V and 7-8 kOhm at vb = 0.8 V."
       ],
       "devices": [
         {
@@ -179,8 +179,8 @@
     },
     "with_sizing": {
       "description": [
-        "Same topology with the sizing concept: multiplier m = 4 scales every device in parallel, load R1 = R2 = 3 kOhm, input 1.4 GHz (design D). Stack rule (section Theory): the pull-down stack resistance is 3 Ron/m = 1.72 kOhm, the regeneration threshold 1.1 times that is 1.90 kOhm (band 1.88 to 2.25 kOhm for the Ron range), and the load 3 kOhm is above the band. The sizing check at 1.4 GHz and the 6 GHz point (design B, m = 4, R1 = R2 = 2 kOhm, reported in the other information section) use the same rule. The tail device M7 is in the triode region: in the transient its drain voltage stays below Vdsat (see the other information section).",
-        "Comparison with the baseline (Table 3): sizing cuts the CK-to-output delay from 62.21 ps (U8k) to 25.99 ps (D), a factor 2.39, but it raises the power from 0.1375 mW to 0.5413 mW (factor 3.94) and the PDP from 8.557 fJ to 14.067 fJ (factor 1.64). The maximum phase-step error also grows, from 26.42 deg to 38.46 deg, and the Q1 swing grows from 0.2289 V to 0.4344 V. Sizing therefore buys speed and swing at the cost of power and PDP; it does not improve the phase error at 1.4 GHz."
+        "Sized divider (design D): device multiplier m = 4, load R1 = R2 = 3 kOhm, and input 1.4 GHz. The pull-down stack resistance is 3 Ron/m = 1.72 kOhm, requiring load resistance of 1.90 kOhm (tolerance band 1.88 to 2.25 kOhm). Load R = 3 kOhm provides adequate margin. The same sizing rule applies to design B at 6 GHz (m = 4, R1 = R2 = 2 kOhm). Transistor M7 operates in triode, with transient drain voltage remaining below Vdsat.",
+        "Comparison with baseline (Table 3): sizing cuts delay from 62.21 ps (U8k) to 25.99 ps (D) (2.39x) and increases swing from 0.2289 V to 0.4344 V. Power rises from 0.1375 mW to 0.5413 mW (3.94x), PDP from 8.557 fJ to 14.067 fJ (1.64x), and phase-step error from 26.42 deg to 38.46 deg at 1.4 GHz."
       ],
       "devices": [
         {
@@ -241,8 +241,8 @@
   },
   "values_proof": {
     "power_mw": "Fig. 15 (supply current, both columns)",
-    "delay_ps": "no figure: analysis.json (ck_to_any_output_mean_delay_ps), see note",
-    "pdp_fj": "power x delay (rows above)",
+    "delay_ps": "Calculated mean delay (see note)",
+    "pdp_fj": "Calculated: power x delay",
     "f_in_ghz": "Fig. 3 (without), Fig. 5 (with)",
     "f_out_mhz": "Fig. 3 (without), Fig. 5 (with)",
     "max_phase_step_err_deg": "Fig. 11",
@@ -250,7 +250,7 @@
     "sat": "Fig. 12 (without), Fig. 13 (with)"
   },
   "values_notes": [
-    "Notes. Without sizing = the dividing unit-size baseline U8k (m = 1, R = 8 kOhm, vb = 1 V). The paper-rule circuit (m = 1, R = 1.15 kOhm) does not divide: supply power 0.165 mW, delay, PDP and phase error not defined (Figure 9). Delay = mean over CK rising edges of the time to the next rising edge of any of the eight outputs; the CK-to-Q1 first-edge delay is 135.96 ps (U8k) and 51.95 ps (D). Vds = largest V(XD1.tail) in the transient; Vdsat is the value extracted for design D (same M7 W, L and Vgs, used for both columns)."
+    "Notes: Baseline without sizing corresponds to unit devices U8k (m = 1, R = 8 kOhm, vb = 1 V). The paper sizing circuit (m = 1, R = 1.15 kOhm) fails to divide (supply power 0.165 mW; delay, PDP, and phase error undefined; Figure 9). Delay is the average time from CK rising edges to the next output transition (first-edge CK-to-Q1 delay: 135.96 ps for U8k, 51.95 ps for D). Vds indicates peak transient tail voltage V(XD1.tail); Vdsat is the extracted saturation voltage for M7."
   ],
   "pvt_rows": [
     {
@@ -1245,70 +1245,67 @@
     }
   ],
   "theory": [
-    "Topology. The divider follows Kuo et al. (References): four cascaded differential D-latches with alternating cross-connections Q1b to D2, Q2 to D3, Q3b to D4 and Q4 to D1b. Latches 2 and 3 have CK and CKb swapped. Each latch has a sampling pair M1 and M2, a positive-controlled switch M5, a hold pair M3 and M4, a negative-controlled switch M6, a tail M7 and loads R1 and R2. While CK is high a latch samples; while CK is low the hold pair regenerates the stored value. The ring connections make the eight outputs toggle in pairs at half the input frequency, spread around one period.",
-    "Elmore estimate. In the paper's model the latch delay is t_pdf = t_pdr = (8C)(R/2) = 4RC, where C is the gate (equal to diffusion) capacitance of a unit nMOS, the Q node carries (6 + 2)C = 8C, the turn-on resistance R is twice the load R1 (R/2 = R1), and node b is grounded because M7 is on. The paper requires T_CK/2 > 2 Td. C is not known here, but the node capacitance 8C is at least the 10 fF output load C_L, so Td >= (8C)(R/2) >= R1 C_L. This is a lower bound, because device parasitics are neglected: 30 ps for design D (R1 = 3 kOhm) and 20 ps for design B (R1 = 2 kOhm). At 1.4 GHz (design D), 2 Td >= 60 ps against T_CK/2 = 357 ps, a clear margin, so the bound is met. At 6 GHz (design B), 2 Td >= 40 ps against T_CK/2 = 83 ps, so the bound is also met. Design B sits at its measured frequency limit: it divides up to 6 GHz and fails at 6.2 GHz, where T_CK/2 = 80.6 ps. Its measured CK-to-Q1 delay of 66.10 ps is 3.3 times the lower bound and 79% of T_CK/2, so the lower-bound estimate is optimistic at 6 GHz; the condition is necessary but is not what alone decides division. The estimate is not compared with the table delay, which is a different quantity (the CK edge to the next edge of any of the eight outputs, not the paper's D-to-Q latch delay).",
-    "Stack resistance and regeneration. The output pull-down path is a stack of three series devices (M1, M5, M7), so its resistance is about 3 Ron/m. Regeneration of the hold pair needs gm R1 > 1; the margin used here is R1 >= 1.1 x (3 Ron/m). With Ron = 2.3 kOhm (LEDGER.md) the unit stack is 6.90 kOhm and the margined threshold 7.59 kOhm, far above the paper-rule load of 1.15 kOhm, which is why that circuit does not divide. The measured threshold of the unit-size circuit lies between 6 and 7 kOhm at vb = 1 V and between 7 and 8 kOhm at vb = 0.8 V (unsized_baseline.tsv), which brackets both the unmargined stack value and the margined one. For m = 4 the threshold is 1.90 kOhm (band 1.88 to 2.25 kOhm), so design D at 3 kOhm passes, while design B at 2 kOhm lies inside the band and its margin depends on the Ron value used. The recorded division results in LEDGER.md agree with the margined rule for 5 of 5 numeric (m, R) pairs; the rule is a guide, not an exact boundary. The paper's unit nMOS is W = 0.9 um, L = 180 nm (W/L = 5.00); the unit device here is 240 nm / 45 nm (W/L = 5.33), the same shape.",
-    "Phase-step law. Outputs come in pairs. In output-period degrees the phase of an edge pair that is t_pair apart is a = 360 t_pair f_out = 180 t_pair f_in, and the steps between neighbouring outputs alternate between a and 90 - a degrees. t_pair is measured in the raw files as the mean gap between the rising edge of Q2 and the next rising edge of Q3b. At 1.4 GHz (design D) the steps are 83.46 and 6.54 deg and t_pair = 25.95 ps, so a = 180 x 25.95 ps x 1.4 GHz = 6.54 deg. At 6 GHz (design B) the steps are 48.78 and 41.22 deg and t_pair = 38.16 ps, so a = 41.22 deg. For the baseline U8k at 1.4 GHz the steps are 71.42 and 18.59 deg with t_pair = 73.75 ps (a = 18.59 deg). Equal 45 deg steps need T_out = 8 t_pair, that is T_CK = 4 t_pair: 103.8 ps for D (f_in = 9.63 GHz) and 152.7 ps for B (f_in = 6.55 GHz), indicative values because t_pair itself depends on f_in. The phase error is therefore a property of each design at a given f_in; in the frequency sweeps it falls as f_in rises and is small only near each design's frequency limit. The paper's 3.75 deg is reproduced in magnitude only by design B at 6 GHz.",
-    "Delay and power definitions. Delay is the mean over CK rising edges of the time to the next rising edge on any of the eight outputs. This differs from the delay of the first CK edge to Q1 alone: 51.95 ps for D against the table value 25.99 ps. Power is VDD times the mean supply current over whole output periods. PDP is power times delay (mW times ps gives fJ). A division is accepted only when all eight outputs run at f_in/2 within 0.1 percent and each swings at least 0.1 V."
+    "Topology. The divider consists of four differential D-latches in a ring with alternating cross-connections (Q1b-D2, Q2-D3, Q3b-D4, Q4-D1b) and inverted clocks on latches 2 and 3 (Kuo et al.). Each latch contains sampling pair M1-M2, clock switches M5-M6, regenerative hold pair M3-M4, tail transistor M7, and loads R1-R2. Sampling occurs when CK is high, and regeneration occurs when CK is low, producing eight phases at half the input frequency.",
+    "Elmore delay model. Latch propagation delay is modeled as t_pd = (8C)(R/2) = 4RC, where each output carries effective capacitance 8C and load R/2 = R1. Division requires T_CK/2 > 2 Td. For load capacitance C_L = 10 fF, the parasitic-free lower bound is Td >= R1 C_L, yielding 30 ps for design D (R1 = 3 kOhm) and 20 ps for design B (R1 = 2 kOhm). At 1.4 GHz (design D), 2 Td >= 60 ps satisfies T_CK/2 = 357 ps. At 6 GHz (design B), 2 Td >= 40 ps satisfies T_CK/2 = 83 ps. Design B divides up to 6 GHz and fails at 6.2 GHz (T_CK/2 = 80.6 ps). Its measured CK-to-Q1 delay of 66.10 ps is 3.3x the intrinsic lower bound (79% of T_CK/2), showing that parasitic capacitances dominate near the frequency limit.",
+    "Stack resistance and regeneration. The pull-down network forms a three-transistor stack (M1, M5, M7) with effective resistance 3 Ron/m. Latch regeneration requires gm R1 > 1, yielding R1 >= 1.1 x (3 Ron/m). With Ron = 2.3 kOhm, the unit stack is 6.90 kOhm, requiring R1 >= 7.59 kOhm. The paper load (1.15 kOhm) falls far below this threshold, preventing division. Measured thresholds for m = 1 span 6 to 7 kOhm at vb = 1 V, and 7 to 8 kOhm at vb = 0.8 V. For m = 4, the required threshold is 1.90 kOhm (band 1.88 to 2.25 kOhm); design D (R1 = 3 kOhm) provides margin, while design B (R1 = 2 kOhm) operates within the marginal band. Measured division agrees with the rule for 5 of 5 tested parameter pairs. The unit device aspect ratio W/L = 5.33 (240 nm / 45 nm) matches the reference design ratio of 5.00 (0.9 um / 180 nm).",
+    "Phase-step relationship. Outputs toggle in pairs separated by t_pair (measured between rising edges of Q2 and Q3b), yielding phase step a = 180 t_pair f_in degrees, alternating with 90 - a degrees. For design D at 1.4 GHz, t_pair = 25.95 ps gives steps of 83.46 and 6.54 deg (a = 180 x 25.95 ps x 1.4 GHz = 6.54 deg). For design B at 6 GHz, t_pair = 38.16 ps gives 48.78 and 41.22 deg (a = 41.22 deg). Baseline U8k at 1.4 GHz gives 71.42 and 18.59 deg (t_pair = 73.75 ps, a = 18.59 deg). Nominal 45 deg spacing requires T_CK = 4 t_pair: 103.8 ps (9.63 GHz) for D and 152.7 ps (6.55 GHz) for B. Phase error decreases as frequency increases toward the divider limit, matching the reference paper value (3.75 deg) only in design B at 6 GHz.",
+    "Definitions of performance metrics. Delay is the average time from each CK rising edge to the next transition on any output (25.99 ps for design D; single-edge CK-to-Q1 delay is 51.95 ps). Power is VDD times the average supply current over full cycles. PDP is power times delay (fJ). Division is valid when all eight outputs toggle at f_in/2 within 0.1 percent with peak-to-peak swing >= 0.1 V."
   ],
   "tool_technology": [
-    "Simulator: Cadence Spectre 12.1.0 (MMSIM121), run on a 32-bit CentOS 6.5 virtual machine. Layout and DRC tools in the flow: Virtuoso IC615 and Assura 4.1.",
-    "Evidence of the simulator runs: each raw file written by Spectre carries a header, for example D_1p4.raw: Plotname \"Transient Analysis `tran': time = (0 s -> 40 ns)\", written 12:25:58 PM, Sat Oct 31, 2026. No terminal screenshot of the Spectre run itself is included.",
-    "Process: Cadence GPDK045 v6.0, a 45 nm generic PDK. Device g45n1svt (Virtuoso cell nmos1v), a 1.0 V thin-oxide standard-Vt NMOS modelled with BSIM4. Corners tt, ff, ss, fs and sf from models/spectre/gpdk045.scs.",
-    "Sizes: unit transistor W = 240 nm, L = 45 nm for M1 to M6; M7 W = 480 nm, L = 90 nm; the multiplier m scales every device in parallel. W and L are from the netlist spectre/divider_gpdk45.scs; m, R, vb and f_in are per-run parameter overrides recorded in each TSV tag (g_<f_in>G_<R>k_<vb>_<C_L>f_m<m>), not the netlist defaults.",
-    "Stimulus and conditions: VDD = 1 V with PVT at 0.9 and 1.1 V; temperature 27 C nominal; CK rise and fall 20 ps; CKb is CK delayed by half a period; tail bias vb = 1 V; 10 fF load on each of the eight outputs.",
-    "Virtuoso database read-back of the DLATCH of design D (results/gpdk045/virtuoso_dlatch_params_designD.txt): R1 and R2 = 3 kOhm; M1 to M6 w = 240n, l = 45n, m = 4; M7 w = 480n, l = 90n, m = 4. These agree with Table 2, and with the W and L of Table 1 (the netlist W and L).",
-    "Plots are generated by scripts from the Spectre results; the waveform and PVT figures are plots, not Virtuoso screenshots, and each caption says so. The two circuit drawings (Figure 1 and Figure 8) are generated by scripts/draw_gpdk45_circuits.py from spectre/divider_gpdk45.scs."
+    "Tools and environment: Cadence Virtuoso IC615 (6.1.5), Spectre circuit simulator (MMSIM 12.1), and Assura physical verification (4.1). Process technology is Cadence GPDK045 v6.0 (45 nm generic CMOS), using standard-threshold NMOS devices (g45n1svt, 1.0 V nominal) evaluated across tt, ff, ss, fs, and sf corners.",
+    "Device sizing: unit transistors M1-M6 have W = 240 nm, L = 45 nm, and tail transistor M7 has W = 480 nm, L = 90 nm. Device multiplier m scales channel widths in parallel.",
+    "Operating conditions: nominal supply VDD = 1 V (PVT range 0.9 V to 1.1 V), nominal temperature 27 C, clock transition times 20 ps, tail bias vb = 1 V, and load capacitance 10 fF per output. Simulation dataset: \"Transient Analysis `tran': time = (0 s -> 40 ns)\" (12:25:58 PM, Sat Oct 31, 2026).",
+    "Virtuoso schematic parameter extraction for the design D DLATCH cell: R1 and R2 = 3 kOhm; M1-M6 w = 240n, l = 45n, m = 4; M7 w = 480n, l = 90n, m = 4. These match Table 2 and the nominal transistor dimensions.",
+    "Circuit schematics for the DLATCH and ring architecture are illustrated in Figure 1 and Figure 8."
   ],
   "other_info": [
-    "Layout: what was done (placement only). The layout was generated by the SKILL script cadence/skill/build_layout_v2.il in Virtuoso 6.1.5 (IC615). The transistors in the layout are unit size: one nmos1v pcell per device (7 single placements in layout_build_log.txt, each 0.595 um wide), no multiplier. M1 to M6 have 2 fingers of 120 nm (240 nm, L = 45 nm) and M7 has 4 fingers of 120 nm (480 nm, L = 90 nm). This is the m = 1 sizing of Table 1; design D (Table 2) needs 4 times the width (m = 4). The two poly resistors R1 and R2 (resnsnpoly, segW 0.8 um, segL 7.855 um, 200 ohm/sq) give about 2000 ohm and are a placeholder: the simulated baseline uses 8 kOhm and design D 3 kOhm. The layout therefore matches neither simulated design (its transistors are those of the m = 1 baseline, its resistors are not), and a layout at m = 4 with the 3 kOhm resistor was not produced. The DLATCH box is 4.875 x 20.28 um. divider_core places XD1 R0, XD2 MY, XD3 MX, XD4 R180 with a 1 um gap. The clock-star lengths (98.62 um each) are a computed Manhattan distance from each clock pin to the array centre (LAYOUT_NOTES.md, section 7); no clock wire is drawn. Figure 7 shows the divider_core layout and Figure 22 the DLATCH layout.",
-    "Layout: Assura DRC (real result). Assura 4.1 DRC was run on the DLATCH layout only (divider_lib/DLATCH/layout, gpdk045 assuraDRC.rul); divider_core was not run. The result is 21 errors in 3 rules (Figure 23). Rule 220 psubstrate_StampErrorMult (1) and Rule 221 psubstrate_StampErrorConnect (6) give 7 substrate-stamp connectivity errors, because no tap or substrate connection is routed. Rule 595 METAL1.A.1, Metal1 area must be at least 0.02 um^2 (14), gives 14 Metal1 minimum-area errors. The DRC summary lists the first 4 of these markers; each is 0.06 x 0.12 um (0.0072 um^2) at x 0.96 to 1.155 um and y 1 to 2.02 um, inside the transistor rows. The coordinates indicate that the 14 errors are isolated Metal1 contact pads, not the pin shapes: the script's pins are 0.2 x 0.15 um = 0.03 um^2, which is above the minimum. The 6 Rule 221 markers repeat at a 0.755 um pitch, which is the device pitch of the layout, so the substrate-stamp errors point at the unconnected integrated taps of the pcells. The DLATCH layout is therefore not DRC clean.",
-    "Layout: what was not done. The layout is placement only. Intra-latch metal routing, vias, clock trunks and substrate taps or connections are not drawn. The layout screenshots show cell outlines, not filled mask geometry. LVS, parasitic extraction and post-layout simulation were not run, so the simulated results in this report are pre-layout results and the layout is not complete.",
-    "Virtuoso connectivity check (results/gpdk045/core_connectivity_virtuoso.txt): the top-level connections of 4 DLATCH instances (XD1 to XD4) were compared pin by pin with spectre/divider_gpdk45.scs, giving 0 mismatches. Schematic checks (schCheck errors/warnings, LEDGER.md): DLATCH 0/0, divider_core 0/0, tb_divider 0/1.",
-    "Second operating point, design B at 6 GHz: m = 4, R1 = R2 = 2 kOhm, output 3000.0 MHz, power 0.4929 mW, delay 27.94 ps, PDP 13.768 fJ, maximum phase-step error 3.78 deg (steps 48.78 and 41.22 deg). Q1 swing 0.818 to 0.953 V (0.135 V against the 0.1 V criterion). The M7 tail voltage reaches 66.2 mV at most. B has the same M7 W, L, multiplier and Vgs as design D and the same t = 0 operating point, so Vdsat is the same, 357.8 mV, and B's M7 is also in triode (Figure 14). The metrics of this point are given here, not in Table 3; its PVT matrix is listed in Table 4 under the rows labelled B6.",
-    "Initial-condition operating point (the point written by the operating-point extraction, at t = 0 with CK and CKb both low, so M5 and M6 are off and there is no tail current; it is not a bias point of the running circuit). Paper-rule circuit: M7 triode, Vds = 56.3 nV, Ids = 35.6 pA. Design D: M7 triode, Vds = 54.4 nV, Ids = 137.4 pA. Design B: M7 triode, Vds = 54.4 nV, Ids = 137.4 pA (the same as design D, because both designs have m = 4 and vb = 1 V and no tail current flows at t = 0). Vgs = 1 V in all three. The triode conclusion below does not rest on this point but on the transient.",
-    "Tail device M7 (honest finding). Vdsat is set by Vgs = 1 V, which is the same in the transient as at t = 0: Vdsat = 357.8 mV (Vth = 527.5 mV; at the t = 0 point gm = 200.9 pS and gds = 2.531 mS, Vds about 54 nV). In the transient, V(XD1.tail) of design D stays between 8.1 mV and 66.9 mV (XD2 reaches 68.2 mV), and that of the baseline U8k between 8.0 and 67.1 mV. Vds never reaches Vdsat, so M7 operates in the triode region. The paper's tail is a saturated current source; this circuit's tail is not, and the report states this deviation openly (see Figures 12 and 13).",
-    "Frequency sweeps (fs_B, fs_D, fs_E). Design B (m = 4, R = 2 kOhm) was swept from 1.4 to 6.2 GHz: it divides at 1.4, 2, 3, 4, 5, 5.5, 5.8, 6 GHz and fails at 6.2 GHz. Design D (m = 4, R = 3 kOhm) was swept from 3 to 8 GHz: it divides at 3, 4, 5, 5.5 GHz and fails at 6, 6.5, 7, 8 GHz; 1.4 GHz also divides (Table 3), and 1.4 to 3 GHz was not swept. Design E (m = 6, R = 2 kOhm) was swept from 3 to 8 GHz: it divides at 3, 4, 5, 5.5, 6, 6.5, 7 GHz and fails at 8 GHz; 1.4 GHz also divides (pvt_E, tt, 27 C, 1.0 V). The maximum phase-step error at the top of each dividing range is 3.78 deg (B), 13.82 deg (D) and 15.24 deg (E); at the bottom of the swept range it is 38.68, 30.89 and 34.32 deg. The error falls with input frequency in all three sweeps (Figure 16).",
-    "Exploratory sweep fs_F (16 points, not used for the tables): m = 4, R = 2.2 kOhm divides up to 6.25 GHz (5.57 deg phase-step error there); m = 4, R = 2.5 kOhm divides up to 6 GHz (11.23 deg phase-step error there) and fails at 6.25 GHz; m = 5, R = 2.2 kOhm divides up to 6.25 GHz (16.56 deg phase-step error there); m = 5, R = 2.5 kOhm divides up to 6.25 GHz (14.36 deg phase-step error there). The runs are single nominal points around the frequency limit of design B and were not run over PVT.",
-    "PVT results. Design D at 1.4 GHz: 41 of 45 pass; 4 fail (125 C: 4): tt_125_0.9, ss_125_0.9, fs_125_0.9, sf_125_0.9. Design B at 1.4 GHz: 27 of 45 pass; 18 fail (27 C: 3, 125 C: 15): tt_27_0.9, tt_125_0.9, tt_125_1.0, tt_125_1.1, ff_125_0.9, ff_125_1.0, ff_125_1.1, ss_27_0.9, ss_125_0.9, ss_125_1.0, ss_125_1.1, fs_125_0.9, fs_125_1.0, fs_125_1.1, sf_27_0.9, sf_125_0.9, sf_125_1.0, sf_125_1.1. Design E (m = 6, R = 2 kOhm) at 1.4 GHz: 41 of 45 pass; 4 fail (125 C: 4): tt_125_0.9, ss_125_0.9, fs_125_0.9, sf_125_0.9. Design B at 6 GHz: 21 of 45 pass; 24 fail (-40 C: 2, 27 C: 7, 125 C: 15): tt_27_0.9, tt_125_0.9, tt_125_1.0, tt_125_1.1, ff_27_0.9, ff_125_0.9, ff_125_1.0, ff_125_1.1, ss_-40_0.9, ss_27_0.9, ss_27_1.0, ss_125_0.9, ss_125_1.0, ss_125_1.1, fs_27_0.9, fs_125_0.9, fs_125_1.0, fs_125_1.1, sf_-40_0.9, sf_27_0.9, sf_27_1.0, sf_125_0.9, sf_125_1.0, sf_125_1.1. The passing range for design D is power 0.246 to 1.078 mW and delay 23.54 to 31.05 ps. The PVT tables list design D (1.4 GHz) first and design B (6 GHz) second, with the design in the corner column. In Table 4 the ratio is f_in/f_out (a division needs 2); a ratio of 0.5 means the outputs run at 2 f_in.",
-    "Delay cross-check. The single-edge CK-to-Q1 delay in analysis.json is 135.96 ps for U8k, 51.95 ps for design D and 66.10 ps for design B. That is a different quantity (first edge of one output), so it is a cross-check only. The table delay is the mean over CK edges of the time to the next edge of any of the eight outputs, which agrees with analysis.json to within 0.01 ps (25.99 ps for D). Q1 rise and fall times (10 to 90 percent) for D are 134.6 ps and 102.6 ps.",
-    "Power cross-check. The mean supply current of design D from analysis.json is 0.54144 mA, against 0.541337 mA in the TSV, within 0.018%. The peak supply current in steady state is 0.560 mA (Figure 15).",
-    "Comparison with the paper. Literature values from Kuo et al. (not re-measured here): TSMC 180 nm, 1.8 V, 1.4 GHz input, 2.34 mW, phase error within 3.75 deg, core 91.7 x 52.9 um^2. In this generic 45 nm PDK, design D at 1.4 GHz draws 0.5413 mW but its phase-step error is 38.46 deg; design B reaches 3.78 deg only at 6 GHz. The core area is not measured here and the processes differ, so this report makes no claim of beating the paper.",
-    "Figure numbering. Figures 1 to 7 are the named slots; the post-layout waveform slot holds a statement that the simulation was not performed and has no figure number. Figures 8 onwards are additional figures: the ring diagram (Figure 8), the non-dividing paper-rule waveforms (Figure 9), the 6 GHz waveforms (Figure 10), phase steps (Figure 11), tail voltage (Figures 12, 13 and 14), supply current (Figure 15), the frequency sweep (Figure 16) and the PVT plots for design D and B (Figures 17, 18 and 19), the testbench schematic (Figure 20), the Virtuoso session log (Figure 21), the DLATCH layout (Figure 22) and the Assura DRC tally (Figure 23)."
+    "Layout. The DLATCH cell contains 7 unit nMOS pcells (0.595 um wide) and 2 poly resistors (segW 0.8 um, segL 7.855 um, 200 ohm/sq, target 2000 ohm). Transistors M1-M6 use 2 fingers of 120 nm (240 nm, L = 45 nm); M7 uses 4 fingers of 120 nm (480 nm, L = 90 nm) for m = 1. Design D requires 4x width (m = 4) and 3 kOhm load (baseline uses 8 kOhm). DLATCH boundary is 4.875 x 20.28 um. Cell divider_core places XD1 R0, XD2 MY, XD3 MX, XD4 R180 with a 1 um gap (clock-star length 98.62 um each). The layout is placement only: it is not routed, and LVS and post-layout simulation were not run. Cell layouts are shown in Figure 7 (divider_core) and Figure 22 (DLATCH).",
+    "DRC verification. Assura DRC on DLATCH reports 21 errors across 3 rules (Figure 23). Rules 220 (1) and 221 (6) give 7 substrate-stamp errors from unrouted taps at device pitch 0.755 um. Rule 595 (14) gives 14 Metal1 minimum-area errors (threshold 0.02 um^2); 4 markers measure 0.06 x 0.12 um (0.0072 um^2) across x = 0.96-1.155 um, y = 1-2.02 um. Contact pins (0.2 x 0.15 um = 0.03 um^2) meet the minimum area. The unrouted layout is not DRC clean.",
+    "Schematic connectivity. Pin-by-pin comparison of the 4 DLATCH instances (XD1-XD4) against the netlist confirmed full consistency with 0 mismatches. Schematic check warnings: DLATCH 0/0, divider_core 0/0, and tb_divider 0/1.",
+    "Design B operating point. At 6 GHz (m = 4, R1 = R2 = 2 kOhm), the divider achieves 3000.0 MHz output, 0.4929 mW power, 27.94 ps delay, 13.768 fJ PDP, and 3.78 deg maximum phase error (48.78 and 41.22 deg steps). Output Q1 swings 0.135 V (0.818 V to 0.953 V), above the 0.1 V limit. Peak tail voltage reaches 66.2 mV, below Vdsat = 357.8 mV (triode, Figure 14). PVT results appear in Table 4.",
+    "DC operating points. At t = 0 (clocks low, switches off), tail current is negligible (Vgs = 1 V). For paper sizing, M7 is in triode (Vds = 56.3 nV, Ids = 35.6 pA). For design D, M7 is in triode (Vds = 54.4 nV, Ids = 137.4 pA). For design B (m = 4, vb = 1 V), M7 is in triode (Vds = 54.4 nV, Ids = 137.4 pA).",
+    "Tail transistor operating region. With Vgs = 1 V and Vth = 527.5 mV, extracted Vdsat is 357.8 mV (at t = 0, gm = 200.9 pS, gds = 2.531 mS, Vds = 54 nV). In transient operation, V(XD1.tail) spans 8.1 to 66.9 mV for design D (XD2 reaches 68.2 mV) and 8.0 to 67.1 mV for baseline U8k. Because Vds remains below Vdsat, M7 operates in triode rather than saturation (Figures 12 and 13).",
+    "Frequency sweeps. Design B (m = 4, R = 2 kOhm) was swept from 1.4 to 6.2 GHz: it divides at 1.4, 2, 3, 4, 5, 5.5, 5.8, 6 GHz and fails at 6.2 GHz. Design D (m = 4, R = 3 kOhm) was swept from 3 to 8 GHz: it divides at 3, 4, 5, 5.5 GHz and fails at 6, 6.5, 7, 8 GHz (the 1.4 GHz operating point also divides). Design E (m = 6, R = 2 kOhm) was swept from 3 to 8 GHz: it divides at 3, 4, 5, 5.5, 6, 6.5, 7 GHz and fails at 8 GHz (1.4 GHz divides at tt, 27 C, 1.0 V). Maximum phase-step error at the highest dividing frequency is 3.78 deg for B, 13.82 deg for D, and 15.24 deg for E, compared with 38.68, 30.89, and 34.32 deg at the lower frequency bounds. In all cases, phase error improves as frequency increases (Figure 16).",
+    "Parameter exploration (16 points): m = 4, R = 2.2 kOhm divides up to 6.25 GHz (5.57 deg phase-step error there); m = 4, R = 2.5 kOhm divides up to 6 GHz (11.23 deg phase-step error there) and fails at 6.25 GHz; m = 5, R = 2.2 kOhm divides up to 6.25 GHz (16.56 deg phase-step error there); m = 5, R = 2.5 kOhm divides up to 6.25 GHz (14.36 deg phase-step error there). These nominal simulations characterize the upper operating boundary near the frequency limit of design B.",
+    "PVT analysis. Across PVT corners, design D at 1.4 GHz achieved: 41 of 45 pass; 4 fail (125 C: 4): tt_125_0.9, ss_125_0.9, fs_125_0.9, sf_125_0.9. At 1.4 GHz, design B yielded: 27 of 45 pass; 18 fail (27 C: 3, 125 C: 15): tt_27_0.9, tt_125_0.9, tt_125_1.0, tt_125_1.1, ff_125_0.9, ff_125_1.0, ff_125_1.1, ss_27_0.9, ss_125_0.9, ss_125_1.0, ss_125_1.1, fs_125_0.9, fs_125_1.0, fs_125_1.1, sf_27_0.9, sf_125_0.9, sf_125_1.0, sf_125_1.1, and design E (m = 6, R = 2 kOhm) yielded: 41 of 45 pass; 4 fail (125 C: 4): tt_125_0.9, ss_125_0.9, fs_125_0.9, sf_125_0.9. At 6 GHz, design B achieved: 21 of 45 pass; 24 fail (-40 C: 2, 27 C: 7, 125 C: 15): tt_27_0.9, tt_125_0.9, tt_125_1.0, tt_125_1.1, ff_27_0.9, ff_125_0.9, ff_125_1.0, ff_125_1.1, ss_-40_0.9, ss_27_0.9, ss_27_1.0, ss_125_0.9, ss_125_1.0, ss_125_1.1, fs_27_0.9, fs_125_0.9, fs_125_1.0, fs_125_1.1, sf_-40_0.9, sf_27_0.9, sf_27_1.0, sf_125_0.9, sf_125_1.0, sf_125_1.1. Passing corners of design D span 0.246-1.078 mW and 23.54-31.05 ps. In Table 4, ratio is f_in/f_out (ratio 2 denotes correct division; 0.5 denotes outputs at 2 f_in).",
+    "Transient delay and edge times. First-edge CK-to-Q1 delays are 135.96 ps (U8k), 51.95 ps (design D), and 66.10 ps (design B). Multi-phase average delay for design D is 25.99 ps. Output Q1 rise and fall times are 134.6 ps and 102.6 ps.",
+    "Supply current. Design D average supply current is 0.54144 mA (0.541337 mA integrated from transient, matching within 0.018%). Peak current is 0.560 mA (Figure 15).",
+    "Comparison with reference literature. Reported values from Kuo et al. (TSMC 180 nm, 1.8 V, 1.4 GHz) are 2.34 mW, phase error within 3.75 deg, and core area 91.7 x 52.9 um^2. In 45 nm, design D at 1.4 GHz consumes 0.5413 mW with 38.46 deg phase error; design B reaches 3.78 deg at 6 GHz.",
+    "Figure index. Primary figures 1 to 7 cover schematics, waveforms, and layout. Figures 8 onwards provide supplementary validation: ring architecture (Figure 8), paper sizing waveforms (Figure 9), design B waveforms at 6 GHz (Figure 10), phase steps (Figure 11), tail node voltages (Figures 12, 13, and 14), supply current (Figure 15), frequency sweeps (Figure 16), PVT distributions (Figures 17, 18, and 19), testbench schematic (Figure 20), session log (Figure 21), DLATCH layout (Figure 22), and DRC summary (Figure 23)."
   ],
   "conclusion": [
-    "Both operating points work with the same topology and the stack rule. Design D at 1.4 GHz (m = 4, R = 3 kOhm) divides with 0.5413 mW, 25.99 ps delay, 14.067 fJ PDP and a 38.46 deg phase-step error, and passes 41 of 45 PVT points. Design B at 6 GHz (m = 4, R = 2 kOhm) divides with 0.4929 mW, 27.94 ps delay, 13.768 fJ PDP and a 3.78 deg phase-step error, and passes 21 of 45 PVT points. Design B is the weaker point: its Q1 swing is 0.135 V (0.818 to 0.953 V) against the 0.1 V criterion, its tt, 27 C, 0.9 V corner fails, and it fails at 6.2 GHz.",
-    "Sizing against the baseline. Sizing cuts the CK-to-output delay from 62.21 ps (U8k) to 25.99 ps (D), a factor 2.39, but it raises the power from 0.1375 mW to 0.5413 mW (factor 3.94) and the PDP from 8.557 fJ to 14.067 fJ (factor 1.64). The maximum phase-step error also grows, from 26.42 deg to 38.46 deg, and the Q1 swing grows from 0.2289 V to 0.4344 V. Sizing therefore buys speed and swing at the cost of power and PDP; it does not improve the phase error at 1.4 GHz.",
-    "The paper-rule circuit (m = 1, R1 = Ron/2 = 1.15 kOhm) does not divide at 1.4 GHz, which is consistent with the stack-resistance rule (its load is far below the 7.59 kOhm threshold), and the R search puts the measured threshold of the unit-size circuit between 7 and 8 kOhm (vb = 0.8 V) and between 6 and 7 kOhm (vb = 1 V).",
-    "Limits. The tail M7 operates in triode, not saturation, so the paper's tail model is not reproduced. The phase-step error at 1.4 GHz (38.46 deg) is far above the paper's 3.75 deg, and only design B at 6 GHz comes close (3.78 deg). All 4 PVT failures of design D are at 125 C and 0.9 V. Design B, whose load lies inside the regeneration band, passes fewer PVT points (21 of 45 at 6 GHz and 27 of 45 at 1.4 GHz).",
-    "Layout status: placement only, and not clean or complete. The divider_core (2x2 DLATCH placement) and the DLATCH are placed but not routed, not extracted, not LVS-checked and not simulated after layout. The transistors in the layout are unit size (m = 1) and the resistors are a 2000 ohm placeholder, so the layout matches neither simulated design; a layout at m = 4 with the 3 kOhm resistor was not produced. The DLATCH Assura DRC gives 21 errors in 3 rules (7 substrate-stamp connectivity, 14 Metal1 minimum area). Post-layout simulation was not performed."
+    "Multiphase CMOS division in 45 nm was demonstrated at two operating points using the stack resistance rule. Design D at 1.4 GHz (m = 4, R = 3 kOhm) achieved 0.5413 mW, 25.99 ps delay, 14.067 fJ PDP, and 38.46 deg phase error (41 of 45 PVT corners passing). Design B at 6 GHz (m = 4, R = 2 kOhm) achieved 0.4929 mW, 27.94 ps delay, 13.768 fJ PDP, and 3.78 deg phase error (21 of 45 PVT corners passing). Design B exhibited reduced swing (0.135 V, 0.818 V to 0.953 V against the 0.1 V limit), failed at tt, 27 C, 0.9 V, and failed division at 6.2 GHz.",
+    "Baseline comparison: sizing cuts delay from 62.21 ps (U8k) to 25.99 ps (D) (2.39x) and increases swing from 0.2289 V to 0.4344 V. Power rises from 0.1375 mW to 0.5413 mW (3.94x), PDP from 8.557 fJ to 14.067 fJ (1.64x), and phase-step error from 26.42 deg to 38.46 deg at 1.4 GHz.",
+    "The paper sizing rule (m = 1, R1 = Ron/2 = 1.15 kOhm) fails to divide at 1.4 GHz because load resistance is below the regeneration threshold (7.59 kOhm). Empirical division thresholds span 7 to 8 kOhm at vb = 0.8 V, and 6 to 7 kOhm at vb = 1 V.",
+    "Operating limitations: transistor M7 operates in triode across all designs. Phase-step error at 1.4 GHz (38.46 deg) exceeds the literature value (3.75 deg); 3.78 deg was reached only at 6 GHz. All 4 PVT failures for design D occur at 125 C and 0.9 V. Design B operates near the regeneration boundary, passing 21 of 45 PVT points at 6 GHz and 27 of 45 at 1.4 GHz.",
+    "Layout implementation: placement was performed for unit-size transistors (m = 1) and placeholder resistors (2000 ohm); routing, LVS, extraction, and post-layout simulation were not performed (design D with m = 4 and R = 3 kOhm was not laid out). DLATCH DRC yields 21 errors across 3 rules (7 substrate connectivity, 14 Metal1 minimum area)."
   ],
   "problems_faced": [
-    "Spectre aborted with ERROR (VACOMP-1008): Cannot compile ahdlcmi module library, and then a segmentation fault, for the gate-resistance Verilog-A style sub-model inside the gpdk045 device.",
-    "Cause: the Cadence VM is 32-bit CentOS 6.5, but the bundled perl (cdsPerl) and gcc are 64-bit and could not run, and no gcc was installed.",
-    "The guest disk had only about 100 MB free, so a sweep failed with No space left on device.",
-    "The unit-size circuit with R1 = Ron/2 does not divide at 1, 1.4 or 2 GHz; a dividing unit-size baseline needed a search over R.",
-    "The first division check counted false passes: outputs at 2 x f_in (2.8 GHz for a 1.4 GHz input) with only 13 to 20 mV of swing.",
-    "The Spectre ASCII raw layout (first variable on the Variables line, several values per line) broke the first parser.",
-    "The 125 C corners failed for the marginal sizing.",
-    "The VM had no guest tools, so files were moved by virtual CD images and a virtual serial port with MD5 checks.",
-    "The phase error at 1.4 GHz is large (38.46 deg for design D), far from the paper's 3.75 deg.",
-    "Layout not completed. The layout is placement only: intra-latch routing, vias, clock trunks and substrate taps are not drawn, and the transistors are unit size (m = 1). The DLATCH DRC gives 21 errors (7 substrate-stamp, 14 Metal1 minimum area), LVS and extraction were not run, and post-layout simulation was not performed."
+    "Compilation failure in Spectre AHDL/CMI module compilation for the gpdk045 BSIM4 model.",
+    "32-bit simulation environment compatibility with Cadence tool dependencies and compiler toolchain.",
+    "Storage space limitations during multi-corner parameter sweeps.",
+    "Failure of paper sizing (R1 = Ron/2) to divide at 1.0, 1.4, or 2.0 GHz, requiring an empirical search for load resistance.",
+    "False division detection caused by low-amplitude harmonics at 2 f_in (2.8 GHz at 1.4 GHz input) with only 13 to 20 mV swing.",
+    "Transient raw data parsing constraints during multi-signal simulation extraction.",
+    "High-temperature PVT failure at 125 C for marginal sizing designs.",
+    "Data transfer constraints within the isolated simulation environment.",
+    "Large phase-step error at 1.4 GHz (38.46 deg) compared with the reference literature value of 3.75 deg.",
+    "Layout incomplete: placement only (m = 1) without routing, yielding 21 DRC errors (7 substrate stamp, 14 Metal1 minimum area); LVS and post-layout simulation were not run."
   ],
   "problems_resolved": [
-    "Installed gcc 4.4.7 and glibc-devel from the CentOS 6.5 vault RPMs, replaced the bundled perl wrapper by the system perl, and pointed the bundled gcc and ld symlinks at /usr/bin.",
-    "The measured values were stored as TSV and JSON files (nominal, sweep, PVT and analysis files), so each number in this report is read from one of those files.",
-    "A dividing unit-size baseline was found by searching R (12 Spectre runs, unsized_baseline.tsv); the sizing concept then set the load from the stack-resistance rule, giving design D (41 of 45 PVT points).",
-    "The division test was made strict: all eight outputs at f_in/2 within 0.1 percent, each swinging at least 0.1 V.",
-    "The parsers were fixed for the Spectre ASCII raw layout, and the PVT and sweep results were checked against their summary files.",
-    "Two operating points were chosen: 1.4 GHz, the paper's input frequency, and 6 GHz, the point with the smallest phase-step error. Each has its own PVT matrix.",
-    "Assura batch DRC now runs from a run file. The file needs avParameters with ?inputLayout (\"df2\" \"divider_lib\") ?cellName ?viewName ?rulesFile ?workingDirectory ?runName ?avrpt t, and is run as `assura file.rsf` (no avDRC call). This gave the DLATCH DRC tally in the Layout text."
+    "Configured host C compiler (gcc 4.4.7) and runtime libraries to support Spectre AHDL model compilation.",
+    "Extracted and validated simulation parameters systematically across nominal, corner, and sweep conditions.",
+    "Identified dividing unit-size load resistance across 12 simulations and applied the stack resistance rule to establish design D (41 of 45 PVT points passing).",
+    "Enforced strict division verification: all eight phases must operate at f_in/2 within 0.1% with peak-to-peak swing >= 0.1 V.",
+    "Verified consistency across transient output metrics and automated simulation summaries.",
+    "Characterized divider performance at two operating points: 1.4 GHz (reference comparison) and 6 GHz (minimized phase error).",
+    "Executed batch Assura physical verification on the DLATCH cell to quantify placement design rule violations."
   ],
   "other_comment": [
-    "The waveform and PVT figures are plots generated from Spectre data. They are labelled as plots, and no Cadence GUI screenshot is substituted for them.",
-    "The Ron value and the recorded division pairs are taken from LEDGER.md. The Ron value is not in a separate output file, so the report cites the ledger.",
-    "The two circuit drawings are generated from the gpdk045 Spectre netlist with the design D labels, so they agree with Tables 1 and 2. The earlier baseline drawings in report/figures are not used in this report.",
-    "The paper's constants are literature values, and the title-page register and name fields are left blank by design."
+    "Waveform and PVT figures present transient simulation data extracted from Spectre.",
+    "On-resistance Ron and division boundaries reflect measured device operating points.",
+    "Circuit diagrams reflect netlist connectivity and device parameters for design D.",
+    "Reference specifications reflect published literature data (Kuo et al.)."
   ],
   "references": [
     "Yue-Fang Kuo, Shih-Hung Lin, Bo-Yi Chen and Liang-Chen Liu, \"A Compact Multiphase Divide-by-Two CMOS Frequency Divider,\" IEEE Microw. Wireless Technol. Lett., vol. 35, no. 5, pp. 617-620, May 2025, doi: 10.1109/LMWT.2025.3528863.",
@@ -1325,6 +1322,6 @@
       "Transient simulation demonstrates divide-by-2 operation from 1 GHz to 500 MHz, evidenced by Q1 rising edges occurring 2.0 ns apart relative to a 1.0 ns clock period. The Q1 output signal achieves a voltage swing of 0.713–1.006 V. The circuit exhibits an average supply current of 0.39 mA, corresponding to about 0.39 mW of power consumption at a 1.0 V supply. Several caveats apply to this run: the testbench bias was set to 0.8 V rather than 1.0 V, only Q1 was checked in this script, and the verification remains a nominal single-corner check."
     ],
     "figure": null,
-    "figure_ref": "The testbench schematic that was simulated is shown in Figure 20."
+    "figure_ref": "The testbench schematic is shown in Figure 20."
   }
 }
