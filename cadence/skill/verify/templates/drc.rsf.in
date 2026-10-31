@@ -1,0 +1,12 @@
+; Assura DRC batch RSF (same form as the working run in results/gpdk045/assura_drc_dlatch_*.txt).
+; Filled in by ../run_verify.sh. No avDRC() call: the DRC run is started by `assura <file>.rsf`.
+avParameters(
+  ?inputLayout ( "df2" "@LIB@" )
+  ?cellName "@CELL@"
+  ?viewName "layout"
+  ?rulesFile "/home/buet/pdk/gpdk045_v_6_0/assura/assuraDRC.rul"
+  ?workingDirectory "@WORK@"
+  ?runName "@RUN@"
+  ?avrpt t
+  ?diskList ( ( "/dev/shm/@RUN@" 1G ) )   ; guest / is nearly full; scratch goes to tmpfs
+)

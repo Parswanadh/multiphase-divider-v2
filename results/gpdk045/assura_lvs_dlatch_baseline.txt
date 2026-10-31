@@ -1,0 +1,52 @@
+Assura 4.1 LVS baseline, DLATCH layout vs DLATCH schematic (divider_lib, gpdk045)
+Measured in the Cadence VM (Assura 4.1_USR2_HF8, nvn/aveng), batch run from cadence/skill/verify/run_verify.sh.
+The layout is placement-only (no routing), so mismatches are expected. All numbers below are copied from the Assura report files.
+
+== Run A: default rules (raw result, no workaround) -- run dir /home/buet/verify/DLATCH_lvs (guest), report DLATCH_lvs.lrs / .cls
+Assura: "Assura LVS terminated normally."
+Schematic                    | Layout                     | Status
+-------------------------------------------------------------------------------
+res(RES)                     | g45rnsnp(RES)              | matched,
+                             |                            | fatal pin errs   *
+DLATCH schematic divider_lib | DLATCH layout divider_lib  | not run          *
+Mismatch between Schematic and Layout
+   1 cell matched with pin errors
+   1 cell not run
+Mismatch  Information
+     0 cells have 0 Net mismatches
+     0 cells have 0 Device mismatches
+     1 cells have 1 Pin mismatches
+     0 cells have 0 Parameter mismatches
+Pin errors (DLATCH_lvs.cls):
+  res(RES): 5 out of 5 pins were unmatched (schematic PLUS MINUS; layout PLUS MINUS B), further matching disabled.
+Result: LVS is NOT clean and the top-level comparison did not run. The gpdk045 poly resistor g45rnsnp
+has a bulk terminal B, the analogLib res symbol used in the schematic has two terminals.
+
+== Run B: diagnostic variant -- layout bulk pin of the resistor removed with
+   layout( deleteCellPin("g45rnsnp" "B") )  (same idiom as the PDK compare.rul for g45inds CTAP)
+   run dir /home/buet/verify/DLATCH_lvs_pinB (guest), report DLATCH_lvs_pinB.lrs / .cls
+Schematic                       | Layout                       | Status
+DLATCH schematic divider_lib    | DLATCH layout divider_lib    | errors      *
+Mismatch between Schematic and Layout
+   1 cell with errors
+Mismatch  Information
+     1 cells have 4 Net mismatches
+     1 cells have 12 Device mismatches
+     1 cells have 2 Pin mismatches
+     1 cells have 3 Parameter mismatches
+Match Statistics (DLATCH_lvs_pinB.cls)
+  Cell/Device                  schematic  layout   unmatched sch  unmatched lay
+  (g45n1svt) MOS                     7        7          6              6
+  (res, g45rnsnp) RES                2        2          0              0
+  Match statistics for nets         12       25          3             16
+Examples from the report: unmatched schematic pin VDD; layout nets avC31..avC34 (poly resistor to Q/Qb) have no
+schematic counterpart; the schematic tail/xh/xs nets match layout nets with a different device set ("Bad Matched Nets").
+Result: the comparison runs to the end. 4 net, 12 device, 2 pin and 3 parameter mismatches, all caused by the
+placement-only layout (no routed metal between devices). Run B is a diagnostic only, it is not a clean LVS.
+
+== RCX (qrc / Assura RCX) -- not run
+rcx run stopped at setup: "Error: The entry /home/buet/pdk/gpdk045_v_6_0/qrc for ?rcxSetupDir is not a directory".
+The gpdk045 PDK copy has no RCX technology directory (only soce/*.CapTbl files for Cadence QRC).
+No av_extracted view and no parasitic netlist were produced.
+
+== DRC (for the record) -- stage drc in run_verify.sh fails in the VM with "No space left on device" (guest / has ~17 MB free).

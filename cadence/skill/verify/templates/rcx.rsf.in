@@ -1,0 +1,21 @@
+; Assura RCX batch RSF (extracted view output), template for gpdk045.
+; Filled in by ../run_verify.sh. Requires a successful LVS extraction in the same run dir
+; (the avNX part of LVS) and an RCX tech directory (rcxSetupDir); the gpdk045 PDK copy in
+; the guest has no qrc/ directory, so this is expected to stop with a missing-tech error.
+avParameters(
+  ?workingDirectory "@WORK@"
+  ?runName "@RUN@"
+  ?inputLayout ( "df2" "@LIB@" )
+  ?cellName "@CELL@"
+  ?viewName "layout"
+  ?techLib "/home/buet/pdk/gpdk045_v_6_0/assura_tech.lib"
+)
+
+rcxParameters(
+  ?rcxSetupDir "/home/buet/pdk/gpdk045_v_6_0/qrc"
+  ?outputFormat "dfII"
+  ?extractedView "av_extracted"
+  ?runName "@RUN@"
+)
+
+avRCX()

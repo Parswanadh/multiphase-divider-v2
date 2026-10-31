@@ -1,0 +1,11 @@
+; Assura DFII schematic netlister rules (dfIIToVldb native rules file) for the LVS schematic side.
+; Filled in by ../run_verify.sh. Names the schematic top cell and where its VLDB netlist goes;
+; the LVS RSF refers to this file as netlist( dfII "<WORK>/<RUN>.vlr" ).
+avLibName="@LIB@"
+avCellName="@CELL@"
+avViewName="schematic"
+avSimName="auLvs"
+avViewList="auLvs schematic symbol"
+avStopList="auLvs"
+avVldbFile="@WORK@/@RUN@.vldb"
+avErrorOnMissingMaster=nil

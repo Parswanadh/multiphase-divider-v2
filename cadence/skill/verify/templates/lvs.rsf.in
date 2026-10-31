@@ -1,0 +1,33 @@
+; Assura LVS batch RSF (layout vs schematic), template for gpdk045.
+; Filled in by ../run_verify.sh: @LIB@ = design library, @CELL@ = top cell, @WORK@ = absolute run dir (guest),
+; @RUN@ = run name. Structure follows the GUI-generated RSF of the Assura 4.1 sample
+; (/home/buet/cds_work/mylib2/nand2/run2.rsf): avParameters, load compare rules, avCompareRules with
+; schematic(netlist(dfII <vlr>)), avLVS(). The schematic netlist is produced by dfIIToVldb, which aveng
+; runs itself from the netlist(dfII) path; top view = "schematic" (default).
+avParameters(
+  ?inputLayout ( "df2" "@LIB@" )
+  ?cellName "@CELL@"
+  ?viewName "layout"
+  ?rulesFile "/home/buet/pdk/gpdk045_v_6_0/assura/extract.rul"
+  ?workingDirectory "@WORK@"
+  ?runName "@RUN@"
+  ?avrpt t
+  ?overwrite t
+  ?dbuPerUU 2000.0
+  ?joinPins top
+  ?userUnits "micron"
+  ?diskList ( ( "/dev/shm/@RUN@" 1G ) )   ; guest / is full (~17 MB free); tmp/db spill goes to tmpfs
+)
+
+load( "/home/buet/pdk/gpdk045_v_6_0/assura/compare.rul" )
+load( "/home/buet/pdk/gpdk045_v_6_0/assura/LVSinclude.rsf" )
+
+avCompareRules(
+  groupModels( RES )   ; schematic res (analogLib) and layout g45rnsnp are matched by type, not name
+  @EXTRA@
+  schematic(
+    netlist( dfII "@WORK@/@RUN@.vlr" )
+  )
+)
+
+avLVS()
