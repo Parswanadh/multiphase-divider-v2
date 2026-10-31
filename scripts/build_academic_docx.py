@@ -840,7 +840,7 @@ class Builder:
             ])
 
         header = ["Corner", "Temp (°C)", "VDD (V)", "Divides", "f_out (MHz)", "Delay (ps)", "Power (mW)", "PDP (fJ)", "Note"]
-        widths = [0.65, 0.75, 0.70, 0.75, 0.90, 0.80, 0.80, 0.75, 3.30]
+        widths = [0.80, 0.75, 0.70, 0.75, 0.90, 0.80, 0.80, 0.75, 3.15]
         alignments = ["c", "c", "c", "c", "c", "c", "c", "c", "l"]
         self.table(header, rows, widths,
                    "Complete PVT analysis results for design D at 1.4 GHz (45 corners)",
