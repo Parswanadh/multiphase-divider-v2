@@ -1,0 +1,29 @@
+wire_schematics run log (divider_lib: DLATCH, divider_core, tb_divider; schematic views)
+Tool: cadence/skill/auto/wire_schematics.il (wireSchematicsMain), verify: cadence/skill/auto/wire_verify.il
+Backups: schematic_bak created for DLATCH, divider_core, tb_divider (dbCopyCellView, before any change).
+Each run restores schematic from schematic_bak first, so runs are repeatable.
+Supply nets VSS and gnd! left as stubs (wsSkipNets). VDD and all signal nets wired.
+
+Wiring method: per net, Prim MST over Manhattan distance of terminal points; each edge drawn with
+schCreateWire(cv "route" "full" ...). Route results that are flight lines, or touch another net, are
+rejected and drawn as an explicit Manhattan polyline (schCreateWire "draw") that touches no other net.
+If a connection cannot be drawn clear, the other terminals of the net are tried as far end.
+
+Final run (last pipeline run, state now saved):
+  DLATCH        schCheck: 0 errors, 23 warnings   (baseline: 0 errors, 0 warnings)
+  divider_core  schCheck: 0 errors, 11 warnings   (baseline: 0 errors, 0 warnings)
+                UNRESOLVED Q1b: 1 edge not drawn (net Q1b stays connected by labels only)
+  tb_divider    schCheck: 0 errors, 19 warnings   (baseline: 0 errors, 1 warning, known)
+  Warnings are extraction "Floating net" notices at stub-end label points. They appear after
+  wiring and were NOT explained; they are not connectivity errors (netlist unchanged).
+
+Connectivity check (verify dump, sorted INST/PARAM/CONN lines, pre vs post):
+  DLATCH        conn diff 0 lines, param diff 0  (32 terminals)
+  divider_core  conn diff 0 lines, param diff 0  (36 terminals)
+  tb_divider    conn diff 0 lines, param diff 0  (38 terminals)
+Netlist (ocean createNetlist, tb_divider input.scs), pre vs post:
+  identical except the line "// Generated on:" (timestamp). Verdict: netlist unchanged.
+
+Files: /home/buet/gpdk_run/wire/{pre,post3}_<cell>_{conn,shapes}.txt, netlist_{pre,post}.scs (guest).
+Screenshots: report/gpdk045/screens/schematic_{dlatch,core,tb}_full.png (GUI, maximised, zoomed to bBox+margin).
+Not done: layout captures (owned by another worker); Q1b left unwired in divider_core; warnings above.
