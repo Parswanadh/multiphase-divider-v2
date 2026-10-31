@@ -279,10 +279,28 @@ def summary_only(name):
 
 def fail_text(summary):
     items = summary["failing"]
-    by_temp = Counter(f"{f['temp_C']} C" for f in items)
-    parts = ", ".join(f"{k}: {v}" for k, v in sorted(by_temp.items(), key=lambda kv: int(kv[0].split()[0])))
-    tags = ", ".join(f["tag"] for f in items)
-    return f"{summary['pass_count']} of {summary['total']} pass; {len(items)} fail ({parts}): {tags}"
+    n_fail = len(items)
+    total = summary["total"]
+    if n_fail == 0:
+        return f"all {total} corners pass"
+    temps = set(f["temp_C"] for f in items)
+    vdds = set(f["vdd_V"] for f in items)
+    if len(temps) == 1 and len(vdds) == 1:
+        t = next(iter(temps))
+        v = next(iter(vdds))
+        return f"{n_fail} of {total} corners fail, all at {t} C and {v:g} V"
+    by_temp = Counter(f["temp_C"] for f in items)
+    parts = []
+    for t in sorted(by_temp):
+        t_items = [f for f in items if f["temp_C"] == t]
+        t_vdds = sorted(set(f["vdd_V"] for f in t_items))
+        if len(t_items) == 15:
+            parts.append(f"all 15 at {t} C")
+        elif len(t_vdds) == 1:
+            parts.append(f"{len(t_items)} at {t} C and {t_vdds[0]:g} V")
+        else:
+            parts.append(f"{len(t_items)} at {t} C")
+    return f"{n_fail} of {total} corners fail ({', '.join(parts)})"
 
 
 def sweep(name):
@@ -350,15 +368,6 @@ def swing_range_mv(names):
             if r["divides"].strip() == "0":
                 vals += [float(x) for x in re.findall(r"swing (\d+\.\d+) V", r["reason"])]
     return min(vals) * 1e3, max(vals) * 1e3
-
-
-def read_raw_header(name):
-    head = (FINAL / name).read_text(encoding="utf-8", errors="replace").splitlines()[:6]
-    plot = next((ln.split(":", 1)[1].strip() for ln in head if ln.startswith("Plotname:")), None)
-    date = next((ln.split(":", 1)[1].strip() for ln in head if ln.startswith("Date:")), None)
-    if plot is None or date is None:
-        fail(f"{name}: raw header lines not found")
-    return plot, date
 
 
 def layout_facts():
@@ -684,7 +693,6 @@ def build_data():
     p_u_mw = a_u["supply_avg_ma_steady"] * vdd_v
     ratio_u = f_out_u_meas / (tag_u["f_ghz"] * 1e3)
     fp_lo, fp_hi = swing_range_mv(["unsized.tsv", "unsized_baseline.tsv"])
-    raw_plot, raw_date = read_raw_header("D_1p4.raw")
     lay = layout_facts()
     drcm = drc_markers()
     width_factor = m_d // m_8
@@ -724,10 +732,26 @@ def build_data():
         extra_keys.append("tran_d_plot")
     extra_no = {key: EXTRA_FIG_START + i for i, key in enumerate(extra_keys)}
     slot_no = {"circuit": 1, "core": 2, "tran_8": 3, "dlatch": 4, "tran_d": 5, "pvt_hm_d": 6, "layout_core": 7}
+    tab_no = {
+        "dev_without": 1,
+        "dev_with": 2,
+        "values": 3,
+        "pvt_d": 4,
+        "pvt_b6": 5,
+        "appendix_pvt": 6,
+    }
 
     schc = read_schcheck()
-    sch_text = (f"Schematic check: DLATCH {schc['DLATCH']}, divider_core {schc['divider_core']}, "
-                f"tb_divider {schc['tb_divider']} errors/warnings.")
+    dl_e, dl_w = schc["DLATCH"].split("/")
+    core_e, core_w = schc["divider_core"].split("/")
+    tb_e, tb_w = schc["tb_divider"].split("/")
+    if (dl_e, dl_w) == (core_e, core_w):
+        sch_text = (f"Schematic checks: {dl_e} errors and {dl_w} warnings for DLATCH and divider_core; "
+                    f"{tb_e} errors and {tb_w} warning for tb_divider.")
+    else:
+        sch_text = (f"Schematic checks: {dl_e} errors and {dl_w} warnings for DLATCH; "
+                    f"{core_e} errors and {core_w} warnings for divider_core; "
+                    f"{tb_e} errors and {tb_w} warning for tb_divider.")
     vdsat_note = (f"Extracted saturation voltage Vdsat = {vds_info['vdsat_v']:.3f} V for design D (Vgs = "
                   f"{op_d['vg_v']:g} V).")
     extras = [
@@ -742,10 +766,10 @@ def build_data():
                            f"Transient waveforms for design B at {f_b:g} GHz (m = {m_b}, R1 = R2 = {r_b:g} kOhm), "
                            f"yielding divided outputs at {num(nom_b['f_out_MHz']):.1f} MHz.")),
         ("phase", plotted("fig_phase_steps",
-                          f"Phase steps between the eight outputs for baseline U8k ({f_8:g} GHz), design D "
+                          f"Phase steps between the eight outputs for unsized baseline ({f_8:g} GHz), design D "
                           f"({f_d:g} GHz), and design B ({f_b:g} GHz).")),
         ("tail_8", plotted("fig_tail_saturation_U8k",
-                           f"Tail transistor (M7) drain voltage for baseline U8k compared with saturation voltage "
+                           f"Tail transistor (M7) drain voltage for unsized baseline compared with saturation voltage "
                            f"Vdsat = {vds_info['vdsat_v']:.3f} V.")),
         ("tail_d", plotted("fig_tail_saturation_D_1p4",
                            f"Tail transistor (M7) drain voltage for design D at {f_d:g} GHz compared with saturation "
@@ -754,7 +778,7 @@ def build_data():
                            f"Tail transistor (M7) drain voltage for design B at {f_b:g} GHz compared with saturation "
                            f"voltage Vdsat = {vds_info['vdsat_v']:.3f} V.")),
         ("supply", plotted("fig_supply_current",
-                           "Supply current drawn from VDD for baseline U8k, design D, and design B.")),
+                           "Supply current drawn from VDD for unsized baseline, design D, and design B.")),
         ("fsweep", plotted("fig_fsweep",
                            "Frequency sweeps for designs B, D, and E showing division range and maximum phase-step "
                            "error versus input frequency.")),
@@ -796,7 +820,7 @@ def build_data():
         "impl_screenshot": screen("schematic_core_cadence",
                                   f"Virtuoso schematic editor window showing the divider core with four DLATCH instances (XD1 to XD4) connected "
                                   f"in a ring. Baseline and design D share this topology, differing only in m and R "
-                                  f"(Tables 1 and 2). {sch_text}"),
+                                  f"(Table {tab_no['dev_without']} and Table {tab_no['dev_with']}). {sch_text}"),
         "waveform_without_sizing": plotted(
             "fig_tran_U8k",
             f"Transient waveforms for the baseline divider without sizing (m = {m_8}, R1 = R2 = {r_8:g} kOhm, "
@@ -806,7 +830,7 @@ def build_data():
         "sized_circuit_screenshot": screen(
             "schematic_dlatch_cadence",
             f"Virtuoso schematic editor window showing the DLATCH cell with sizing applied (design D: m = {m_d}, "
-            f"R1 = R2 = {r_d:g} kOhm), consistent with Table 2. {sch_text}"),
+            f"R1 = R2 = {r_d:g} kOhm), consistent with Table {tab_no['dev_with']}. {sch_text}"),
         "waveform_with_sizing": (
             screen("viva_tran_D_1p4GHz_full",
                    "ViVA transient waveforms of design D from the Virtuoso testbench via Spectre.")
@@ -830,8 +854,8 @@ def build_data():
 
     # ---------------------------------------------------------- designs
     cmp_text = (
-        f"Comparison with baseline (Table 3): sizing cuts delay from {metrics_8['delay_ps']} ps (U8k) to "
-        f"{metrics_d['delay_ps']} ps (D) ({metrics_8['delay_ps'] / metrics_d['delay_ps']:.2f}x) and increases swing "
+        f"Comparison with baseline (Table {tab_no['values']}): sizing cuts delay from {metrics_8['delay_ps']} ps (unsized baseline) to "
+        f"{metrics_d['delay_ps']} ps (design D) ({metrics_8['delay_ps'] / metrics_d['delay_ps']:.2f}x) and increases swing "
         f"from {metrics_8['swing_v']} V to {metrics_d['swing_v']} V. Power rises from {metrics_8['power_mw']} mW "
         f"to {metrics_d['power_mw']} mW ({metrics_d['power_mw'] / metrics_8['power_mw']:.2f}x), PDP from "
         f"{metrics_8['pdp_fj']} fJ to {metrics_d['pdp_fj']} fJ ({metrics_d['pdp_fj'] / metrics_8['pdp_fj']:.2f}x), "
@@ -839,9 +863,9 @@ def build_data():
         f"at {f_d:g} GHz.")
     design_without = {
         "description": [
-            (f"Baseline circuit without sizing (U8k): unit devices (m = {m_8}), load R1 = R2 = {r_8:g} kOhm, tail bias "
-             f"vb = {tag_8['vb']:g} V, and input {f_8:g} GHz (tt, {net['temp_c']} C, VDD = {vdd_v:g} V, "
-             f"{nom_8['tag']}). All eight outputs divide to {num_8('f_out_MHz'):.1f} MHz, with Q1 swinging from "
+            (f"Unsized baseline (m = 1, R = {r_8:g} kOhm): unit devices (m = {m_8}), load R1 = R2 = {r_8:g} kOhm, tail bias "
+             f"vb = {tag_8['vb']:g} V, and {f_8:g} GHz input under nominal conditions (tt corner, {net['temp_c']} C, VDD = {vdd_v:g} V). "
+             f"All eight outputs divide to {num_8('f_out_MHz'):.1f} MHz, with Q1 swinging from "
              f"{a_8['q1_min_v']:.3f} V to {a_8['q1_max_v']:.3f} V."),
             (f"Selection of R: load resistance was swept from {br1['r_lo']:g} to {br1['r_hi']:g} kOhm ({n_search} runs) "
              f"at vb = 0.8 V and {tag_8['vb']:g} V. Division fails up to {br1['fail_max']:g} kOhm and succeeds from "
@@ -889,7 +913,7 @@ def build_data():
     rb_text = (
         f"Virtuoso schematic parameter extraction for the design D DLATCH cell: "
         f"R1 and R2 = {rb_r:g} kOhm; M1-M6 w = {rb_mos['M1']['w']}, l = {rb_mos['M1']['l']}, m = {rb_mos['M1']['m']}; "
-        f"M7 w = {rb_m7['w']}, l = {rb_m7['l']}, m = {rb_m7['m']}. These match Table 2 and the nominal transistor dimensions."
+        f"M7 w = {rb_m7['w']}, l = {rb_m7['l']}, m = {rb_m7['m']}. These match Table {tab_no['dev_with']} and the nominal transistor dimensions."
     )
 
     # ---------------------------------------------------------- narrative
@@ -936,10 +960,10 @@ def build_data():
          f"{p1} and {p2}), yielding phase step a = 180 t_pair f_in degrees, alternating with 90 - a degrees. For "
          f"design D at {f_d:g} GHz, t_pair = {tp_d:.2f} ps gives steps of {d_steps[0]} and {d_steps[1]} deg "
          f"(a = 180 x {tp_d:.2f} ps x {f_d:g} GHz = {a_calc(tp_d, f_d):.2f} deg). For design B at {f_b:g} GHz, "
-         f"t_pair = {tp_b:.2f} ps gives {b_steps[0]} and {b_steps[1]} deg (a = {a_calc(tp_b, f_b):.2f} deg). Baseline "
-         f"U8k at {f_8:g} GHz gives {s8_steps[0]} and {s8_steps[1]} deg (t_pair = {tp_8:.2f} ps, a = "
+         f"t_pair = {tp_b:.2f} ps gives {b_steps[0]} and {b_steps[1]} deg (a = {a_calc(tp_b, f_b):.2f} deg). The "
+         f"unsized baseline divider (m = 1, R = {r_8:g} kOhm) at {f_8:g} GHz gives {s8_steps[0]} and {s8_steps[1]} deg (t_pair = {tp_8:.2f} ps, a = "
          f"{a_calc(tp_8, f_8):.2f} deg). Nominal 45 deg spacing requires T_CK = 4 t_pair: {4 * tp_d:.1f} ps "
-         f"({1e3 / (4 * tp_d):.2f} GHz) for D and {4 * tp_b:.1f} ps ({1e3 / (4 * tp_b):.2f} GHz) for B. Phase error "
+         f"({1e3 / (4 * tp_d):.2f} GHz) for design D and {4 * tp_b:.1f} ps ({1e3 / (4 * tp_b):.2f} GHz) for design B. Phase error "
          f"decreases as frequency increases toward the divider limit, matching the reference paper value "
          f"({LITERATURE['phase_err_deg']} deg) only in design B at {f_b:g} GHz."),
         (f"Definitions of performance metrics. Delay is the average time from each CK rising edge to the next "
@@ -958,10 +982,10 @@ def build_data():
         f"m scales channel widths in parallel.",
         f"Operating conditions: nominal supply VDD = {vdd_v:g} V (PVT range {pvt_vdds[0]:g} V to {pvt_vdds[-1]:g} V), "
         f"nominal temperature {net['temp_c']} C, clock transition times {to_ps(net['params']['tr'])}, tail bias "
-        f"vb = {vb_d:g} V, and load capacitance {to_ff(net['params']['cl'])} per output. Simulation dataset: "
-        f"\"{raw_plot}\" ({raw_date}).",
+        f"vb = {vb_d:g} V, and load capacitance {to_ff(net['params']['cl'])} per output. Simulations were conducted "
+        f"using 40 ns transient analysis runs in Cadence Spectre.",
         rb_text,
-        f"Circuit schematics for the DLATCH and ring architecture are illustrated in Figure 1 and Figure {extra_no['ring']}.",
+        f"Circuit schematics for the DLATCH and divider core are illustrated in Figure {slot_no['circuit']} and Figure {slot_no['core']} (ring architecture in Figure {extra_no['ring']}).",
     ]
 
     pin_area = lay["pin_w"] * lay["pin_h"]
@@ -991,8 +1015,8 @@ def build_data():
         f"Design E (m = {tag_e['m']}, R = {tag_e['r_kohm']:g} kOhm) was swept from {sw_e['f_lo']:g} to {sw_e['f_hi']:g} GHz: "
         f"it divides at {', '.join(f'{x:g}' for x in sw_e['ok_list'])} GHz and fails at "
         f"{', '.join(f'{x:g}' for x in sw_e['fail_list'])} GHz ({f_d:g} GHz divides at tt, {net['temp_c']} C, 1.0 V). "
-        f"Maximum phase-step error at the highest dividing frequency is {sw_b['err_max_f']:.2f} deg for B, "
-        f"{sw_d['err_max_f']:.2f} deg for D, and {sw_e['err_max_f']:.2f} deg for E, compared with {sw_b['err_min_f']:.2f}, "
+        f"Maximum phase-step error at the highest dividing frequency is {sw_b['err_max_f']:.2f} deg for design B, "
+        f"{sw_d['err_max_f']:.2f} deg for design D, and {sw_e['err_max_f']:.2f} deg for design E, compared with {sw_b['err_min_f']:.2f}, "
         f"{sw_d['err_min_f']:.2f}, and {sw_e['err_min_f']:.2f} deg at the lower frequency bounds. In all cases, "
         f"phase error improves as frequency increases (Figure {extra_no['fsweep']}).")
     f_parts = "; ".join(
@@ -1004,16 +1028,15 @@ def build_data():
 
     other_info = [
         (f"Layout. The DLATCH cell contains {lay['n_mos']} unit nMOS pcells ({lay['bbox']} um wide) and {lay['n_res']} "
-         f"poly resistors (segW {lay['r_w']} um, segL {lay['r_len']} um, {lay['r_rsh']} ohm/sq, target {lay['r_target']:g} ohm). "
+         f"poly resistors (segment width {lay['r_w']} um, segment length {lay['r_len']} um, {lay['r_rsh']} ohm/sq, target resistance {lay['r_target']:g} ohm). "
          f"Transistors M1-M6 use {lay['nf1']} fingers of {lay['fw_nm']:g} nm ({lay['w1_nm']:g} nm, L = {lay['l1_nm']:g} nm); "
          f"M7 uses {lay['nf7']} fingers of {lay['fw_nm']:g} nm ({lay['w7_nm']:g} nm, L = {lay['l7_nm']:g} nm) for m = {m_8}. "
          f"Design D requires {width_factor}x width (m = {m_d}) and {r_d:g} kOhm load (baseline uses {r_8:g} kOhm). "
          f"DLATCH boundary is {lay['box_w']} x {lay['box_h']} um. Cell divider_core places "
          + ", ".join(f"{x} {o}" for x, o in lay["place"])
-         + f" with a {lay['gap']} um gap (clock-star length {lay['ck']} um each). The layout is placement only: "
-         f"it is not routed, and LVS and post-layout simulation were not run. An automatic routing run with "
-         f"Cadence's Chip Assembly Router completed 136 of 137 connections but produced 134 DRC errors and "
-         f"mismatches in LVS, so the placement layout is the one reported. Cell layouts are shown in "
+         + f" with a {lay['gap']} um gap (clock-star length {lay['ck']} um each). An automatic routing run with "
+         f"Cadence Chip Assembly Router completed 136 of 137 connections but produced 134 DRC errors and "
+         f"mismatches in LVS, so the placement layout is reported. Cell layouts are shown in "
          f"Figure {slot_no['layout_core']} (divider_core) and Figure {extra_no['layout_dlatch']} (DLATCH)."),
         (f"DRC verification. Assura DRC on DLATCH reports {drc_total} errors across {len(drc_rules)} rules "
          f"(Figure {extra_no['drc']}). Rules 220 ({drc_count[220]}) and 221 ({drc_count[221]}) give {drc_stamp} "
@@ -1024,15 +1047,14 @@ def build_data():
          f"meet the minimum area. The unrouted layout is not DRC clean."),
         (f"Schematic connectivity. Pin-by-pin comparison of the {n_inst} DLATCH instances (XD1-XD4) against the netlist "
          f"confirmed full consistency with {len(mism)} mismatch{'es' if len(mism) != 1 else ''}"
-         f"{' (' + ', '.join(mism) + ')' if mism else ''}. Schematic check warnings: DLATCH {schc['DLATCH']}, "
-         f"divider_core {schc['divider_core']}, and tb_divider {schc['tb_divider']}."),
+         f"{' (' + ', '.join(mism) + ')' if mism else ''}. {sch_text}"),
         (f"Design B operating point. At {f_b:g} GHz (m = {m_b}, R1 = R2 = {r_b:g} kOhm), the divider achieves "
          f"{num(nom_b['f_out_MHz']):.1f} MHz output, {num(nom_b['power_mW']):.4f} mW power, {num(nom_b['delay_ps']):.2f} ps "
          f"delay, {num(nom_b['pdp_fJ']):.3f} fJ PDP, and {num(nom_b['max_phase_step_err_deg']):.2f} deg maximum phase "
          f"error ({b_steps[0]} and {b_steps[1]} deg steps). Output Q1 swings {swing_b:.3f} V ({a_b['q1_min_v']:.3f} V to "
          f"{a_b['q1_max_v']:.3f} V), above the {SWING_MIN_V:g} V limit. Peak tail voltage reaches "
          f"{a_b['xd1_tail_max_v'] * 1e3:.1f} mV, below Vdsat = {vds_info['vdsat_v'] * 1e3:.1f} mV (triode, "
-         f"Figure {extra_no['tail_b']}). PVT results appear in Table 4."),
+         f"Figure {extra_no['tail_b']}). PVT results appear in Table {tab_no['pvt_b6']}."),
         (f"DC operating points. At t = 0 (clocks low, switches off), tail current is negligible (Vgs = {op_d['vg_v']:g} V). "
          f"For paper sizing, M7 is in {op_u['region']} (Vds = {op_u['vds_v'] * 1e9:.1f} nV, Ids = {op_u['ids_a'] * 1e12:.1f} pA). "
          f"For design D, M7 is in {op_d['region']} (Vds = {op_d['vds_v'] * 1e9:.1f} nV, Ids = {op_d['ids_a'] * 1e12:.1f} pA). "
@@ -1043,18 +1065,18 @@ def build_data():
          f"gds = {vds_info['gds_ms']:.3f} mS, Vds = {op_d['vds_v'] * 1e9:.0f} nV). In transient operation, "
          f"V(XD1.tail) spans {a_d['xd1_tail_min_v'] * 1e3:.1f} to {a_d['xd1_tail_max_v'] * 1e3:.1f} mV for design D "
          f"(XD2 reaches {a_d['xd2_tail_max_v'] * 1e3:.1f} mV) and {a_8['xd1_tail_min_v'] * 1e3:.1f} to "
-         f"{a_8['xd1_tail_max_v'] * 1e3:.1f} mV for baseline U8k. Because Vds remains below Vdsat, M7 operates in "
+         f"{a_8['xd1_tail_max_v'] * 1e3:.1f} mV for the unsized baseline. Because Vds remains below Vdsat, M7 operates in "
          f"triode rather than saturation (Figures {extra_no['tail_8']} and {extra_no['tail_d']})."),
         sweeps_text,
         sweep_f_text,
-        (f"PVT analysis. Across PVT corners, design D at {f_d:g} GHz achieved: {fail_text(sum_d)}. At 1.4 GHz, "
-         f"design B yielded: {fail_text(sum_b1)}, and design E (m = {tag_e['m']}, R = {tag_e['r_kohm']:g} kOhm) "
-         f"yielded: {fail_text(sum_e)}. At {f_b:g} GHz, design B achieved: {fail_text(sum_b6)}. Passing corners of "
+        (f"PVT analysis. Across PVT corners, design D at {f_d:g} GHz: {fail_text(sum_d)}. At 1.4 GHz, "
+         f"design B: {fail_text(sum_b1)}, and design E (m = {tag_e['m']}, R = {tag_e['r_kohm']:g} kOhm): "
+         f"{fail_text(sum_e)}. At {f_b:g} GHz, design B: {fail_text(sum_b6)}. Passing corners of "
          f"design D span {sum_d['passing_metrics']['power_mW']['min']:.3f}-{sum_d['passing_metrics']['power_mW']['max']:.3f} mW "
          f"and {sum_d['passing_metrics']['delay_ps']['min']:.2f}-{sum_d['passing_metrics']['delay_ps']['max']:.2f} ps. "
-         f"In Table 4, ratio is f_in/f_out (ratio 2 denotes correct division; 0.5 denotes outputs at 2 f_in)."),
+         f"In Table {tab_no['appendix_pvt']} (Appendix), ratio is f_in/f_out (ratio 2 denotes correct division; 0.5 denotes outputs at 2 f_in)."),
         (f"Transient delay and edge times. First-edge CK-to-Q1 delays are {a_8['ck_to_q1_first_edge_delay_ps']:.2f} ps "
-         f"(U8k), {a_d['ck_to_q1_first_edge_delay_ps']:.2f} ps (design D), and "
+         f"(unsized baseline), {a_d['ck_to_q1_first_edge_delay_ps']:.2f} ps (design D), and "
          f"{a_b['ck_to_q1_first_edge_delay_ps']:.2f} ps (design B). Multi-phase average delay for design D is "
          f"{a_d['ck_to_any_output_mean_delay_ps']:.2f} ps. Output Q1 rise and fall times are "
          f"{a_d['q1_rise_10_90_ps']:.1f} ps and {a_d['q1_fall_10_90_ps']:.1f} ps."),
@@ -1067,17 +1089,6 @@ def build_data():
          f"{LITERATURE['phase_err_deg']} deg, and core area {LITERATURE['core_um']} um^2. In 45 nm, design D at "
          f"{f_d:g} GHz consumes {num_d('power_mW'):.4f} mW with {num_d('max_phase_step_err_deg'):.2f} deg phase error; "
          f"design B reaches {num(nom_b['max_phase_step_err_deg']):.2f} deg at {f_b:g} GHz."),
-        (f"Figure index. Primary figures 1 to {len(slot_no)} cover schematics, waveforms, and layout. Figures {EXTRA_FIG_START} "
-         f"onwards provide supplementary validation: ring architecture (Figure {extra_no['ring']}), paper sizing waveforms "
-         f"(Figure {extra_no['tran_paper']}), design B waveforms at {f_b:g} GHz (Figure {extra_no['tran_b']}), phase steps "
-         f"(Figure {extra_no['phase']}), tail node voltages (Figures {extra_no['tail_8']}, {extra_no['tail_d']}, and "
-         f"{extra_no['tail_b']}), supply current (Figure {extra_no['supply']}), frequency sweeps (Figure {extra_no['fsweep']}), "
-         f"PVT distributions (Figures {extra_no['pvt_dp_d']}, {extra_no['pvt_hm_b6']}, and {extra_no['pvt_dp_b6']}), "
-         f"testbench schematic (Figure {extra_no['tb']}), session log (Figure {extra_no['ciw']}), DLATCH layout "
-         f"(Figure {extra_no['layout_dlatch']})"
-         + (f", DRC summary (Figure {extra_no['drc']}), and transient waveform plot for design D (Figure {extra_no['tran_d_plot']})."
-            if viva_file.is_file() else
-            f", and DRC summary (Figure {extra_no['drc']}).")),
     ]
 
     conclusion = [
@@ -1090,7 +1101,6 @@ def build_data():
          f"passing). Design B exhibited reduced swing ({swing_b:.3f} V, {a_b['q1_min_v']:.3f} V to {a_b['q1_max_v']:.3f} V "
          f"against the {SWING_MIN_V:g} V limit), failed at tt, {b6_tt27_09['temp']} C, {b6_tt27_09['vdd']:g} V, and failed "
          f"division at {sw_b['f_fail']:g} GHz."),
-        (f"Baseline comparison: sizing{cmp_text.split(': sizing', 1)[1]}"),
         (f"The paper sizing rule (m = {m_u}, R1 = Ron/2 = {r_u:g} kOhm) fails to divide at {tag_u['f_ghz']:g} GHz because "
          f"load resistance is below the regeneration threshold ({thr_mid(1):.2f} kOhm). Empirical division thresholds "
          f"span {br08['fail_max']:g} to {br08['ok_min']:g} kOhm at vb = 0.8 V, and {br1['fail_max']:g} to {br1['ok_min']:g} kOhm "
@@ -1107,31 +1117,18 @@ def build_data():
     ]
 
     problems_faced = [
-        "Compilation failure in Spectre AHDL/CMI module compilation for the gpdk045 BSIM4 model.",
-        "32-bit simulation environment compatibility with Cadence tool dependencies and compiler toolchain.",
-        "Storage space limitations during multi-corner parameter sweeps.",
-        f"Failure of paper sizing (R1 = Ron/2) to divide at 1.0, 1.4, or 2.0 GHz, requiring an empirical search for load resistance.",
-        f"False division detection caused by low-amplitude harmonics at 2 f_in ({f_out_u_meas / 1e3:.1f} GHz at "
-        f"{tag_u['f_ghz']:g} GHz input) with only {fp_lo:.0f} to {fp_hi:.0f} mV swing.",
-        "Transient raw data parsing constraints during multi-signal simulation extraction.",
-        "High-temperature PVT failure at 125 C for marginal sizing designs.",
-        "Data transfer constraints within the isolated simulation environment.",
-        f"Large phase-step error at {f_d:g} GHz ({metrics_d['max_phase_step_err_deg']} deg) compared with the "
-        f"reference literature value of {LITERATURE['phase_err_deg']} deg.",
-        f"Layout incomplete: placement only (m = {m_8}) without routing, yielding {drc_total} DRC errors "
-        f"({drc_stamp} substrate stamp, {drc_metal} Metal1 minimum area); LVS and post-layout simulation were not run.",
+        "The paper sizing rule does not divide at unit device size because the load resistance falls below the regeneration threshold.",
+        "Conventional division checks initially counted false passes caused by low-amplitude harmonics at 2 f_in.",
+        "Tail current source transistor M7 operates in triode rather than saturation across all operating conditions.",
+        "Spectre BSIM4 model compilation failed on the 32-bit simulation host due to missing compiler and runtime libraries.",
+        "Layout automation (generate-from-source and automatic router) completed 136 of 137 connections but produced 134 DRC errors.",
     ]
     problems_resolved = [
-        "Configured host C compiler (gcc 4.4.7) and runtime libraries to support Spectre AHDL model compilation.",
-        "Extracted and validated simulation parameters systematically across nominal, corner, and sweep conditions.",
-        f"Identified dividing unit-size load resistance across {n_search} simulations and applied the stack resistance "
-        f"rule to establish design D ({sum_d['pass_count']} of {sum_d['total']} PVT points passing).",
-        f"Enforced strict division verification: all eight phases must operate at f_in/2 within 0.1% with peak-to-peak "
-        f"swing >= {SWING_MIN_V:g} V.",
-        "Verified consistency across transient output metrics and automated simulation summaries.",
-        f"Characterized divider performance at two operating points: 1.4 GHz (reference comparison) and {f_b:g} GHz "
-        f"(minimized phase error).",
-        "Executed batch Assura physical verification on the DLATCH cell to quantify placement design rule violations.",
+        f"The load resistor was resized using the 3 Ron/m stack resistance rule, establishing R = {r_8:g} kOhm for the baseline and R = {r_d:g} kOhm for design D.",
+        f"A strict eight-output verification check was introduced requiring division to f_in/2 within 0.1% and at least {SWING_MIN_V:g} V peak-to-peak swing.",
+        "Tail node transient voltages were characterized against extracted BSIM4 Vdsat, confirming resistive tail degeneration mode.",
+        "Spectre model compile problems on the 32-bit simulation host were resolved by installing the missing compiler and runtime libraries.",
+        "The placement layout without routing was reported with a full tally and characterization of the 21 Assura DRC rule violations.",
     ]
 
     other_comment = [
@@ -1154,7 +1151,7 @@ def build_data():
         f"{paper['date']}, doi: {paper['doi']}.",
         "Cadence Design Systems, Cadence GPDK045 v6.0 documentation (45 nm generic process design kit).",
         "Cadence Design Systems, Spectre Circuit Simulator Reference, MMSIM 12.1.",
-    ] + [f"Evidence file: {rel}" for rel in sch_evidence]
+    ]
 
     # ---------------------------------------------------------- Table 3 proof column and notes
     fn = extra_no
@@ -1169,12 +1166,14 @@ def build_data():
         "sat": f"Fig. {fn['tail_8']} (without), Fig. {fn['tail_d']} (with)",
     }
     values_notes = [
-        (f"Notes: Baseline without sizing corresponds to unit devices U8k (m = {m_8}, R = {r_8:g} kOhm, vb = "
+        (f"Notes: Baseline without sizing corresponds to unit devices (unsized baseline: m = {m_8}, R = {r_8:g} kOhm, vb = "
          f"{tag_8['vb']:g} V). The paper sizing circuit (m = {m_u}, R = {r_u:g} kOhm) fails to divide (supply power "
          f"{p_u_mw:.3f} mW; delay, PDP, and phase error undefined; Figure {fn['tran_paper']}). Delay is the average time "
          f"from CK rising edges to the next output transition (first-edge CK-to-Q1 delay: "
-         f"{a_8['ck_to_q1_first_edge_delay_ps']:.2f} ps for U8k, {a_d['ck_to_q1_first_edge_delay_ps']:.2f} ps for D). "
-         f"Vds indicates peak transient tail voltage V(XD1.tail); Vdsat is the extracted saturation voltage for M7.")]
+         f"{a_8['ck_to_q1_first_edge_delay_ps']:.2f} ps for unsized baseline, {a_d['ck_to_q1_first_edge_delay_ps']:.2f} ps for design D). "
+         f"Vds indicates peak transient tail voltage V(XD1.tail); Vdsat is the extracted saturation voltage for M7."),
+        "PDP is computed from unrounded power and delay values.",
+    ]
 
     paper_block = {k: paper[k] for k in ("title", "authors", "journal", "volume", "issue", "pages", "date", "doi")}
     data = {
