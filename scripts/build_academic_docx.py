@@ -464,8 +464,11 @@ class Builder:
         """
         self.heading(sub.get("heading") or "Simulation from the Virtuoso schematic")
         self.body(sub.get("paragraphs"), "schematic simulation text (schematic_sim.paragraphs)")
-        number = self.extra_start + len(self._slot_list("extra_figures"))
-        self.figure(number, sub.get("figure"), "schematic simulation figure (schematic_sim.figure)")
+        if sub.get("figure_ref"):
+            self.body([sub["figure_ref"]], "schematic simulation figure reference")
+        if sub.get("figure"):
+            number = self.extra_start + len(self._slot_list("extra_figures"))
+            self.figure(number, sub["figure"], "schematic simulation figure (schematic_sim.figure)")
 
     def sec_sizing(self):
         self.heading("SCREENSHOT OF THE CIRCUIT BASED ON SIZING CONCEPT:")

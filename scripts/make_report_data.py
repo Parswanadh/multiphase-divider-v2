@@ -1229,9 +1229,8 @@ def build_data():
     schematic_sim = {
         "heading": sch_heading,
         "paragraphs": sch_paras,
-        "figure": screen("schematic_tb_cadence",
-                         "Virtuoso testbench schematic of tb_divider, the circuit simulated by OCEAN "
-                         "(Cadence GUI screenshot)."),
+        "figure": None,  # the testbench schematic is already shown as an extra figure
+        "figure_ref": f"The testbench schematic that was simulated is shown in Figure {extra_no['tb']}.",
     }
     references = [
         f"{LITERATURE['authors']}, \"A Compact Multiphase Divide-by-Two CMOS Frequency Divider,\" IEEE Microw. "
