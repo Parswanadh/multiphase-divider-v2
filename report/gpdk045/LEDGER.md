@@ -41,3 +41,6 @@ All numbers below come from Cadence Spectre 12.1 (MMSIM121) runs inside the Cent
 
 - Ruling (after independent review): 'without sizing' = dividing unit-size baseline m=1, R=8k, vb=1.0 at 1.4 GHz (Cadence run; 0.138 mW, 62.2 ps, 8.56 fJ, 26.4 deg); the paper-rule m=1/R1=1.15k circuit stays as the non-dividing finding. Threshold: R >= ~7k (stack rule predicts 7.6k). — if wrong, the baseline can be replaced by any other m=1 row of results/gpdk045/final/unsized_baseline.tsv.
 - Review (REVIEW.md): 4 critical / 11 important / 13 minor; single fix pass dispatched (FIXLOG.md records outcomes).
+
+- Schematic-driven simulation (OCEAN on divider_lib/tb_divider): divides 1 GHz -> 500 MHz, Q1 swing 0.713-1.006 V, 0.39 mW (tbVbias 0.8 V, differs from design D's 1.0 V): results/gpdk045/ocean_schematic_run.txt; script cadence/ocean/run_schematic_tb.ocn. NOT yet in the report text (add as 'simulation from the Virtuoso schematic' evidence).
+- Layout automation research (Layout XL generate-from-source, router) agent running; notes expected in cadence/skill/auto/. Docs copied to /home/parshu/vm/cdsdocs/ic615_doc (not in git).

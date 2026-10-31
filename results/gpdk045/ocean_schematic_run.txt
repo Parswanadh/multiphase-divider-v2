@@ -1,0 +1,8 @@
+> OC t1=1.106878e-08 t2=1.306878e-08 t3=1.506878e-08
+> OC ck1=9.01e-09 ck2=1.001e-08
+> OC Iavg=-0.0003896401
+grep: /home/buet/gpdk_run/ocean_tb/netlist/input.scs: No such file or directory
+grep: /home/buet/gpdk_run/ocean_tb/netlist/input.scs: No such file or directory
+# Context: OCEAN (ocean -nograph < run_schematic_tb.ocn) netlisted divider_lib/tb_divider/schematic with Virtuoso's own netlister
+# and ran Spectre 12.1 with gpdk045 tt. Testbench: R=3k, m=4, tbPeriod 1 ns (1 GHz), tbVbias 0.8 V (NOT the 1.0 V used for design D in the standalone runs).
+# Q1 rising edges 2.0 ns apart vs CK period 1.0 ns -> divide by 2 (500 MHz). Iavg = -0.390 mA (supply delivering) -> about 0.39 mW at 1.0 V.
