@@ -1,0 +1,91 @@
+Layout XL generate-from-source flow: log excerpts (batch Virtuoso 6.1.5, guest, via skill_run.sh)
+Each line below is copied from the guest run log. Failed attempts are kept (they were fixed in lxl_flow.il).
+
+== Probe 1: which lx* functions exist before loading the context
+PRB fboundp lxGenFromSource = nil
+PRB fboundp lxLaunchLayoutXL = funobj:lxLaunchLayoutXL
+PRB fboundp lxHiMoveAutomatically = nil
+PRB fboundp lxHiAutoPlace = nil
+PRB fboundp vcpfeRunCustomDigitalPlacer = nil
+PRB fboundp lxGetLXInfo = nil
+
+== Probe 2: loadContext("lx") (short name)
+*Error* loadContext: could not open file - "lx"
+
+== Probe 3: loadContext with full path to lx.cxt (works)
+PR3 loadContext full path -> (t)
+PR3 fboundp lxGenFromSource = funobj:lxGenFromSource
+PR3 fboundp lxHiMoveAutomatically = funobj:lxHiMoveAutomatically
+PR3 fboundp lxHiAutoPlace = macro:evalalias
+PR3 fboundp vcpfeRunCustomDigitalPlacer = nil
+PR3 fboundp lxGetLXInfo = funobj:lxGetLXInfo
+PR3 fboundp lxRunCmdInVXL = funobj:lxRunCmdInVXL
+PR3 fboundp lxGetAvailablePinLPPs = funobj:lxGetAvailablePinLPPs
+
+== DLATCH run 1 (failed: boundary shape value)
+*WARNING* (LX-2052): The 'lxGenFromSource' SKILL function specifies an invalid boundary shape: 'rectangle'.
+Specify either 'Rectangle' or Polygon'.
+LXL step 3 failed: lxGenFromSource -> view layout_lxl
+
+== DLATCH run 2 (failed: origin list of integers)
+*Error* ilGetDouble: arg must be flonum - 0
+LXL step 3 failed: lxGenFromSource -> view layout_lxl
+
+== DLATCH run 3 (generation OK)
+LXL step 0 ok: Layout XL context lx.cxt loaded
+LXL step 1 ok: layoutXL env vars set
+LXL step 2 ok: opened divider_lib/DLATCH/schematic
+INFO (BND-1002): Binder initialization report:
+  Schematic instances with corresponding layout instances:   0
+  Layout instances with corresponding schematic instances:   0
+  Layout instances with no corresponding schematic instance: 0
+  Instances present in schematic but missing from layout:    30
+*WARNING* (LX-2002): Cannot create layout instance for schematic instance 'R1' because there is no layout master defined.
+*WARNING* (LX-2002): Cannot create layout instance for schematic instance 'R2' because there is no layout master defined.
+*WARNING* (LX-2006): There were errors or warnings during layout generation.
+INFO (LX-1030): Run Connectivity - Check - Against Source for more details.
+LXL step 3 ok: lxGenFromSource -> view layout_lxl
+INFO (LCE-1007): The cell verifier found
+INFO (LCE-1008):    109 open(s)
+LXL step 4 ok: dbSave of generated layout
+LXL step 5 failed: layout source == schematic
+LXL inst |M6.4 master=nmos1v   (28 lines in total, M1.1..M7.4)
+LXL step 6 ok: instance list printed
+LXL step 11 ok: final dbSave
+LXL flow finished. Layout view: divider_lib/DLATCH/layout_lxl
+
+Note: step 5 fails because lxGetLXInfo("srcView" layCv) returns nil (see the core run below).
+
+== DLATCH readback: see results/gpdk045/lxl_dlatch_readback.txt (raw guest output included there).
+
+== divider_core run (generation OK)
+LXL step 2 ok: opened divider_lib/divider_core/schematic
+INFO (BND-1002): Instances present in schematic but missing from layout:    4
+LXL step 3 ok: lxGenFromSource -> view layout_lxl
+INFO (LCE-1008):    36 open(s)
+LXL step 4 ok: dbSave of generated layout
+LXL step 5 failed: layout source == schematic
+LXL inst |XD4 master=DLATCH   (XD1..XD4)
+LXL step 11 ok: final dbSave
+LXL flow finished. Layout view: divider_lib/divider_core/layout_lxl
+
+== divider_core readback (SKILL, guest)
+RC lxGetLXInfo srcView -> (nil)
+RC layout bBox = ((0.0 0.0) (38.925 38.925))
+RC inst count = 4
+RC inst |XD4 master=divider_lib/DLATCH/layout bBox=((0.18 9.545) (4.955 29.375)) xy=(0.08 9.345) orient="R0"
+RC inst |XD3 master=divider_lib/DLATCH/layout bBox=((22.705 9.545) (27.48 29.375)) xy=(22.605 9.345) orient="R0"
+RC inst |XD2 master=divider_lib/DLATCH/layout bBox=((33.965 9.545) (38.74 29.375)) xy=(33.865 9.345) orient="R0"
+RC inst |XD1 master=divider_lib/DLATCH/layout bBox=((11.44 9.545) (16.215 29.375)) xy=(11.34 9.345) orient="R0"
+RC pins = ("CK" "CKb" "NBIAS" "Q4" "Q4b" "Q3" "Q3b" "Q1" "Q1b" "Q2" "Q2b" "VDD" "VSS")
+RC sch pins = ("CK" "CKb" "NBIAS" "Q4" "Q4b" "Q3" "Q3b" "Q1" "Q1b" "Q2" "Q2b" "VDD" "VSS")
+Caveat: the 4 instances reference divider_lib/DLATCH/layout (the hand-built view), NOT divider_lib/DLATCH/layout_lxl.
+  The core has all 4 instances on the existing DLATCH layout. The generated DLATCH layout_lxl is not used by divider_core.
+  All instances are orient R0 (not mirrored), so the ring is not in the generator's placement.
+
+== Automatic placement test (divider_core/layout_lxl, batch, no window)
+PT lxHiMoveAutomatically -> nil   *Error* hiGetWidgetType: argument #1 should be a window type
+PT lxHiAutoPlace -> nil           *Error* geGetWindowCellView: argument #1 should be a window type
+PT vcpfeRunCustomDigitalPlacer -> nil   *Error* vcpfeRunCustomDigitalPlacer: argument #1 should be a database object (called with nil, so the arguments were wrong; it was NOT tested with real cellviews)
+Note: this test ran without loadContext; the calls still resolved, so the functions autoload on first call. The fboundp=nil in probe 1 is therefore not a missing-function signal.
+Result: no automatic placement ran in batch. Real placement with cellviews not attempted for vcpfe (needs a licence check, not done).

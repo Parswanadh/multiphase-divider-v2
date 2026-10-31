@@ -1,13 +1,20 @@
 ;; lxl_flow.il -- Layout XL "Generate All From Source" flow for divider_lib/DLATCH
 ;; Companion notes: LXL_FLOW_NOTES.md (each call cites the IC615 6.1.5 doc heading)
-;; STATUS: UNVERIFIED. Run from the CIW first and read the "LXL step" lines.
+;; STATUS: run in batch Virtuoso 6.1.5 (guest) on divider_lib/DLATCH and divider_core.
+;;   DLATCH: lxGenFromSource -> layout_lxl OK (28 nmos1v = 7 x m4 split, 9 pins).
+;;           R1, R2 NOT generated (no layout master for analogLib res). See results/gpdk045/lxl_dlatch_readback.txt
+;;   divider_core: lxGenFromSource -> layout_lxl OK (4 DLATCH instances, 13 pins).
+;;   Placement does NOT run in batch: lxHiMoveAutomatically and lxHiAutoPlace need a window;
+;;   vcpfeRunCustomDigitalPlacer was not run with real cellviews (test called with nil args).
+;;   Log excerpts: results/gpdk045/lxl_flow_log.txt
 ;;
 ;; Load in CIW (or in a startup file):
 ;;   load("/home/parshu/projects/multiphase-divider-v2/cadence/skill/auto/lxl_flow.il")
 ;;   lxlRunFlow()
 ;;
-;; Batch: "virtuoso -nograph -replay" is NOT IN DOCS (no such flag text in the IC615
-;; copies). Treat batch use as UNVERIFIED.
+;; Batch: verified in this VM with "virtuoso -nograph -replay" via skill_run.sh (guest log).
+;;   The IC615 docs do not mention the flags; the run is the evidence.
+;;   Run as a replay file: load("<copy of lxl_flow.il>") then set lxlCell if needed, then lxlRunFlow().
 ;;
 ;; SKILL notes: defvar values are reassigned every time this file is loaded, so edit
 ;; the defvar lines below and reload. Variables are prefixed lxl; no x, y, t, i.
@@ -15,8 +22,8 @@
 ;; in the IC615 copies; they are standard SKILL. VERIFY the errset return shape.
 
 ;; ---------------------------------------------------------------- settings
-defvar(lxlLib      "divider_lib")    ;; ;; VERIFY: library name matches cds.lib
-defvar(lxlCell     "DLATCH")         ;; ;; VERIFY: cell name
+defvar(lxlLib      "divider_lib")    ;; verified (library used in batch run)
+defvar(lxlCell     "DLATCH")         ;; verified cell name (divider_lib/DLATCH); set lxlCell after load() for divider_core
 defvar(lxlSchView  "schematic")      ;; source view (sklayoutref/chap2.html: 'lxGenFromSource', example)
 defvar(lxlLayView  "layout_lxl")     ;; NEW view. Do NOT use "layout": Generate All From Source deletes
                                      ;; the existing components (vxlhelp/chap6.html: 'Generating All Components from Source')
@@ -26,6 +33,8 @@ defvar(lxlDoPlace  nil)              ;; vcpfeRunCustomDigitalPlacer, GXL token (
 defvar(lxlDoMovePorts nil)           ;; lxMovePorts (sklayoutref/chap6.html: 'lxMovePorts')
 defvar(lxlDoCompare nil)             ;; lxRunCmdInVXL comparison report (sklayoutref/chap2.html: 'lxRunCmdInVXL')
 defvar(lxlIgnoreR   t)               ;; ignore schematic r on generation (vxlhelp/appA.html: 'paramsToIgnore')
+
+defvar(lxlCtxFile "/home/buet/cadence/IC615/tools.lnx86/dfII/etc/context/lx.cxt")  ;; guest path; loadContext("lx") fails ("could not open file")
 
 ;; ---------------------------------------------------------------- helpers
 ;; errset returns a list holding the value, or nil on error. lxlGot returns the value.
@@ -46,6 +55,15 @@ procedure(lxlSkip(lxlN lxlWhy)
 )
 
 ;; ---------------------------------------------------------------- steps
+;; Step 0: load the Layout XL SKILL context. Without it lxGenFromSource and the other lx*
+;; functions are unbound (fboundp nil) in batch. Verified: loadContext with the full path returns (t).
+procedure(lxlStep0LoadCtx()
+  let((lxlR)
+    lxlR = errset(loadContext(lxlCtxFile) t)
+    lxlReport(0 lxlR "Layout XL context lx.cxt loaded")
+  )
+)
+
 ;; Step 1: options that control generation. Set before generating.
 ;; envSetVal form: vxlhelp/chap1.html: 'Setting Environment Variables in the CIW'
 ;; Variable names: vxlhelp/appA.html (lxEvalCDFCallbacks, lxGenerateInBoundary, mfactorSplit,
@@ -86,8 +104,8 @@ procedure(lxlStep3Generate(lxlSchCv)
         ?initCreateBoundary t            ;; PR boundary (vxlhelp/chap6.html: 'Specifying the Place and Route Boundary')
         ?initDoStacking nil              ;; chaining OFF. VERIFY: nmos chaining wanted or not
         ?initDoFolding nil               ;; folding OFF. VERIFY
-        ?initPrBoundaryShape "rectangle" ;; VERIFY: doc lists "rectangle" for lxGenFromSource, "Rectangle" for lxSetBoundaryOptions
-        ?initPrBoundaryOrigin list(0 0)  ;; VERIFY: list form and units (user units)
+        ?initPrBoundaryShape "Rectangle" ;; guest log (LX-2052): value must be 'Rectangle' or 'Polygon'
+        ?initPrBoundaryOrigin list(0.0 0.0)  ;; must be floats (guest: "ilGetDouble: arg must be flonum - 0")
         ?lxGenerateInBoundary t          ;; (vxlhelp/appA.html: 'lxGenerateInBoundary')
         ?extractAfterGenerateAll t       ;; extract after generation
         ?extractSchematic t))            ;; allow schematic extraction if needed
@@ -111,11 +129,14 @@ procedure(lxlStep4Save(lxlLay)
 
 ;; Step 5: confirm the layout points at the schematic we generated from.
 ;; sklayoutref/chap2.html: 'lxGetLXInfo' example: lxGetLXInfo("srcView" cvId)
+;; GUEST RESULT: lxGetLXInfo("srcView" layCv) returns nil on both DLATCH and divider_core, so this
+;; check currently FAILS. Its meaning is unverified; the source is the schematic by construction.
 procedure(lxlStep5CheckSource(lxlLay lxlSchCv)
   let((lxlR lxlSrc)
     if(lxlLay
-      then lxlR = errset(lxGetLXInfo("srcView" lxlLay))
+      then lxlR = errset(lxGetLXInfo("srcView" lxlLay) t)
            lxlSrc = lxlGot(lxlR)
+           printf("LXL step 5 lxGetLXInfo srcView -> %L\n" lxlSrc)
            lxlReport(5 and(lxlSrc equal(lxlSrc lxlSchCv)) "layout source == schematic")
       else lxlSkip(5 "no layout cellview")
     )
@@ -123,15 +144,14 @@ procedure(lxlStep5CheckSource(lxlLay lxlSchCv)
 )
 
 ;; Step 6: list the generated instances (name and master). Print for inspection.
-;; ~>instances is NOT IN DOCS as a documented accessor; ~>name and ~>master~>superMaster
-;; appear in the docs (sklayoutref/odc.html, vxlhelp/appC.html). VERIFY the others.
+;; GUEST RESULT: ~>instances, ~>name, ~>cellName work on layout instances (verified, DLATCH and core).
 procedure(lxlStep6List(lxlLay)
   let((lxlR)
     if(lxlLay
       then lxlR = errset(
              foreach(lxlInst lxlLay~>instances
-               printf("LXL inst %s master=%s\n" lxlInst~>name lxlInst~>master~>cellName)))
-           lxlReport(6 lxlR "instance list printed (VERIFY accessors)")
+               printf("LXL inst %s master=%s\n" lxlInst~>name lxlInst~>master~>cellName)) t)
+           lxlReport(6 lxlR "instance list printed")
       else lxlSkip(6 "no layout cellview")
     )
   )
@@ -200,6 +220,7 @@ procedure(lxlStep11Save(lxlLay)
 ;; ---------------------------------------------------------------- driver
 procedure(lxlRunFlow()
   let((lxlSchCv lxlLay)
+    lxlStep0LoadCtx()
     lxlStep1SetEnv()
     lxlSchCv = lxlStep2OpenSource()
     if(lxlSchCv

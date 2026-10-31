@@ -1,0 +1,200 @@
+Layout XL generate-from-source readback, divider_lib/DLATCH view layout_lxl
+Source: batch Virtuoso 6.1.5 guest, probe run + readback run (raw output below, from the guest log).
+Readback: SKILL on the database (dbOpenCellViewByType, ~>instances, cdfGetInstCDF), no GUI.
+
+SCHEMATIC (read via cdfGetInstCDF from divider_lib/DLATCH/schematic):
+  M1..M6  nmos1v  w=240n l=45n fw=240n fingers=1 m=4 model=g45n1svt
+  M7      nmos1v  w=480n l=90n fw=480n fingers=1 m=4 model=g45n1svt
+  R1, R2  analogLib res  r=3K
+  9 pins: D Db CK CKb NBIAS Q Qb VDD VSS
+
+LAYOUT (readback below):
+  28 nmos1v instances = 7 devices x m=4 split (mfactorSplit). Names M1.1..M1.4 ... M7.1..M7.4.
+  Each split instance: fw/w = same as schematic w (240n, or 480n for M7), l same, fingers=1, m=1 (instance count carries the m).
+  Total width per device = 4 x w, equal to schematic w*m (M1..M6: 960n, M7: 1920n). Match.
+  Bounding box of cell: (0,0)-(5.03,5.03) um.
+  9 terminals: D Db CK CKb NBIAS Q Qb VDD VSS. Match the schematic pins.
+  R1, R2: NOT in the layout. Guest log: "LX-2002 Cannot create layout instance for schematic instance 'R1'
+  because there is no layout master defined" (same for R2).
+
+VERDICT: transistors and pins match the schematic. Resistors do NOT (missing).
+RESISTOR HANDLING: lxlIgnoreR = t (paramsToIgnore="r") in lxl_flow.il. No layout pcell was mapped for analogLib res,
+  so no resnsnpoly was generated. The resistance of the layout is therefore NOT checked (no layout R exists).
+  Schematic value is r=3K. The sizing (segW/segL) is NOT computed by Layout XL; a manual mapping is needed (not done).
+  Route not tested in this session: CPH per-instance physical cell (GUI), or a LAM mapping.
+
+RAW READBACK (guest log, \o lines; the '\o' prefix is the SKILL output channel):
+\o RB start
+\o Loaded gpdk045/libInit.il successfully!
+\o RB bBox = ((0.0 0.0) (5.03 5.03))
+\o RB inst count = 28
+\o RB inst |M6.4 master=gpdk045/nmos1v bBox=((2.57 1.69) (3.035 2.13)) xy=(2.78 1.79)
+\o RB    m="1"
+\o RB    l="45n"
+\o RB    fw="240.0n"
+\o RB    w="240n"
+\o RB    fingers="1"
+\o RB inst |M6.3 master=gpdk045/nmos1v bBox=((1.985 1.69) (2.45 2.13)) xy=(2.195 1.79)
+\o RB    m="1"
+\o RB    l="45n"
+\o RB    fw="240.0n"
+\o RB    w="240n"
+\o RB    fingers="1"
+\o RB inst |M6.2 master=gpdk045/nmos1v bBox=((2.57 1.13) (3.035 1.57)) xy=(2.78 1.23)
+\o RB    m="1"
+\o RB    l="45n"
+\o RB    fw="240.0n"
+\o RB    w="240n"
+\o RB    fingers="1"
+\o RB inst |M6.1 master=gpdk045/nmos1v bBox=((1.985 1.13) (2.45 1.57)) xy=(2.195 1.23)
+\o RB    m="1"
+\o RB    l="45n"
+\o RB    fw="240.0n"
+\o RB    w="240n"
+\o RB    fingers="1"
+\o RB inst |M4.4 master=gpdk045/nmos1v bBox=((4.3 2.405) (4.765 2.845)) xy=(4.51 2.505)
+\o RB    m="1"
+\o RB    l="45n"
+\o RB    fw="240.0n"
+\o RB    w="240n"
+\o RB    fingers="1"
+\o RB inst |M4.3 master=gpdk045/nmos1v bBox=((3.715 2.405) (4.18 2.845)) xy=(3.925 2.505)
+\o RB    m="1"
+\o RB    l="45n"
+\o RB    fw="240.0n"
+\o RB    w="240n"
+\o RB    fingers="1"
+\o RB inst |M4.2 master=gpdk045/nmos1v bBox=((4.3 1.845) (4.765 2.285)) xy=(4.51 1.945)
+\o RB    m="1"
+\o RB    l="45n"
+\o RB    fw="240.0n"
+\o RB    w="240n"
+\o RB    fingers="1"
+\o RB inst |M4.1 master=gpdk045/nmos1v bBox=((3.715 1.845) (4.18 2.285)) xy=(3.925 1.945)
+\o RB    m="1"
+\o RB    l="45n"
+\o RB    fw="240.0n"
+\o RB    w="240n"
+\o RB    fingers="1"
+\o RB inst |M3.4 master=gpdk045/nmos1v bBox=((0.845 2.405) (1.31 2.845)) xy=(1.055 2.505)
+\o RB    m="1"
+\o RB    l="45n"
+\o RB    fw="240.0n"
+\o RB    w="240n"
+\o RB    fingers="1"
+\o RB inst |M3.3 master=gpdk045/nmos1v bBox=((0.26 2.405) (0.725 2.845)) xy=(0.47 2.505)
+\o RB    m="1"
+\o RB    l="45n"
+\o RB    fw="240.0n"
+\o RB    w="240n"
+\o RB    fingers="1"
+\o RB inst |M3.2 master=gpdk045/nmos1v bBox=((0.845 1.845) (1.31 2.285)) xy=(1.055 1.945)
+\o RB    m="1"
+\o RB    l="45n"
+\o RB    fw="240.0n"
+\o RB    w="240n"
+\o RB    fingers="1"
+\o RB inst |M3.1 master=gpdk045/nmos1v bBox=((0.26 1.845) (0.725 2.285)) xy=(0.47 1.945)
+\o RB    m="1"
+\o RB    l="45n"
+\o RB    fw="240.0n"
+\o RB    w="240n"
+\o RB    fingers="1"
+\o RB inst |M5.4 master=gpdk045/nmos1v bBox=((2.57 3.3) (3.035 3.74)) xy=(2.78 3.4)
+\o RB    m="1"
+\o RB    l="45n"
+\o RB    fw="240.0n"
+\o RB    w="240n"
+\o RB    fingers="1"
+\o RB inst |M5.3 master=gpdk045/nmos1v bBox=((1.985 3.3) (2.45 3.74)) xy=(2.195 3.4)
+\o RB    m="1"
+\o RB    l="45n"
+\o RB    fw="240.0n"
+\o RB    w="240n"
+\o RB    fingers="1"
+\o RB inst |M5.2 master=gpdk045/nmos1v bBox=((2.57 2.74) (3.035 3.18)) xy=(2.78 2.84)
+\o RB    m="1"
+\o RB    l="45n"
+\o RB    fw="240.0n"
+\o RB    w="240n"
+\o RB    fingers="1"
+\o RB inst |M5.1 master=gpdk045/nmos1v bBox=((1.985 2.74) (2.45 3.18)) xy=(2.195 2.84)
+\o RB    m="1"
+\o RB    l="45n"
+\o RB    fw="240.0n"
+\o RB    w="240n"
+\o RB    fingers="1"
+\o RB inst |M2.4 master=gpdk045/nmos1v bBox=((4.3 4.37) (4.765 4.81)) xy=(4.51 4.47)
+\o RB    m="1"
+\o RB    l="45n"
+\o RB    fw="240.0n"
+\o RB    w="240n"
+\o RB    fingers="1"
+\o RB inst |M2.3 master=gpdk045/nmos1v bBox=((3.715 4.37) (4.18 4.81)) xy=(3.925 4.47)
+\o RB    m="1"
+\o RB    l="45n"
+\o RB    fw="240.0n"
+\o RB    w="240n"
+\o RB    fingers="1"
+\o RB inst |M2.2 master=gpdk045/nmos1v bBox=((4.3 3.81) (4.765 4.25)) xy=(4.51 3.91)
+\o RB    m="1"
+\o RB    l="45n"
+\o RB    fw="240.0n"
+\o RB    w="240n"
+\o RB    fingers="1"
+\o RB inst |M2.1 master=gpdk045/nmos1v bBox=((3.715 3.81) (4.18 4.25)) xy=(3.925 3.91)
+\o RB    m="1"
+\o RB    l="45n"
+\o RB    fw="240.0n"
+\o RB    w="240n"
+\o RB    fingers="1"
+\o RB inst |M1.4 master=gpdk045/nmos1v bBox=((0.845 4.37) (1.31 4.81)) xy=(1.055 4.47)
+\o RB    m="1"
+\o RB    l="45n"
+\o RB    fw="240.0n"
+\o RB    w="240n"
+\o RB    fingers="1"
+\o RB inst |M1.3 master=gpdk045/nmos1v bBox=((0.26 4.37) (0.725 4.81)) xy=(0.47 4.47)
+\o RB    m="1"
+\o RB    l="45n"
+\o RB    fw="240.0n"
+\o RB    w="240n"
+\o RB    fingers="1"
+\o RB inst |M1.2 master=gpdk045/nmos1v bBox=((0.845 3.81) (1.31 4.25)) xy=(1.055 3.91)
+\o RB    m="1"
+\o RB    l="45n"
+\o RB    fw="240.0n"
+\o RB    w="240n"
+\o RB    fingers="1"
+\o RB inst |M1.1 master=gpdk045/nmos1v bBox=((0.26 3.81) (0.725 4.25)) xy=(0.47 3.91)
+\o RB    m="1"
+\o RB    l="45n"
+\o RB    fw="240.0n"
+\o RB    w="240n"
+\o RB    fingers="1"
+\o RB inst |M7.4 master=gpdk045/nmos1v bBox=((3.2 0.22) (3.71 0.9)) xy=(3.41 0.32)
+\o RB    m="1"
+\o RB    l="90n"
+\o RB    fw="480.0n"
+\o RB    w="480n"
+\o RB    fingers="1"
+\o RB inst |M7.3 master=gpdk045/nmos1v bBox=((2.57 0.22) (3.08 0.9)) xy=(2.78 0.32)
+\o RB    m="1"
+\o RB    l="90n"
+\o RB    fw="480.0n"
+\o RB    w="480n"
+\o RB    fingers="1"
+\o RB inst |M7.2 master=gpdk045/nmos1v bBox=((1.94 0.22) (2.45 0.9)) xy=(2.15 0.32)
+\o RB    m="1"
+\o RB    l="90n"
+\o RB    fw="480.0n"
+\o RB    w="480n"
+\o RB    fingers="1"
+\o RB inst |M7.1 master=gpdk045/nmos1v bBox=((1.31 0.22) (1.82 0.9)) xy=(1.52 0.32)
+\o RB    m="1"
+\o RB    l="90n"
+\o RB    fw="480.0n"
+\o RB    w="480n"
+\o RB    fingers="1"
+\o RB pins = ("D" "Db" "CK" "CKb" "NBIAS" "Q" "Qb" "VDD" "VSS")
+\o RB end
