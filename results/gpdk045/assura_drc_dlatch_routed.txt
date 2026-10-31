@@ -1,0 +1,59 @@
+Assura 4.1 DRC, DLATCH layout_routed (divider_lib), gpdk045
+Run: cadence/skill/verify/run_verify.sh with VIEW=layout_routed RUNTAG=_routed (DLATCH drc)
+Guest run dir: /home/buet/verify/DLATCH_drc_routed ; report DLATCH_drc_routed.err
+Assura console: "Assura terminated normally", ASSURA_EXIT=0.
+All numbers below are copied from the guest .err report of this run.
+
+Total: 134 real errors (flat count = real count) in 17 rules.
+Before routing (placement-only layout, results/gpdk045/assura_drc_dlatch_summary.txt):
+21 errors in 3 rules (rule 220 psubstrate_StampErrorMult 1, rule 221 psubstrate_StampErrorConnect 6,
+rule 595 METAL1.A.1 14).
+
+Rule counts (routed):
+  219  psubstrate_StampErrorFloat                                          1
+  290  OXIDE.X.1 Oxide must be covered by N+ Implant or Nzvt or Salicide Block   12
+  347  POLY.E.1 Minimum N-channel gate extension beyond Active Area >= 0.1 um       1
+  351  POLY.E.3 Minimum Active Area (source/drain) to gate enclosure >= 0.1 um     2
+  354  POLY.X.1 Poly gate cannot have bends                                 1
+  373  NIMP.E.1 Minimum N+ Implant to Active Area enclosure >= 0.07 um       12
+  374  NIMP.O.1 Minimum N+ Implant to Active Area overlap >= 0.08 um         21
+  380  NIMP.E.4 Minimum N+ Implant to gate (endcap) enclosure >= 0.1 um      2
+  404  CONT.W.1 Maximum and minimum Contact width/length == 0.06 um           7
+  407  CONT.SE.1 Minimum Contact on Active Area to gate spacing >= 0.05 um    2
+  408  CONT.SE.1 (second check, same text)                                    1
+  411  CONT.SE.3 Minimum gate Contact on Active Area spacing >= 0.06 um       1
+  416  CONT.E.1 Minimum Active Area to Contact enclosure >= 0.03 um           1
+  417  CONT.E.2 Minimum Poly to Contact enclosure >= 0.02 um                  1
+  424  CONT.X.1 Cont on gate is NOT allowed                                  1
+  595  METAL1.A.1 Metal1 area must be >= 0.02 um                             12
+  677  LATCHUP.2 Maximum distance from N+ S/D active to Psub pick-up >= 20.0 um  56
+
+Sum check: 1+12+1+2+1+12+21+2+7+2+1+1+1+1+1+12+56 = 134.
+
+First marker coordinates (X1 Y1 X2 Y2, um, from the .err report; first three per rule):
+  219: 0.000 0.000 5.030 5.030 (whole-cell marker)
+  290: 0.335 2.255 0.385 2.435 ; 0.335 4.220 0.385 4.400 ; 0.565 2.845 0.615 3.810
+  347: 1.240 2.065 1.260 2.185
+  351: 1.060 2.184 1.240 2.186 ; 1.135 2.184 1.260 2.186
+  354: 1.159 2.065 1.161 2.185
+  373: 0.260 2.007 0.300 2.243 ; 0.260 3.973 0.300 4.207 ; 0.614 2.745 0.616 2.915
+  374: 0.370 2.185 0.385 2.364 ; 0.370 2.326 0.385 2.505 ; 0.370 4.150 0.385 4.329
+  380: 1.190 2.185 1.306 2.255 ; 1.240 1.994 1.310 2.255
+  404: 0.330 2.095 0.420 2.155 ; 0.330 4.060 0.420 4.120 ; 0.565 4.060 0.655 4.120
+  407: 1.160 2.095 1.165 2.100 ; 1.160 2.150 1.165 2.155
+  408: 1.150 2.035 1.240 2.065
+  411: 1.235 2.095 1.240 2.155
+  416: 1.239 2.065 1.241 2.185
+  417: 1.150 2.095 1.160 2.155
+  424: 1.160 2.095 1.240 2.155
+  595: 0.000 1.885 0.185 2.005 ; 0.360 2.505 0.420 2.745 ; 0.360 4.470 0.420 4.710
+  677: 0.300 1.945 0.470 2.285 ; 0.300 3.910 0.470 4.250 ; 0.330 2.405 0.470 2.745
+
+Comparison with the placement-only run (21 errors, 3 rules):
+  - Rule 220 and rule 221 (psubstrate) from the placement-only run do not appear here; rule 219
+    (psubstrate_StampErrorFloat, one whole-cell marker) appears instead.
+  - Rule 595 (METAL1.A.1) went from 14 to 12 errors.
+  - 16 rules are new: 290, 347, 351, 354, 373, 374, 380, 404, 407, 408, 411, 416, 417, 424, 677 and
+    rule 219 (as above). Cause of the Poly/Oxide/Implant/Contact errors not checked here (inference from
+    rule names and marker positions only, not verified by a layout query); LATCHUP.2 (56) dominates the count.
+  - Net: 21 -> 134 errors. The routed layout is not DRC clean.

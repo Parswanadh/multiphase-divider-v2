@@ -45,3 +45,19 @@ RCX needs a successful LVS (avNX) in the same run dir and an RCX tech directory.
 virtual CD, runs `assura` in the guest under the shared flock, and prints the tail of the Assura console log.
 Variants: env EXTRA="<avCompareRule>" RUNTAG=_suffix (used for the diagnostic LVS run B).
 Results are read from the guest run dir /home/buet/verify/<CELL>_<STAGE>[RUNTAG] (.lrs, .cls, .csm).
+
+## Run: DLATCH layout_routed (DRC and LVS)
+- Wrapper now takes VIEW (default `layout`, env override). It is filled into `@VIEW@` in drc, lvs and rcx templates
+  from one variable in run_verify.sh. Usage: `VIEW=layout_routed RUNTAG=_routed ./run_verify.sh DLATCH drc|lvs`.
+- DRC (`assura` exit 0, "terminated normally"): 134 real errors in 17 rules (placement-only baseline: 21 errors in
+  3 rules). Largest: LATCHUP.2 56, NIMP.O.1 21, OXIDE.X.1 12, NIMP.E.1 12, METAL1.A.1 12. Results in
+  results/gpdk045/assura_drc_dlatch_routed.txt.
+- LVS run 1 (default RSF) aborts in nvn: "Device 'res(RES)' on Schematic is unbound to any Layout device" (the routed
+  layout has no resistor instances). No comparison report is written. groupModels(RES) does not help when the layout
+  has no RES device at all.
+- LVS run 2 (diagnostic, not a pass): `EXTRA='schematic( filterDevice( "res" ) )'` with RUNTAG=_routed_nores. It
+  completes: 10 net, 15 device, 0 pin, 3 parameter mismatches, all from the routed layout (open nets, missing bulk
+  ties to VSS on 8 MOS B pins, finger/series structure, finger width 0.24 vs 0.96 um). Results in
+  results/gpdk045/assura_lvs_dlatch_routed.txt.
+- No "No space left on device" error in these runs (DRC and LVS both use diskList on /dev/shm and TMPDIR=/dev/shm).
+- Guest / was at 119 MB free (100 % used) during both runs.

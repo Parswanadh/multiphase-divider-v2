@@ -13,11 +13,12 @@ fi
 CELL="${1:?usage: run_verify.sh CELL drc|lvs|rcx}"
 STAGE="${2:?usage: run_verify.sh CELL drc|lvs|rcx}"
 LIB=divider_lib                         # the only place the design library is named
+VIEW="${VIEW:-layout}"                  # layout view to check (env override, e.g. VIEW=layout_routed)
 case "$CELL" in *[!A-Za-z0-9_]*|"") echo "bad CELL: $CELL" >&2; exit 2;; esac
 case "$STAGE" in drc|lvs|rcx) ;; *) echo "bad STAGE: $STAGE (drc|lvs|rcx)" >&2; exit 2;; esac
 HERE=$(cd "$(dirname "$0")" && pwd)
 D=/home/parshu/vm
-# optional: EXTRA="<avCompareRule>" is inserted into the LVS RSF; RUNTAG names a variant run
+# optional: VIEW=<layout view name> (default layout); EXTRA="<avCompareRule>" is inserted into the LVS RSF; RUNTAG names a variant run
 EXTRA="${EXTRA:-}"
 RUN="${CELL}_${STAGE}${RUNTAG:-}"
 WORK="/home/buet/verify/$RUN"
@@ -29,7 +30,7 @@ if [ "$STAGE" = lvs ]; then
   PRE="dfIIToVldb -cdslib /home/buet/cds_work/cds.lib $WORK/$RUN.vlr ~/gpdk_run/verify/$RUN.rsf > ~/gpdk_run/verify/$RUN.vlr.out 2>&1; "
 fi
 ST=$(mktemp -d /tmp/verify_stage_XXXXXX)
-fill() { sed -e "s|@LIB@|$LIB|g" -e "s|@CELL@|$CELL|g" -e "s|@WORK@|$WORK|g" -e "s|@RUN@|$RUN|g" -e "s|@EXTRA@|$EXTRA|g" "$1"; }
+fill() { sed -e "s|@LIB@|$LIB|g" -e "s|@VIEW@|$VIEW|g" -e "s|@CELL@|$CELL|g" -e "s|@WORK@|$WORK|g" -e "s|@RUN@|$RUN|g" -e "s|@EXTRA@|$EXTRA|g" "$1"; }
 fill "$HERE/templates/$STAGE.rsf.in" > "$ST/$RUN.rsf"
 if [ "$STAGE" = lvs ]; then fill "$HERE/templates/netlist.vlr.in" > "$ST/$RUN.vlr"; fi
 N=$(date +%s); MED=$D/verify_$N; mkdir -p "$MED"; cp "$ST"/$RUN.* "$MED/"

@@ -1,0 +1,68 @@
+Assura 4.1 LVS, DLATCH layout_routed vs DLATCH schematic (divider_lib, gpdk045)
+Run: cadence/skill/verify/run_verify.sh with VIEW=layout_routed RUNTAG=_routed (DLATCH lvs).
+All numbers below are copied from the Assura reports of these runs (guest run dirs
+/home/buet/verify/DLATCH_lvs_routed and /home/buet/verify/DLATCH_lvs_routed_nores).
+
+== Run 1: default rules, unmodified RSF (DLATCH_lvs_routed) -- ABORTED, no comparison
+Console (~/gpdk_run/verify/DLATCH_lvs_routed.out, nvn section):
+  *ERROR* Device 'res(RES)' on Schematic is unbound to any Layout device.
+  *ERROR* UnBound devices found.
+  Info: All devices must be bound or filtered for comparision to be run.
+  *WARNING* nvn exit with bad status / Status 256 / Assura execution terminated
+  *****  nvn fork terminated abnormally  *****
+  (the other nvn warning "deleteCellPin - Unable to find cell 'g45inds'" is harmless)
+DLATCH_lvs_routed.lrs has no comparison rows (only the header), .cls has no mismatch detail.
+Cause: the schematic has two resistors (R1, R2, analogLib res). The routed layout has no resistor
+instances (they are not in the layout; see the earlier layout facts), so the schematic res devices have
+nothing to bind to. groupModels(RES) matches by type but cannot match a type that is absent on the layout
+side. Result: LVS NOT clean, comparison not performed.
+
+== Run 2: diagnostic, schematic resistors filtered (DLATCH_lvs_routed_nores)
+RSF extra rule: EXTRA='schematic( filterDevice( "res" ) )' (same idiom as the PDK's
+layout( filterDevice("TIE") ) in compare.rul). This is NOT a clean LVS: it removes the resistors from the
+comparison so the remaining mismatches can be seen. It is not a pass criterion.
+Console: "Assura LVS terminated normally." ASSURA_EXIT=0.
+
+DLATCH_lvs_routed_nores.lrs:
+  DLATCH schematic divider_lib | DLATCH layout_routed divider_lib | errors
+  Mismatch Information:
+     1 cells have 10 Net mismatches
+     1 cells have 15 Device mismatches
+     0 cells have 0 Pin mismatches
+     1 cells have 3 Parameter mismatches
+  Extraction: 0 malformed device, 0 label short, 0 label open problems.
+
+Device statistics (cls, match statistics):
+  MOS (g45n1svt): pre-expand schematic 7, layout 29 (the layout has 28 nmos1v fingers per earlier facts
+  plus one more MOS entry, not identified here). After reduce: schematic 7, layout 8 MOS plus
+  2 SerMos2 and 1 SerMos3 series blocks. Unmatched: schematic 2 MOS; layout 3 MOS and 2 + 1 series blocks.
+
+Mismatch classification (from the .cls sections):
+  Net mismatches (10 layout/schematic nets unmatched, "Unmatched Internal Nets" and
+  "Problem Schematic/Layout Nets"):
+    - Schematic net xs has no layout net (open in routing; the known open connection on xs).
+    - Layout nets avC18, avC21, avC22, avC20, avC12, avC14, avC16 each need to connect together
+      ("Open Internal Nets": avC18/avC21/avC22 and avC20/avC12/avC14 should be joined).
+    - Layout VSS vs layout bulk net avS392 (the bulk net of 8 MOS B terminals).
+    - Bad matched nets: schematic tail vs layout avC10; schematic xh vs layout avC18.
+    -> These are routing/connectivity issues of the router output, not resistor effects.
+  Device mismatches (15):
+    - Bulk (B) terminals: 8 layout B pins are on avS392 instead of VSS (Suggested Terminal Rewire, avD2_21,
+      avD2_9, avD2_3, avD2_11, avD2_13). The bulk tie to VSS is missing in the routed layout. Routing cause.
+    - Unmatched schematic instances M3, M2 (no layout counterpart); unmatched layout instances avD2_23,
+      avD2_27, avD2_29 (single-finger MOS with D/G/S tied to Q/Qb/internal nets) and the three series
+      blocks I##30, I##31, I##32. The series blocks are the finger-merged groups of the layout; the
+      schematic has them as single devices. Caused by finger layout and routing, not resistors.
+    - Matched instances with bad net connections: M7/avD2_13, M6/avD2_11, M4/avD2_3, M5/avD2_9,
+      M1/avD2_21 (B pin, plus D/S on M6 and M1). Same B-to-avS392 issue and open nets above.
+  Parameter mismatches (3): M6/avD2_11, M5/avD2_9, M1/avD2_21: width w 9.6e-07 (schematic) vs
+    2.4e-07 (layout), differs by 75%. Each of these layout instances is one finger of a 4-finger
+    device; the layout finger width is 0.24 um, the schematic device is 0.96 um. Layout/finger
+    structure, not resistors.
+
+Resistors: removed from the comparison by the diagnostic filter, so this run cannot say whether the
+resistors match. The resistor question is answered only by Run 1 (unbound, no comparison).
+
+Result: LVS is NOT clean. Run 1 aborts on the unbound resistors. Run 2 (resistors filtered) still shows
+10 net, 15 device and 3 parameter mismatches, all from the routed layout (open nets, missing bulk ties to
+VSS, finger/series structure and finger width), none from the resistors.

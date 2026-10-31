@@ -7,7 +7,7 @@
 avParameters(
   ?inputLayout ( "df2" "@LIB@" )
   ?cellName "@CELL@"
-  ?viewName "layout"
+  ?viewName "@VIEW@"
   ?rulesFile "/home/buet/pdk/gpdk045_v_6_0/assura/extract.rul"
   ?workingDirectory "@WORK@"
   ?runName "@RUN@"
