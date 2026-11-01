@@ -889,7 +889,8 @@ def build_data():
              f"of {thr_mid(m_d):.2f} kOhm (tolerance band {thr_lo(m_d):.2f} to {thr_hi(m_d):.2f} kOhm) according to "
              f"the stack rule established in Theory. Load R = {r_d:g} kOhm provides adequate margin. The same sizing "
              f"rule applies to design B at {f_b:g} GHz (m = {m_b}, R1 = R2 = {r_b:g} kOhm). Transistor M7 operates in "
-             f"triode, with transient drain voltage remaining below Vdsat."),
+             f"triode, with transient drain voltage remaining below Vdsat. "
+             f"Figure {slot_no['dlatch']} shows the Virtuoso schematic of the DLATCH cell with this sizing applied, corresponding to the device dimensions listed in Table {tab_no['dev_with']}."),
             cmp_text,
         ],
         "devices": device_rows(net, m_d, r_d, tag_d["vb"]),
@@ -1047,7 +1048,7 @@ def build_data():
          f"{num(nom_b['f_out_MHz']):.1f} MHz output, {num(nom_b['power_mW']):.4f} mW power, {num(nom_b['delay_ps']):.2f} ps "
          f"delay, {num(nom_b['pdp_fJ']):.3f} fJ PDP, and {num(nom_b['max_phase_step_err_deg']):.2f} deg maximum phase "
          f"error ({b_steps[0]} and {b_steps[1]} deg steps). Output Q1 swings {swing_b:.3f} V ({a_b['q1_min_v']:.3f} V to "
-         f"{a_b['q1_max_v']:.3f} V), above the {SWING_MIN_V:g} V limit. Peak tail voltage reaches "
+         f"{a_b['q1_max_v']:.3f} V), above the {SWING_MIN_V:g} V limit (transient waveforms are shown in Figure {extra_no['tran_b']}). Peak tail voltage reaches "
          f"{a_b['xd1_tail_max_v'] * 1e3:.1f} mV, below Vdsat = {vds_info['vdsat_v'] * 1e3:.1f} mV (triode, "
          f"Figure {extra_no['tail_b']}). PVT results appear in Table {tab_no['pvt_b6']}."),
         (f"DC operating points. Prior to clock switching, tail current leakage is negligible (Vgs = {op_d['vg_v']:g} V). "
@@ -1065,9 +1066,11 @@ def build_data():
         sweeps_text,
         sweep_f_text,
         (f"PVT analysis. Across the 45-corner PVT matrix (Table {tab_no['pvt_d']} and Table {tab_no['pvt_b6']}), "
-         f"design D fails {len(sum_d['failing'])} corners at {f_d:g} GHz (all at 125 C, 0.9 V). At 1.4 GHz, "
+         f"design D fails {len(sum_d['failing'])} corners at {f_d:g} GHz (all at 125 C, 0.9 V), as shown in the pass/fail map in Figure {slot_no['pvt_hm_d']}; "
+         f"propagation delay and supply power across all corners are plotted in Figure {extra_no['pvt_dp_d']}. At 1.4 GHz, "
          f"design B fails {len(sum_b1['failing'])} corners and design E (m = {tag_e['m']}, R = {tag_e['r_kohm']:g} kOhm) "
-         f"fails {len(sum_e['failing'])} corners. At {f_b:g} GHz, design B fails {len(sum_b6['failing'])} corners. "
+         f"fails {len(sum_e['failing'])} corners. At {f_b:g} GHz, design B fails {len(sum_b6['failing'])} corners "
+         f"(pass/fail map in Figure {extra_no['pvt_hm_b6']} and delay/power distribution in Figure {extra_no['pvt_dp_b6']}). "
          f"Passing corners of design D span from {sum_d['passing_metrics']['power_mW']['min']:.3f} to {sum_d['passing_metrics']['power_mW']['max']:.3f} mW "
          f"and {sum_d['passing_metrics']['delay_ps']['min']:.2f} to {sum_d['passing_metrics']['delay_ps']['max']:.2f} ps. "
          f"In Table {tab_no['appendix_pvt']} (Appendix), the Divides column confirms pass and fail status across all 45 corners."),
@@ -1075,7 +1078,8 @@ def build_data():
          f"(unsized baseline), {a_d['ck_to_q1_first_edge_delay_ps']:.2f} ps (design D), and "
          f"{a_b['ck_to_q1_first_edge_delay_ps']:.2f} ps (design B). Multi-phase average delay for design D is "
          f"{a_d['ck_to_any_output_mean_delay_ps']:.2f} ps. Output Q1 rise and fall times are "
-         f"{a_d['q1_rise_10_90_ps']:.1f} ps and {a_d['q1_fall_10_90_ps']:.1f} ps."),
+         f"{a_d['q1_rise_10_90_ps']:.1f} ps and {a_d['q1_fall_10_90_ps']:.1f} ps."
+         + (f" Transient waveforms from the standalone netlist simulation of design D are shown in Figure {extra_no['tran_d_plot']}." if "tran_d_plot" in extra_no else "")),
         (f"Supply current. Average and peak supply currents for design D are {a_d['supply_avg_ma_steady']:.3f} mA "
          f"and {a_d['supply_peak_ma_steady']:.3f} mA, respectively (Figure {extra_no['supply']})."),
         (f"Comparison with reference literature. Reported values from Kuo et al. ({LITERATURE['process']}, "
@@ -1115,7 +1119,9 @@ def build_data():
     ]
 
     other_comment = [
-        "The power and PDP in Table 3 come from the standalone netlist with default device parameters; the schematic-driven run, which includes the layout-dependent parameters, gives lower power (see the schematic-simulation discussion). Post-layout simulation was not possible because the process kit provides no parasitic-extraction rule files.",
+        f"The power and PDP in Table {tab_no['values']} come from the standalone netlist with default device parameters"
+        + (f" (transient waveforms in Figure {extra_no['tran_d_plot']})" if "tran_d_plot" in extra_no else "")
+        + "; the schematic-driven run, which includes the layout-dependent parameters, gives lower power (see the schematic-simulation discussion). Post-layout simulation was not possible because the process kit provides no parasitic-extraction rule files.",
     ]
 
     sch_heading, sch_paras, sch_evidence = read_schematic_section({"fig_tran_d": slot_no["tran_d"]})

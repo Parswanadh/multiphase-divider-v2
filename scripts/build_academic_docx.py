@@ -36,10 +36,10 @@ BODY_PT = 12
 HEADING_PT = 14
 RED = RGBColor(0xC0, 0x00, 0x00)
 BLACK = RGBColor(0x00, 0x00, 0x00)
-MAX_FIG_W_IN = 6.3
-MAX_FIG_H_IN = 5.2
-TEXT_W_IN = 6.7  # Full text width with 0.9 in page margins (8.5 - 1.8)
-DEFAULT_PLOT_W = 5.8  # Preferred width for plots (5.5 to 6.3 in)
+MAX_FIG_W_IN = 6.0
+MAX_FIG_H_IN = 5.0
+TEXT_W_IN = 6.0  # Full text width with 1.25 in left/right margins (8.5 - 2.5)
+DEFAULT_PLOT_W = 5.6  # Preferred width for plots
 DOCX_NAME = "23ECE383_System_Design_Report.docx"
 
 # Figure slots in the order they appear in the document. A slot holding a figure (or a
@@ -451,8 +451,10 @@ class Builder:
         sec = self.doc.sections[0]
         sec.page_width = Inches(8.5)
         sec.page_height = Inches(11)
-        for side in ("left_margin", "right_margin", "top_margin", "bottom_margin"):
-            setattr(sec, side, Inches(0.9))
+        sec.top_margin = Inches(1.0)
+        sec.bottom_margin = Inches(1.0)
+        sec.left_margin = Inches(1.25)
+        sec.right_margin = Inches(1.25)
         sec.footer_distance = Inches(0.45)
 
         # Double page border, as in the format file.
@@ -532,7 +534,7 @@ class Builder:
             cell._tc.get_or_add_tcPr().append(shd)
             self._cell(cell, h, bold=True, italic=True, align="c")
 
-        col_w = [2.2, 2.1, 2.2]
+        col_w = [2.0, 2.0, 2.0]
         for row_idx, row in enumerate(sub.rows):
             row._tr.get_or_add_trPr().append(OxmlElement("w:cantSplit"))
             if row_idx > 0:
@@ -614,7 +616,7 @@ class Builder:
             for dev in devices
         ]
         self.table(["Device", "W", "L", "Multiplier", "Role"], rows,
-                   [1.1, 1.1, 1.1, 1.1, 2.3], caption,
+                   [1.0, 1.0, 1.0, 1.0, 2.0], caption,
                    alignments=["l", "c", "c", "c", "l"])
 
     def sec_implementation(self):
@@ -684,7 +686,7 @@ class Builder:
                 left, right = metric_text(m_wo, key), metric_text(m_w, key)
             rows.append([label, left, right, proofs.get(key or "sat", default_proof)])
         self.table(["Parameter", "Value without Sizing", "Value with Sizing", "Proof (figure)"],
-                   rows, [2.1, 1.5, 1.5, 1.6],
+                   rows, [1.8, 1.4, 1.4, 1.4],
                    "Performance values with and without the sizing concept, "
                    "with the proof figures for each row",
                    alignments=["l", "c", "c", "c"], keep_together=False)
@@ -723,10 +725,10 @@ class Builder:
                 rows.append(row_cells)
 
         header = ["Corner", "Temp (°C)", "0.9 V", "1.0 V", "1.1 V"]
-        widths = [1.34, 1.34, 1.34, 1.34, 1.34]
+        widths = [1.2, 1.2, 1.2, 1.2, 1.2]
         alignments = ["c", "c", "c", "c", "c"]
         caption = f"PVT summary for {title_suffix} ({pass_cnt} of {pass_cnt + fail_cnt} corners pass)"
-        self.table(header, rows, widths, caption, alignments, keep_together=False)
+        self.table(header, rows, widths, caption, alignments, keep_together=True)
 
     def sec_pvt_layout(self):
         self.heading("SCREENSHOT OF THE PVT ANALYSIS:")
