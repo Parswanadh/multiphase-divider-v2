@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "project": "Next-Gen Multiphase CMOS Frequency Divider - IEEE Q1 Campaign",
+  "methodology": "Anthropic Loop Engineering (Proactive & Goal-Based Evaluator-Optimizer Architecture)",
+  "target_venue": "IEEE Transactions on Microwave Theory and Techniques (TMTT) / IEEE JSSC / LMWT",
+  "timeline_scope": "1-2 Weeks Autonomous Iterative Engineering",
+  "north_star_metrics": {
+    "frequency_tuning_range": {
+      "f_min_mhz": 100,
+      "f_max_ghz": 3.5,
+      "ftr_percentage_midpoint": 188.8,
+      "ftr_percentage_endpoint": 3400.0
+    },
+    "phase_accuracy": {
+      "nominal_spacing_deg": 45.0,
+      "max_phase_error_deg": 0.5,
+      "phase_noise_delta_dbc": 6.02
+    },
+    "power_and_pdp": {
+      "target_power_mw": 2.2,
+      "pdp_fj": 0.85,
+      "m7_cascode_vds_headroom_mv": 180
+    },
+    "simulation_depth": {
+      "pvt_corners": [
+        "TT",
+        "FF",
+        "SS",
+        "FS",
+        "SF"
+      ],
+      "temp_range_c": [
+        -40,
+        0,
+        27,
+        85,
+        125
+      ],
+      "voltage_tolerance_pct": 10,
+      "monte_carlo_runs": 200,
+      "post_layout_pex_verified": true
+    },
+    "academic_rubric_marks": {
+      "target": 55,
+      "verified": 0
+    }
+  },
+  "current_stage": "STAGE_1_MODELING_AND_BASELINE",
+  "overall_q1_readiness_pct": 2.5,
+  "dynamic_stages": [
+    {
+      "stage_id": "STAGE-1-ANALYTICAL-FOUNDATION",
+      "name": "Analytical State-Space Modeling & Baseline Calibration",
+      "target_days": "Days 1-3",
+      "status": "ACTIVE",
+      "deliverables": [
+        "Mathematical derivation of non-linear differential latch state equations",
+        "Elmore delay vs BSIM4 transition time comparison",
+        "Baseline 1.4 GHz to 700 MHz ngspice calibration",
+        "23ECE302 Assignment (15 Marks) final report"
+      ]
+    },
+    {
+      "stage_id": "STAGE-2-V2-ARCHITECTURE-ENHANCEMENT",
+      "name": "Loophole Exploitation & V2 Enhanced Circuit Design",
+      "target_days": "Days 4-7",
+      "status": "QUEUED",
+      "deliverables": [
+        "Regulated cascode tail current source design (eliminating M7 triode collapse)",
+        "Active PMOS cross-coupled peaking loads (>3.2 GHz operation)",
+        "Dynamic phase-interpolator tuning network (<0.5 deg phase error)",
+        "Full PVT corner matrix (9+ combinations)",
+        "23ECE383 Lab System Project (40 Marks) report"
+      ]
+    },
+    {
+      "stage_id": "STAGE-3-MONTE-CARLO-AND-LAYOUT-PEX",
+      "name": "Statistical Mismatch & Post-Layout Parasitic Extraction",
+      "target_days": "Days 8-10",
+      "status": "QUEUED",
+      "deliverables": [
+        "200-point Monte Carlo mismatch simulation (Vth and L dispersion)",
+        "Magic VLSI common-centroid shared-diffusion layout with zero DRC/LVS",
+        "Parasitic extraction (PEX) netlist generation",
+        "Post-layout PEX re-simulation verifying <0.8 deg phase error with wire parasitics"
+      ]
+    },
+    {
+      "stage_id": "STAGE-4-IEEE-Q1-MANUSCRIPT-AND-PEER-AUDIT",
+      "name": "Publication-Grade IEEE Manuscript & Adversarial Defense",
+      "target_days": "Days 11-14",
+      "status": "QUEUED",
+      "deliverables": [
+        "Full LaTeX IEEEtran manuscript (paper/manuscript_q1.tex)",
+        "10+ IEEE benchmark comparative table with FoM_phi formulation",
+        "High-DPI vector plots (300 DPI, IEEE standard formatting)",
+        "Adversarial auditor peer-review report verifying 100% reproducibility"
+      ]
+    }
+  ],
+  "active_dynamic_tasks": [
+    {
+      "id": "TASK-Q1-01-ANALYTICAL-MODEL",
+      "stage": "STAGE-1-ANALYTICAL-FOUNDATION",
+      "title": "Derive state-space Elmore delay & non-linear CML latch equations",
+      "assigned_agent": "circuit-engineer",
+      "auditor_agent": "data-integrity-verifier",
+      "status": "READY"
+    },
+    {
+      "id": "TASK-Q1-02-BASELINE-CALIBRATION",
+      "stage": "STAGE-1-ANALYTICAL-FOUNDATION",
+      "title": "Simulate baseline 180nm divider in ngspice (100MHz - 1.4GHz sweep)",
+      "assigned_agent": "circuit-engineer",
+      "auditor_agent": "circuit-auditor",
+      "status": "READY"
+    },
+    {
+      "id": "TASK-Q1-03-ACADEMIC-ASSIGNMENT",
+      "stage": "STAGE-1-ANALYTICAL-FOUNDATION",
+      "title": "Compile 23ECE302 Theory Assignment report (15 Marks)",
+      "assigned_agent": "academic-author",
+      "auditor_agent": "rubric-compliance-officer",
+      "status": "READY"
+    }
+  ],
+  "completed_dynamic_tasks": [],
+  "adversarial_audit_trail": []
+}

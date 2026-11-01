@@ -1,0 +1,77 @@
+# Anthropic Loop Engineering Configuration
+# Orchestrator-Workers + Evaluator-Optimizer
+
+project:
+  name: multiphase-divider-v2
+  goal: "Continuously improve IEEE LMWT paper + academic deliverables beyond checklist"
+  mode: autonomous_research_validation
+
+orchestrator:
+  model: opencode-go/iceman-contributor-free
+  strategy: dynamic_decomposition
+  max_parallel_workers: 6
+  synthesis_enabled: true
+
+workers:
+  - id: paper_reviewer
+    role: "Adversarial IEEE reviewer (LMWT)"
+    focus: ["novelty", "clarity", "references", "formatting", "figures"]
+    model: opencode-go/iceman-contributor-free
+  - id: circuit_theorist
+    role: "Analog/RF circuit theorist"
+    focus: ["topology", "delay model", "cascode", "phase accuracy", "FoM"]
+    model: opencode-go/iceman-contributor-free
+  - id: data_auditor
+    role: "Numerical integrity checker"
+    focus: ["numbers", "tables", "calculations", "PVT", "consistency"]
+    model: opencode-go/iceman-contributor-free
+  - id: layout_auditor
+    role: "Layout/DRC reviewer"
+    focus: ["GDS", "area", "common-centroid", "DRC/LVS"]
+    model: opencode-go/iceman-contributor-free
+  - id: academic_grader
+    role: "Rubric strict grader"
+    focus: ["23ECE302", "23ECE383", "marks", "completeness"]
+    model: opencode-go/iceman-contributor-free
+  - id: literature_scout
+    role: "IEEE literature scout"
+    focus: ["recent references", "benchmarks", "FoM trends"]
+    model: opencode-go/iceman-contributor-free
+
+evaluator_optimizer:
+  enabled: true
+  evaluator_model: opencode-go/iceman-contributor-free
+  optimizer_model: opencode-go/iceman-contributor-free
+  max_iterations: 10
+  acceptance_threshold: 0.95
+  criteria:
+    - id: technical_correctness
+      weight: 0.25
+      threshold: 0.95
+    - id: numerical_consistency
+      weight: 0.20
+      threshold: 0.98
+    - id: ieee_formatting
+      weight: 0.15
+      threshold: 0.95
+    - id: novelty_contribution
+      weight: 0.15
+      threshold: 0.90
+    - id: reproducibility
+      weight: 0.15
+      threshold: 0.95
+    - id: academic_completeness
+      weight: 0.10
+      threshold: 0.98
+
+harness:
+  continuous_loop: true
+  interval_seconds: 60
+  max_cycles: 1000
+  parallel_workers: 6
+  auto_commit: true
+  auto_push: true
+  move_to_trash: true
+  zero_deletions: true
+  context_isolation: true
+  synthesis_every_cycle: true

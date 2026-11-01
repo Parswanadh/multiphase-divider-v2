@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "project": "Next-Gen Multiphase CMOS Frequency Divider",
+  "architecture_pattern": "Anthropic Orchestrator-Workers + Evaluator-Optimizer Closed Loop",
+  "north_star_goal": {
+    "academic_evaluation": {
+      "target_marks": 55,
+      "status": "IN_PROGRESS",
+      "rubrics": {
+        "theory_assignment_implementation": {
+          "target": 7,
+          "verified": 0
+        },
+        "theory_assignment_sizing": {
+          "target": 8,
+          "verified": 0
+        },
+        "system_project_functionality": {
+          "target": 10,
+          "verified": 0
+        },
+        "system_project_power": {
+          "target": 5,
+          "verified": 0
+        },
+        "system_project_delay": {
+          "target": 5,
+          "verified": 0
+        },
+        "system_project_pdp": {
+          "target": 5,
+          "verified": 0
+        },
+        "system_project_pvt": {
+          "target": 5,
+          "verified": 0
+        },
+        "system_project_layout": {
+          "target": 5,
+          "verified": 0
+        },
+        "system_project_report": {
+          "target": 5,
+          "verified": 0
+        }
+      }
+    },
+    "publication_v2_paper": {
+      "target_f_max_ghz": 2.5,
+      "target_phase_error_deg": 1.0,
+      "target_power_mw": 2.5,
+      "target_pdp_fj": 1.0,
+      "m7_saturation_headroom_mv": 150,
+      "pvt_corners_verified": 9,
+      "status": "IN_PROGRESS"
+    }
+  },
+  "current_iteration": 1,
+  "goal_distance_score": 100.0,
+  "active_dynamic_tasks": [
+    {
+      "id": "TASK-01-BASELINE-NETLIST",
+      "category": "implementation",
+      "title": "Build and verify baseline 180nm 4-latch divider in ngspice",
+      "assigned_agent": "circuit-engineer",
+      "auditor_agent": "circuit-auditor",
+      "status": "READY",
+      "dependencies": []
+    },
+    {
+      "id": "TASK-02-RESEARCH-ENHANCEMENT",
+      "category": "research",
+      "title": "Synthesize RF peaking, cascode tail, and phase tuning into V2 architecture brief",
+      "assigned_agent": "research-innovator",
+      "auditor_agent": "fom-benchmarker",
+      "status": "READY",
+      "dependencies": []
+    }
+  ],
+  "completed_dynamic_tasks": [],
+  "rejected_punchlists": [],
+  "dynamic_mutation_history": []
+}
