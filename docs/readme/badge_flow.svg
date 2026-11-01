@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="275" height="22" viewBox="0 0 275 22" role="img" aria-label="EDA Flow: Virtuoso / Spectre / Assura">
+  <linearGradient id="b" x2="0" y2="100%">
+    <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
+    <stop offset="1" stop-opacity=".1"/>
+  </linearGradient>
+  <mask id="m">
+    <rect width="275" height="22" rx="3" fill="#fff"/>
+  </mask>
+  <g mask="url(#m)">
+    <rect width="70" height="22" fill="#21262d"/>
+    <rect x="70" width="205" height="22" fill="#8957e5"/>
+    <rect width="275" height="22" fill="url(#b)"/>
+  </g>
+  <g fill="#fff" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif" font-size="11" font-weight="600">
+    <text x="35.0" y="15" fill="#010101" fill-opacity=".3">EDA Flow</text>
+    <text x="35.0" y="14">EDA Flow</text>
+    <text x="172.5" y="15" fill="#010101" fill-opacity=".3">Virtuoso / Spectre / Assura</text>
+    <text x="172.5" y="14">Virtuoso / Spectre / Assura</text>
+  </g>
+</svg>

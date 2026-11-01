@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="294" height="22" viewBox="0 0 294 22" role="img" aria-label="Design B (6.0 GHz): 3.78 deg phase error">
+  <linearGradient id="b" x2="0" y2="100%">
+    <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
+    <stop offset="1" stop-opacity=".1"/>
+  </linearGradient>
+  <mask id="m">
+    <rect width="294" height="22" rx="3" fill="#fff"/>
+  </mask>
+  <g mask="url(#m)">
+    <rect width="138" height="22" fill="#21262d"/>
+    <rect x="138" width="156" height="22" fill="#f0883e"/>
+    <rect width="294" height="22" fill="url(#b)"/>
+  </g>
+  <g fill="#fff" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif" font-size="11" font-weight="600">
+    <text x="69.0" y="15" fill="#010101" fill-opacity=".3">Design B (6.0 GHz)</text>
+    <text x="69.0" y="14">Design B (6.0 GHz)</text>
+    <text x="216.0" y="15" fill="#010101" fill-opacity=".3">3.78 deg phase error</text>
+    <text x="216.0" y="14">3.78 deg phase error</text>
+  </g>
+</svg>

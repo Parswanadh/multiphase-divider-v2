@@ -1,0 +1,142 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 260" width="100%" height="260" style="background:#090d16; border-radius:6px; border:1px solid #30363d;">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#090d16"/>
+      <stop offset="100%" stop-color="#0d1117"/>
+    </linearGradient>
+    <linearGradient id="pulseGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#58a6ff" stop-opacity="0.2"/>
+      <stop offset="50%" stop-color="#388bfd" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#58a6ff" stop-opacity="0.2"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="960" height="260" fill="url(#bgGrad)" rx="6"/>
+
+  <!-- Left: Metadata and Titles -->
+  <g transform="translate(32, 34)">
+    <rect x="0" y="0" width="280" height="20" rx="3" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+    <text x="8" y="14" fill="#58a6ff" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-size="10.5" font-weight="600" letter-spacing="0.5">CADENCE GPDK045 (45 nm CMOS) • SYSTEM DESIGN</text>
+
+    <text x="0" y="52" fill="#f0f6fc" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-size="22" font-weight="700">Multiphase Divide-by-Two Frequency Divider</text>
+    <text x="0" y="76" fill="#8b949e" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-size="13" font-weight="400">Re-implementation and verification of the Kuo et al. (IEEE MWTL 2025) 8-phase architecture</text>
+
+    <!-- Key metric chips -->
+    <g transform="translate(0, 102)">
+      <rect x="0" y="0" width="370" height="30" rx="4" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+      <circle cx="16" cy="15" r="4" fill="#2ea043"/>
+      <text x="28" y="19" fill="#c9d1d9" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="11.5" font-weight="500">Design D: 1.4 GHz to 700 MHz | 0.54 mW | 41/45 PVT Pass</text>
+    </g>
+
+    <g transform="translate(0, 140)">
+      <rect x="0" y="0" width="370" height="30" rx="4" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+      <circle cx="16" cy="15" r="4" fill="#f0883e"/>
+      <text x="28" y="19" fill="#c9d1d9" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="11.5" font-weight="500">Design B: 6.0 GHz to 3.0 GHz | 3.78° Phase Error | 21/45 Pass</text>
+    </g>
+
+    <g transform="translate(0, 178)">
+      <rect x="0" y="0" width="370" height="30" rx="4" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+      <circle cx="16" cy="15" r="4" fill="#a371f7"/>
+      <text x="28" y="19" fill="#c9d1d9" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="11.5" font-weight="500">Complete Flow: SKILL Schematic, Spectre Sim, Assura Placement</text>
+    </g>
+  </g>
+
+  <!-- Right: 4-Latch Ring Topology Circuit Diagram with SMIL Animation -->
+  <g transform="translate(480, 20)">
+    <!-- Circuit Panel Container -->
+    <rect x="0" y="8" width="450" height="216" rx="6" fill="#111622" stroke="#21262d" stroke-width="1"/>
+    <text x="16" y="28" fill="#8b949e" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="11" font-weight="600">CIRCUIT RING TOPOLOGY (XD1 to XD4)</text>
+
+    <!-- Interconnecting Bus Lines -->
+    <!-- Top bus (XD1 to XD2) -->
+    <path d="M 105 70 L 165 70" stroke="#30363d" stroke-width="2" fill="none"/>
+    <path d="M 105 76 L 165 76" stroke="#30363d" stroke-width="2" fill="none"/>
+
+    <!-- Right bus (XD2 to XD4) -->
+    <path d="M 225 100 L 225 130 L 225 150" stroke="#30363d" stroke-width="2" fill="none"/>
+    <path d="M 231 100 L 231 130 L 231 150" stroke="#30363d" stroke-width="2" fill="none"/>
+
+    <!-- Bottom bus (XD4 to XD3) -->
+    <path d="M 165 170 L 105 170" stroke="#30363d" stroke-width="2" fill="none"/>
+    <path d="M 165 176 L 105 176" stroke="#30363d" stroke-width="2" fill="none"/>
+
+    <!-- Left bus (XD3 back to XD1 with inversion/cross) -->
+    <path d="M 75 140 L 75 125 L 85 115 L 85 100" stroke="#30363d" stroke-width="2" fill="none"/>
+    <path d="M 85 140 L 85 125 L 75 115 L 75 100" stroke="#30363d" stroke-width="2" fill="none"/>
+
+    <!-- Latch 1: XD1 (Top Left) -->
+    <g id="latch1" transform="translate(45, 50)">
+      <rect width="60" height="50" rx="4" fill="#161b22" stroke="#58a6ff" stroke-width="1.5"/>
+      <text x="30" y="24" fill="#f0f6fc" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="11" font-weight="700" text-anchor="middle">XD1</text>
+      <text x="30" y="38" fill="#58a6ff" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="9" text-anchor="middle">CK (0°)</text>
+    </g>
+
+    <!-- Latch 2: XD2 (Top Right) -->
+    <g id="latch2" transform="translate(165, 50)">
+      <rect width="60" height="50" rx="4" fill="#161b22" stroke="#3fb950" stroke-width="1.5"/>
+      <text x="30" y="24" fill="#f0f6fc" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="11" font-weight="700" text-anchor="middle">XD2</text>
+      <text x="30" y="38" fill="#3fb950" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="9" text-anchor="middle">CKb (90°)</text>
+    </g>
+
+    <!-- Latch 4: XD4 (Bottom Right) -->
+    <g id="latch4" transform="translate(165, 140)">
+      <rect width="60" height="50" rx="4" fill="#161b22" stroke="#f778ba" stroke-width="1.5"/>
+      <text x="30" y="24" fill="#f0f6fc" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="11" font-weight="700" text-anchor="middle">XD4</text>
+      <text x="30" y="38" fill="#f778ba" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="9" text-anchor="middle">CK (270°)</text>
+    </g>
+
+    <!-- Latch 3: XD3 (Bottom Left) -->
+    <g id="latch3" transform="translate(45, 140)">
+      <rect width="60" height="50" rx="4" fill="#161b22" stroke="#bc8cff" stroke-width="1.5"/>
+      <text x="30" y="24" fill="#f0f6fc" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="11" font-weight="700" text-anchor="middle">XD3</text>
+      <text x="30" y="38" fill="#bc8cff" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="9" text-anchor="middle">CKb (180°)</text>
+    </g>
+
+    <!-- 8 Phase Output Pins and Arrows -->
+    <!-- Q1, Q1b -->
+    <path d="M 235 65 L 290 65" stroke="#58a6ff" stroke-width="1.5" stroke-dasharray="3 3"/>
+    <text x="295" y="69" fill="#58a6ff" font-family="-apple-system,sans-serif" font-size="10" font-weight="600">Q1, Q1b (0°, 180°)</text>
+
+    <!-- Q2, Q2b -->
+    <path d="M 235 85 L 290 85" stroke="#3fb950" stroke-width="1.5" stroke-dasharray="3 3"/>
+    <text x="295" y="89" fill="#3fb950" font-family="-apple-system,sans-serif" font-size="10" font-weight="600">Q2, Q2b (45°, 225°)</text>
+
+    <!-- Q3, Q3b -->
+    <path d="M 235 155 L 290 155" stroke="#bc8cff" stroke-width="1.5" stroke-dasharray="3 3"/>
+    <text x="295" y="159" fill="#bc8cff" font-family="-apple-system,sans-serif" font-size="10" font-weight="600">Q3, Q3b (90°, 270°)</text>
+
+    <!-- Q4, Q4b -->
+    <path d="M 235 175 L 290 175" stroke="#f778ba" stroke-width="1.5" stroke-dasharray="3 3"/>
+    <text x="295" y="179" fill="#f778ba" font-family="-apple-system,sans-serif" font-size="10" font-weight="600">Q4, Q4b (135°, 315°)</text>
+
+    <!-- Animated traveling pulse token circulating the ring -->
+    <circle r="4" fill="#58a6ff">
+      <animateMotion path="M 105 73 L 165 73 L 195 100 L 195 140 L 165 173 L 105 173 L 75 140 L 75 100 Z" dur="2.4s" repeatCount="indefinite"/>
+      <animate attributeName="fill" values="#58a6ff;#3fb950;#bc8cff;#f778ba;#58a6ff" dur="2.4s" repeatCount="indefinite"/>
+    </circle>
+    <circle r="2" fill="#ffffff">
+      <animateMotion path="M 105 73 L 165 73 L 195 100 L 195 140 L 165 173 L 105 173 L 75 140 L 75 100 Z" dur="2.4s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- Rotating phase ring in bottom right corner -->
+    <g transform="translate(380, 150)">
+      <circle cx="25" cy="25" r="22" fill="none" stroke="#21262d" stroke-width="1.5"/>
+      <!-- 8 phase tick marks -->
+      <line x1="25" y1="3" x2="25" y2="7" stroke="#58a6ff" stroke-width="2"/>
+      <line x1="40" y1="9" x2="37" y2="12" stroke="#3fb950" stroke-width="2"/>
+      <line x1="47" y1="25" x2="43" y2="25" stroke="#bc8cff" stroke-width="2"/>
+      <line x1="40" y1="41" x2="37" y2="38" stroke="#f778ba" stroke-width="2"/>
+      <line x1="25" y1="47" x2="25" y2="43" stroke="#58a6ff" stroke-width="2"/>
+      <line x1="9" y1="41" x2="12" y2="38" stroke="#3fb950" stroke-width="2"/>
+      <line x1="3" y1="25" x2="7" y2="25" stroke="#bc8cff" stroke-width="2"/>
+      <line x1="9" y1="9" x2="12" y2="12" stroke="#f778ba" stroke-width="2"/>
+      <!-- Rotating indicator arrow -->
+      <line x1="25" y1="25" x2="25" y2="8" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round">
+        <animateTransform attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="1.2s" repeatCount="indefinite"/>
+      </line>
+      <circle cx="25" cy="25" r="3" fill="#ffffff"/>
+      <text x="25" y="60" fill="#8b949e" font-family="-apple-system,sans-serif" font-size="8.5" text-anchor="middle">8x PHASES</text>
+    </g>
+  </g>
+</svg>

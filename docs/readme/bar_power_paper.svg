@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="60" height="10" viewBox="0 0 60 10" role="img" aria-label="progress bar">
+  <rect width="60" height="10" rx="2" fill="#21262d"/>
+  <rect x="1" y="1" width="15" height="8" rx="1" fill="#cf222e"/>
+</svg>

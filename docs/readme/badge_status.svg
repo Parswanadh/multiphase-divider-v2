@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="163" height="22" viewBox="0 0 163 22" role="img" aria-label="Baseline: v1.0-stable">
+  <linearGradient id="b" x2="0" y2="100%">
+    <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
+    <stop offset="1" stop-opacity=".1"/>
+  </linearGradient>
+  <mask id="m">
+    <rect width="163" height="22" rx="3" fill="#fff"/>
+  </mask>
+  <g mask="url(#m)">
+    <rect width="70" height="22" fill="#21262d"/>
+    <rect x="70" width="93" height="22" fill="#238636"/>
+    <rect width="163" height="22" fill="url(#b)"/>
+  </g>
+  <g fill="#fff" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif" font-size="11" font-weight="600">
+    <text x="35.0" y="15" fill="#010101" fill-opacity=".3">Baseline</text>
+    <text x="35.0" y="14">Baseline</text>
+    <text x="116.5" y="15" fill="#010101" fill-opacity=".3">v1.0-stable</text>
+    <text x="116.5" y="14">v1.0-stable</text>
+  </g>
+</svg>
