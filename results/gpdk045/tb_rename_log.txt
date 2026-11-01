@@ -1,0 +1,19 @@
+T2 testbench rename (VSUP) - NOT DONE: the guest did not come up.
+
+Status (2026-11-01):
+- VBoxManage startvm CadenceVM --type headless: ok, VMState running.
+- The guest never rendered its desktop: the screenshot stayed fully black through about 15 min of waiting,
+  a key press (Shift), a key press (Enter/Escape), a mouse event, and one controlvm reset plus 4 min of waiting.
+- VBox.log (CadenceVM/Logs/VBox.log): last events are "NAT: Link up", a VMware hypercall message and
+  Display::i_handleDisplayResize w=800 h=600 at 00:08:01. No later events.
+- No guest command could be sent, so no schCheck, netlist, or OCEAN run was made.
+
+Later (about 10:02 IST): the guest finally drew its console: "CentOS release 6.5 (Final) ... cadence login:"
+(text console, no desktop). It needs an interactive login as buet. The password is not stored in the repo and
+was not used or requested from the notes, so no guest command could be sent. The guest is blocked until someone
+logs in (or enables GUI auto-login) on the VM console.
+
+Guest state: unchanged on disk (no SKILL run, no file written). The snapshot stable-v1 and pristine were not touched.
+The VM is still running headless.
+
+Not started: schematic backup (schematic_pre_rename), instance rename, schCheck, netlist diff, OCEAN run, screenshot.
