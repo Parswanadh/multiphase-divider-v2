@@ -35,6 +35,58 @@ SHARED_CSS = """
   --shadow-lg: 0 12px 32px rgba(0,0,0,0.08);
 }
 
+[data-theme="light"] {
+  --bg: #FAF9F5;
+  --bg-panel: #F2EFE8;
+  --bg-card: #FFFFFF;
+  --ink: #1F1E1D;
+  --ink-muted: #6B6A63;
+  --ink-faint: #8E8C84;
+  --line: #E8E6DC;
+  --line-subtle: #F0EDE4;
+  --terracotta: #C96442;
+  --terracotta-hover: #B55434;
+  --terracotta-bg: #FDF5F2;
+  --terracotta-border: #F3D3C7;
+  --code-bg: #F5F3EC;
+  --badge-done-bg: #E6F4EA;
+  --badge-done-ink: #137333;
+  --badge-partial-bg: #FEF7E0;
+  --badge-partial-ink: #B06000;
+  --badge-fail-bg: #FCE8E6;
+  --badge-fail-ink: #C5221F;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.03);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.05);
+  --shadow-lg: 0 12px 32px rgba(0,0,0,0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1F1E1D;
+    --bg-panel: #272523;
+    --bg-card: #2B2927;
+    --ink: #ECEAE4;
+    --ink-muted: #A3A096;
+    --ink-faint: #78756D;
+    --line: #3D3A36;
+    --line-subtle: #33312F;
+    --terracotta: #D97757;
+    --terracotta-hover: #E8896A;
+    --terracotta-bg: #352622;
+    --terracotta-border: #4D332B;
+    --code-bg: #262422;
+    --badge-done-bg: #1B3826;
+    --badge-done-ink: #81C995;
+    --badge-partial-bg: #3E3013;
+    --badge-partial-ink: #FDD663;
+    --badge-fail-bg: #3C1C1A;
+    --badge-fail-ink: #F28B82;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.2);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.25);
+    --shadow-lg: 0 12px 32px rgba(0,0,0,0.4);
+  }
+}
+
 [data-theme="dark"] {
   --bg: #1F1E1D;
   --bg-panel: #272523;
@@ -1288,6 +1340,56 @@ details.qna-card[open] .qna-chevron {
   }
 }
 
+/* v2 Plan Specific Component Styles */
+.v2-gate-timeline {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+
+.v2-gate-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.v2-gate-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--terracotta);
+}
+
+.v2-gate-title {
+  font-family: var(--serif);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.3;
+}
+
+.v2-gate-desc {
+  font-size: 13px;
+  color: var(--ink-muted);
+  line-height: 1.45;
+}
+
+.v2-info-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
 /* Print Friendly Styles */
 @media print {
   #sidebar, .mobile-header, .theme-toggle-btn, .page-switcher-btn, .copy-btn, #lightbox-overlay, .pvt-controls, .glossary-controls-bar {
@@ -1325,20 +1427,25 @@ details.qna-card[open] .qna-chevron {
 """
 
 SHARED_JS = """
-// LocalStorage Theme Management
-(function initTheme() {
+// LocalStorage and OS Theme Management
+function getResolvedTheme() {
   const savedTheme = localStorage.getItem('defense_site_theme');
-  if (savedTheme) {
-    document.documentElement.setAttribute('data-theme', savedTheme);
-  } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    document.documentElement.setAttribute('data-theme', 'dark');
-  } else {
-    document.documentElement.setAttribute('data-theme', 'light');
+  if (savedTheme === 'light' || savedTheme === 'dark') {
+    return savedTheme;
   }
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    return 'dark';
+  }
+  return 'light'; // Light cream Claude-like fallback
+}
+
+(function initTheme() {
+  const theme = getResolvedTheme();
+  document.documentElement.setAttribute('data-theme', theme);
 })();
 
 function toggleTheme() {
-  const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+  const currentTheme = document.documentElement.getAttribute('data-theme') || getResolvedTheme();
   const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
   document.documentElement.setAttribute('data-theme', newTheme);
   localStorage.setItem('defense_site_theme', newTheme);
@@ -1346,10 +1453,21 @@ function toggleTheme() {
 }
 
 function updateThemeBtnText() {
-  const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+  const currentTheme = document.documentElement.getAttribute('data-theme') || getResolvedTheme();
   const btns = document.querySelectorAll('.theme-toggle-text');
   btns.forEach(b => {
     b.textContent = currentTheme === 'dark' ? 'Light Theme' : 'Dark Theme';
+  });
+}
+
+// Dynamically track OS preference changes if user hasn't explicitly set localStorage
+if (window.matchMedia) {
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+    if (!localStorage.getItem('defense_site_theme')) {
+      const newTheme = e.matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      updateThemeBtnText();
+    }
   });
 }
 

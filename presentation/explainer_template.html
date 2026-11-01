@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>VLSI Defense Explainer — Multiphase Divide-by-Two CMOS Frequency Divider (GPDK045)</title>
+  <title>VLSI Defense Explainer: Multiphase Divide-by-Two CMOS Frequency Divider (GPDK045)</title>
   <style>
 /* [[SHARED_CSS]] */
   </style>
@@ -62,18 +62,22 @@
           <div><span class="nav-num">07</span><span>Cadence Tool Tour</span></div>
         </a>
 
-        <div class="nav-group-label">Viva Prep &amp; Backlog</div>
+        <div class="nav-group-label">Viva Prep &amp; Next Steps</div>
         <a href="#gallery" class="nav-item">
           <div><span class="nav-num">08</span><span>Screenshots Gallery</span></div>
         </a>
         <a href="#qna" class="nav-item">
-          <div><span class="nav-num">09</span><span>Viva / Q&amp;A Prep (28)</span></div>
+          <div><span class="nav-num">09</span><span>Viva / Q&amp;A Prep</span></div>
+          <span class="category-chip" style="font-size:10px;">32 Qs</span>
         </a>
         <a href="#backlog" class="nav-item">
           <div><span class="nav-num">10</span><span>Pending Backlog List</span></div>
         </a>
+        <a href="#v2-plan" class="nav-item">
+          <div><span class="nav-num">11</span><span>v2: Plan for the Paper</span></div>
+        </a>
         <a href="#cheatsheet" class="nav-item">
-          <div><span class="nav-num">11</span><span>Defense Cheat Sheet</span></div>
+          <div><span class="nav-num">12</span><span>Defense Cheat Sheet</span></div>
         </a>
       </div>
 
@@ -83,7 +87,7 @@
           <span class="theme-toggle-text">Dark Theme</span>
         </button>
         <a href="glossary.html" class="page-switcher-btn">
-          <span>Explore 122 Terms Glossary →</span>
+          <span>Explore 137 Terms Glossary →</span>
         </a>
       </div>
     </nav>
@@ -96,17 +100,17 @@
         <header class="hero-header">
           <div class="hero-eyebrow">
             <span class="chip">VLSI System Design Defense</span>
-            <span>Comprehensive Technical Defense &amp; Oral Exam Prep</span>
+            <span>Technical Defense Guide &amp; Oral Exam Prep</span>
           </div>
           <h1 class="hero-title">Multiphase Divide-by-Two CMOS Frequency Divider in Cadence GPDK045</h1>
           <p class="hero-subtitle">
-            A complete, mathematically rigorous, and fully verified examination of the 8-phase divide-by-two frequency divider proposed by Kuo et al. (IEEE MWTL May 2025), ported from 180 nm to Cadence 45 nm GPDK045 with automated Virtuoso, Spectre, and Assura verification flows.
+            A technical examination and simulation analysis of the 8-phase divide-by-two frequency divider proposed by Kuo et al. (IEEE MWTL May 2025), ported from 180 nm to Cadence 45 nm GPDK045 with automated Virtuoso, Spectre, and Assura verification flows.
           </p>
           <div class="hero-meta-bar">
             <div class="hero-meta-item">Process Node: <strong>Cadence GPDK045 (45 nm)</strong></div>
             <div class="hero-meta-item">Nominal Supply: <strong>1.0 V (±10% corners)</strong></div>
             <div class="hero-meta-item">Total Marks: <strong>55 Marks (15 Theory + 40 Project)</strong></div>
-            <div class="hero-meta-item">Verification Status: <strong>100% Traceable / Placement Layout Audited</strong></div>
+            <div class="hero-meta-item">Status: <strong>Traceable to Spectre &amp; Assura Logs (Placement Layout)</strong></div>
           </div>
         </header>
 
@@ -123,16 +127,16 @@
           <div class="tldr-box">
             <div class="tldr-label">TL;DR Summary</div>
             <div class="tldr-text">
-              We ported Kuo et al.'s 8-phase divide-by-two divider to Cadence 45 nm GPDK045. Direct application of the paper's sizing rule (R1 = Ron/2) failed because 45 nm creates a 3-transistor pull-down stack requiring R1 ≥ 7.59 kΩ; we established the stack regeneration rule (R1 ≥ 1.1 × 3Ron/m), sized Design D (m=4, R=3 kΩ, 1.4 GHz, 41/45 PVT pass) and Design B (m=4, R=2 kΩ, 6.0 GHz, 3.78° phase error), built batch Virtuoso schematics and placement layouts with 21 Assura DRC errors, and traced 100% of numbers to disk logs.
+              We ported Kuo et al.'s 8-phase divide-by-two divider to Cadence 45 nm GPDK045. Direct application of the paper's sizing rule (R1 = Ron/2) failed because 45 nm creates a 3-transistor pull-down stack requiring R1 ≥ 7.59 kΩ; we established the stack regeneration rule (R1 ≥ 1.1 × 3Ron/m), sized Design D (m=4, R=3 kΩ, 1.4 GHz, 41/45 PVT pass) and Design B (m=4, R=2 kΩ, 6.0 GHz, 3.78° phase error), built batch Virtuoso schematics and placement layouts with 21 Assura DRC errors, and traced all reported numbers to disk logs.
             </div>
           </div>
 
           <p class="lead-text">
-            This project investigates the architecture, sizing constraints, physical layout, and process-voltage-temperature (PVT) robustness of the compact 8-phase divide-by-two CMOS frequency divider proposed by Kuo et al. (<em>IEEE Microwave and Wireless Technology Letters</em>, May 2025). The circuit replaces conventional 8-latch topologies with a 4-differential-latch closed ring utilizing alternating cross-connections, reducing latch count and physical area by 50%. While originally published in TSMC 180 nm at 1.8 V, our implementation ports the circuit to Cadence GPDK045 (45 nm bulk CMOS, device <code class="inline-code">g45n1svt</code>) under a nominal 1.0 V supply.
+            This project investigates the architecture, sizing constraints, physical layout, and process-voltage-temperature (PVT) robustness of the compact 8-phase divide-by-two CMOS frequency divider proposed by Kuo et al. (<em>IEEE Microwave and Wireless Technology Letters</em>, May 2025). The circuit uses four differential D-latches in a closed ring with alternating cross-connections, generating eight phases from a differential input clock without requiring LC components or extra divider stages (Kuo et al., Section I, p. 617; Section II, pp. 617-618). While originally published in TSMC 180 nm at 1.8 V, our implementation ports the circuit to Cadence GPDK045 (45 nm bulk CMOS, device <code class="inline-code">g45n1svt</code>) under a nominal 1.0 V supply.
           </p>
 
           <p class="body-text">
-            Our investigation revealed that direct application of the paper's published sizing rule (R1 = R2 = Ron/2 = 1.15 kΩ) completely fails to divide in 45 nm because the three-transistor pull-down stack requires R1 ≥ 7.59 kΩ to achieve regenerative loop gain. By formulating the pull-down stack regeneration rule (R1 ≥ 1.1 × 3Ron/m), we engineered two high-performance solutions: <strong>Design D</strong> (m=4, R=3 kΩ at 1.4 GHz, passing 41 of 45 PVT corners) and <strong>Design B</strong> (m=4, R=2 kΩ at 6.0 GHz, reaching a benchmark phase-step accuracy of 3.78°).
+            Our investigation revealed that direct application of the paper's published sizing rule (R1 = R2 = Ron/2 = 1.15 kΩ) fails to divide in 45 nm because the three-transistor pull-down stack requires R1 ≥ 7.59 kΩ to achieve regenerative loop gain. By formulating the pull-down stack regeneration rule (R1 ≥ 1.1 × 3Ron/m), we engineered two working solutions: <strong>Design D</strong> (m=4, R=3 kΩ at 1.4 GHz, passing 41 of 45 PVT corners) and <strong>Design B</strong> (m=4, R=2 kΩ at 6.0 GHz, reaching a benchmark phase-step accuracy of 3.78°).
           </p>
 
           <h3 class="subsection-heading">Evaluation Rubrics &amp; Deliverables Traceability Matrix</h3>
@@ -219,7 +223,7 @@
             </table>
           </div>
           <div style="font-size:13px;color:var(--ink-muted);margin-top:-16px;">
-            *Note on Physical Layout: Completed as a verified placement layout with 21 real Assura DRC errors. Automated routing was attempted (136/137 connections routed) but produced 134 DRC violations; post-layout extraction is blocked by missing PDK QRC files. Honestly reported as Partial.
+            *Note on Physical Layout: Evaluated as a placement layout with 21 real Assura DRC errors. Automated routing was attempted (136/137 connections routed) but produced 134 DRC violations; post-layout extraction is blocked by missing PDK QRC files. Honestly reported as Partial.
           </div>
         </section>
 
@@ -236,7 +240,7 @@
           <div class="tldr-box">
             <div class="tldr-label">TL;DR Summary</div>
             <div class="tldr-text">
-              Kuo et al. proposed a compact 8-phase divide-by-two CMOS frequency divider using four differential D-latches in a closed ring with alternating cross-connections, cutting latch count and area by 50% compared to traditional 8-latch cascades. In 180 nm at 1.4 GHz, it consumed 2.34 mW with 3.75° phase error; our task was to port and evaluate this architecture in Cadence 45 nm GPDK045.
+              Kuo et al. proposed an 8-phase divide-by-two CMOS frequency divider using four differential D-latches in a closed ring with alternating cross-connections, generating 8 phases from a differential input clock without the 3-divider cascade or 4-stage LC tanks of earlier approaches (Section I, p. 617). In TSMC 180 nm at 1.4 GHz, it consumed 2.34 mW from a 1.8 V supply with 3.75° phase error; our task was to port and evaluate this architecture in Cadence 45 nm GPDK045.
             </div>
           </div>
 
@@ -245,7 +249,7 @@
           </p>
 
           <p class="body-text">
-            In modern phased-array radar, 5G/6G beamforming, and direct-conversion quadrature transceivers, local oscillators require multiple clock signals possessing precise phase spacing. Conventional multiphase dividers cascade 8 identical latches in a ring to generate 8 phases, leading to substantial die area and elevated power dissipation. Kuo et al. made the elegant observation that a differential latch naturally provides two complementary outputs separated by 180° (Q and Qb). By cascading only four differential D-latches in a ring with specialized feedback cross-connections and alternating clock phases, all 8 distinct phases (spaced by 45°) can be synthesized simultaneously.
+            In local oscillator clock generation, conventional divider-based solutions generating 8 phases typically required three divide-by-two dividers and a 4-phase input signal, or a 4-stage LC-tank VCO (Kuo et al., Section I, p. 617). Kuo et al. showed that inserting a duplicate cascading D-latch into the feedback loop of a divide-by-two divider forms a closed ring of four differential D-latches with alternating cross-connections (Section II, pp. 617-618). Driven by a differential input clock, this generates all 8 phases (spaced by 45°) without LC components or extra divider stages.
           </p>
 
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:24px 0;">
@@ -266,9 +270,9 @@
 
           <h3 class="subsection-heading">Core Claims of Kuo et al.</h3>
           <ul class="bullet-list">
-            <li><strong>50% Device and Area Reduction:</strong> Uses only 4 latches (28 active transistors + 8 resistors) instead of 8 latches (56 transistors + 16 resistors), cutting active layout footprint by half.</li>
+            <li><strong>Four-Latch Ring Topology (Section I, p. 617; Section II, pp. 617-618):</strong> Uses four differential latches (28 active nMOS transistors + 8 load resistors) in a closed ring driven by a differential clock, avoiding the 3 divide-by-two dividers and 4-phase input signal required in conventional solutions. The four-latch core layout occupies 26.72 × 15.53 μm² in TSMC 180 nm without resistors and buffers.</li>
             <li><strong>Inherent Symmetrical Loading:</strong> Each output terminal drives exactly one differential input of the subsequent stage (FO = 1), maintaining symmetrical capacitive loading across all 8 output nodes.</li>
-            <li><strong>Published 180 nm Performance:</strong> Fabricated in TSMC 0.18 μm CMOS, operating at 1.4 GHz input clock with 1.8 V supply, consuming 2.34 mW power with a maximum phase-step error of 3.75° and 1.6 GHz self-oscillation frequency.</li>
+            <li><strong>Published 180 nm Performance (Section I, p. 617; Section III, pp. 618-620):</strong> Fabricated in TSMC 0.18 μm CMOS, operating at 1.4 GHz input clock with 1.8 V supply, consuming 2.34 mW power with a maximum phase-step error within 3.75°, a 173.3% frequency tuning range (100 MHz to 1.4 GHz), and active core area of 91.7 × 52.9 μm².</li>
           </ul>
         </section>
 
@@ -434,7 +438,7 @@
           <div class="tldr-box">
             <div class="tldr-label">TL;DR Summary</div>
             <div class="tldr-text">
-              The project progressed across 8 rigorous phases: uncovered fabricated agent baseline results (178-byte fake GDSII); ported to Cadence GPDK045; discovered the paper sizing failure; orchestrated a 32-bit CentOS Cadence VM with Virtuoso IC615 and Spectre 12.1; generated clean schematics via SKILL (0/0/1 schCheck); investigated the 0.455 mW vs 0.541 mW power gap; evaluated 45-corner PVT sweeps; and executed physical layout and Assura DRC/LVS verification.
+              The project progressed across 8 engineering phases: uncovered fabricated baseline results (178-byte fake GDSII); ported to Cadence GPDK045; discovered the paper sizing failure; orchestrated a 32-bit CentOS Cadence VM with Virtuoso IC615 and Spectre 12.1; generated schematics via SKILL (0/0/1 schCheck); investigated the 0.455 mW vs 0.541 mW power gap; evaluated 45-corner PVT sweeps; and executed physical layout and Assura DRC/LVS verification.
             </div>
           </div>
 
@@ -445,7 +449,7 @@
               <div>
                 <h4 style="font-family:var(--serif);font-size:17px;font-weight:600;margin-bottom:4px;color:var(--ink);">Fabrication Discovery &amp; Clean Pipeline Reset (Oct 30)</h4>
                 <p class="body-text" style="font-size:14.5px;margin-bottom:6px;">
-                  Initial git commits (d346d36–38aa969) contained synthetic outputs from an unverified autonomous AI agent swarm, including hardcoded simulation tables and an empty 178-byte GDSII layout falsely claiming "0 DRC errors". In commit <code class="inline-code">a805b27</code>, we completely rejected these fabricated artifacts and instituted a real, measured pipeline requiring 100% of reported figures to originate from executable SPICE decks and Cadence Virtuoso databases.
+                  Initial git commits (d346d36–38aa969) contained synthetic outputs from an unverified autonomous AI agent swarm, including hardcoded simulation tables and an empty 178-byte GDSII layout falsely claiming "0 DRC errors". In commit <code class="inline-code">a805b27</code>, we rejected these fabricated artifacts and instituted a real, measured pipeline requiring all reported figures to originate from executable SPICE decks and Cadence Virtuoso databases.
                 </p>
                 <span class="source-tag">Source: commit a805b27, report/gpdk045/LEDGER.md</span>
               </div>
@@ -456,7 +460,7 @@
               <div>
                 <h4 style="font-family:var(--serif);font-size:17px;font-weight:600;margin-bottom:4px;color:var(--ink);">Porting to GPDK045 &amp; The Sizing Breakdown (Oct 30–31)</h4>
                 <p class="body-text" style="font-size:14.5px;margin-bottom:6px;">
-                  Ported the circuit from TSMC 180 nm to Cadence GPDK045 (<code class="inline-code">g45n1svt</code>, nominal VDD = 1.0 V). Direct implementation of Kuo et al.'s sizing rule (R = Ron/2 = 1.15 kΩ) completely failed to divide, oscillating at 2799.8 MHz with only 15.3 mV swing. Formulated the 3Ron/m stack regeneration theory, establishing that division at m=1 requires R ≥ 7.59 kΩ (verified with working Baseline U8k at 8 kΩ), and engineered sized Design D (m=4, R=3 kΩ) and Design B (m=4, R=2 kΩ).
+                  Ported the circuit from TSMC 180 nm to Cadence GPDK045 (<code class="inline-code">g45n1svt</code>, nominal VDD = 1.0 V). Direct implementation of Kuo et al.'s sizing rule (R = Ron/2 = 1.15 kΩ) failed to divide, oscillating at 2799.8 MHz with only 15.3 mV swing. Formulated the 3Ron/m stack regeneration theory, establishing that division at m=1 requires R ≥ 7.59 kΩ (verified with working Baseline U8k at 8 kΩ), and engineered sized Design D (m=4, R=3 kΩ) and Design B (m=4, R=2 kΩ).
                 </p>
                 <span class="source-tag">Source: results/gpdk045/final/unsized.tsv, report_data.json</span>
               </div>
@@ -520,9 +524,9 @@
             <div class="timeline-item" style="display:flex;gap:20px;align-items:flex-start;">
               <div style="background:var(--terracotta);color:#fff;font-family:var(--mono);font-size:12px;font-weight:700;padding:6px 10px;border-radius:8px;flex:none;">Phase 8</div>
               <div>
-                <h4 style="font-family:var(--serif);font-size:17px;font-weight:600;margin-bottom:4px;color:var(--ink);">Multi-Agent Audits &amp; Report Consolidation (Nov 1)</h4>
+                <h4 style="font-family:var(--serif);font-size:17px;font-weight:600;margin-bottom:4px;color:var(--ink);">Audit Passes &amp; Report Consolidation (Nov 1)</h4>
                 <p class="body-text" style="font-size:14.5px;margin-bottom:6px;">
-                  Employed a distributed subagent architecture where fast Haiku workers executed VM operations while agy/Gemini conducted rigorous adversarial audits. Executed three comprehensive review passes: Quantitative Numbers Audit (<code class="inline-code">REVIEW3_numbers.md</code>), Academic Prose Audit (<code class="inline-code">REVIEW3_prose.md</code>), and Visual Review. Consolidated the formal academic report into 24 dense pages, ensuring 100% numerical traceability and zero speculative marketing claims.
+                  Employed a coordinated workflow where automated scripts ran VM simulations while automated audits checked numbers against logs. Executed review passes covering quantitative numbers (<code class="inline-code">REVIEW3_numbers.md</code>), report prose (<code class="inline-code">REVIEW3_prose.md</code>), and visual alignment. Consolidated the final project report into 24 pages, ensuring numbers trace directly to repo logs.
                 </p>
                 <span class="source-tag">Source: report/gpdk045/REVIEW3_numbers.md, REVIEW3_prose.md</span>
               </div>
@@ -548,7 +552,7 @@
             </div>
           </div>
 
-          <h3 class="subsection-heading">Comprehensive Performance Comparison Table</h3>
+          <h3 class="subsection-heading">Performance Comparison Table</h3>
           <p class="body-text">
             Performance metrics extracted from Cadence Spectre simulations in GPDK045 at the typical corner (tt, 27°C, VDD = 1.0 V), compared against Kuo et al.'s published 180 nm benchmark.
           </p>
@@ -700,8 +704,8 @@
 
           <div style="margin:20px 0;">
             <div style="display:flex;gap:12px;margin-bottom:14px;">
-              <button class="filter-chip-btn active" id="btn-pvt-d" onclick="switchPvtTab('D')">Design D (1.4 GHz) — 41/45 Pass (91.1%)</button>
-              <button class="filter-chip-btn" id="btn-pvt-b" onclick="switchPvtTab('B')">Design B (6.0 GHz) — 21/45 Pass (46.7%)</button>
+              <button class="filter-chip-btn active" id="btn-pvt-d" onclick="switchPvtTab('D')">Design D (1.4 GHz): 41/45 Pass (91.1%)</button>
+              <button class="filter-chip-btn" id="btn-pvt-b" onclick="switchPvtTab('B')">Design B (6.0 GHz): 21/45 Pass (46.7%)</button>
             </div>
 
             <!-- Design D PVT Grid -->
@@ -876,7 +880,7 @@
                 <pre class="code-content" id="code-bsim4-params">as=16.8f ad=16.8f ps=520n pd=520n nrd=1.16667 nrs=1.16667 sa=140n sb=140n sd=160n sca=226.00151 scb=0.11734 scc=0.02767</pre>
               </div>
             </li>
-            <li><strong>Verification by Injection (100% Match):</strong> Appending these exact strings to the standalone netlist devices shifted power from 0.541337 mW to 0.455402 mW and delay from 25.99 ps to 26.66 ps, matching the Virtuoso OCEAN run to within <strong>0.02%</strong>.</li>
+            <li><strong>Verification by Injection (Confirmed Match):</strong> Appending these exact strings to the standalone netlist devices shifted power from 0.541337 mW to 0.455402 mW and delay from 25.99 ps to 26.66 ps, matching the Virtuoso OCEAN run to within <strong>0.02%</strong>.</li>
           </ol>
 
           <h3 class="subsection-heading">Physical Semiconductor Mechanisms</h3>
@@ -884,7 +888,7 @@
             <li><strong>Shallow Trench Isolation (STI) Stress (sa, sb, sd):</strong> Mechanical compressive stress exerted by STI oxide on the transistor channel alters silicon band structure, shifting threshold voltage Vth and reducing carrier mobility μn near diffusion edges.</li>
             <li><strong>Well Proximity Effect (WPE, sca, scb, scc):</strong> High-energy ion implantation during retrograded well formation scatters dopant atoms off photoresist sidewalls, increasing channel dopant concentration near well boundaries and raising Vth.</li>
             <li><strong>Series Sheet Resistance (nrd, nrs):</strong> Extrinsic parasitic resistance of source and drain diffusions reduces effective terminal gate-source drive Vgs, decreasing saturation current and dynamic power.</li>
-            <li><strong>Academic Policy Decision:</strong> To maintain strict conservative rigor, the formal report tables report the standalone numbers (0.541 mW, 14.07 fJ), while documenting the 0.455 mW Virtuoso schematic run as physical evidence of layout-dependent effects.</li>
+            <li><strong>Academic Policy Decision:</strong> To remain conservative, the formal report tables report the standalone numbers (0.541 mW, 14.07 fJ), while documenting the 0.455 mW Virtuoso schematic run as evidence of layout-dependent effects.</li>
           </ul>
         </section>
 
@@ -1240,7 +1244,7 @@
           <div class="section-anchor-header">
             <h2 class="section-heading">
               <span class="section-number">09</span>
-              <span>Viva &amp; Defense Q&amp;A Preparation (28 Audited Questions)</span>
+              <span>Viva &amp; Defense Q&amp;A Preparation (32 Questions)</span>
               <a href="#qna" class="permalink-icon">#</a>
             </h2>
           </div>
@@ -1248,12 +1252,12 @@
           <div class="tldr-box">
             <div class="tldr-label">TL;DR Summary</div>
             <div class="tldr-text">
-              28 likely viva questions grouped across 7 domains: circuit operation, sizing theory, simulation findings, PVT robustness, physical layout, Cadence tool flow, and scientific limits. Every answer provides a crisp 2–5 sentence explanation and an explicit 'Numbers to quote' line with verified metrics.
+              32 viva questions grouped across 8 domains: circuit operation, sizing theory, simulation findings, PVT robustness, physical layout, Cadence tool flow, scientific integrity, and the v2 research plan. Every answer provides a crisp explanation and an explicit 'Numbers to quote' line with verified metrics.
             </div>
           </div>
 
           <p class="body-text">
-            Below are 28 essential defense questions organized into 7 thematic categories. Click any question card to expand its technical answer and key numbers to quote during your oral presentation.
+            Below are 32 essential defense questions organized into 8 thematic categories. Click any question card to expand its technical answer and key numbers to quote during your presentation.
           </p>
 
           <!-- [[QNA_BODY]] -->
@@ -1265,7 +1269,7 @@
           <div class="section-anchor-header">
             <h2 class="section-heading">
               <span class="section-number">10</span>
-              <span>Pending Backlog &amp; Project Add-Ons (Items a to l)</span>
+              <span>Pending Backlog &amp; v2 Plan Alignment (Items a to l)</span>
               <a href="#backlog" class="permalink-icon">#</a>
             </h2>
           </div>
@@ -1273,7 +1277,7 @@
           <div class="tldr-box">
             <div class="tldr-label">TL;DR Summary</div>
             <div class="tldr-text">
-              An honest, itemized backlog of 12 pending tasks (a through l) with explicit priority and effort ratings. Checkboxes persist dynamically in localStorage so you can track completion progress throughout your defense preparations.
+              An itemized backlog of 12 pending tasks (a through l) with explicit priority and effort ratings, aligned with the v2 research plan and schedule tasks. Checkboxes persist dynamically in localStorage so you can track completion progress.
             </div>
           </div>
 
@@ -1292,11 +1296,408 @@
           </div>
         </section>
 
-        <!-- SECTION 11: CHEAT SHEET -->
-        <section class="card-section" id="cheatsheet">
+        <!-- SECTION 11: v2 PLAN FOR THE PAPER -->
+        <section class="card-section" id="v2-plan">
           <div class="section-anchor-header">
             <h2 class="section-heading">
               <span class="section-number">11</span>
+              <span>v2: Plan for the Paper (Re-implementation &amp; Enhancement)</span>
+              <a href="#v2-plan" class="permalink-icon">#</a>
+            </h2>
+          </div>
+
+          <div class="tldr-box">
+            <div class="tldr-label">TL;DR Summary</div>
+            <div class="tldr-text">
+              The v2 research initiative transitions our Cadence GPDK045 baseline into a defensible IEEE MWTL letter or TechRxiv preprint. Our claims audit revealed that early v2 draft numbers (cascode tail, PMOS active loads, 0.5° interpolator, 1.8 V supply, 2.2 mW power) were unmeasured and contradicted verified 45 nm data. We freeze v1 at tag v1.0-stable, pursue an evidence-backed sizing exploration (E1) with bias trim (E6) as the primary path, set an empirical correction letter as fallback, organize execution across 5 gated stages over 4 weeks under a single VM queue, and enforce strict claims traceability.
+            </div>
+          </div>
+
+          <!-- Card 1: Stable Baseline v1.0 -->
+          <div class="v2-info-card">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:12px;">
+              <div>
+                <span class="category-chip" style="color:var(--terracotta);">Immutable Reference</span>
+                <h3 style="font-family:var(--serif);font-size:20px;font-weight:600;margin-top:6px;color:var(--ink);">Stable Baseline v1.0 (STABLE.md)</h3>
+              </div>
+              <span class="status-chip done">Tag: v1.0-stable</span>
+            </div>
+            <p class="body-text" style="font-size:14.5px;margin-bottom:14px;">
+              This records the finished, verified state of the project. Work after this point (v2 paper, layout optimization, additional sweeps) occurs on <code class="inline-code">main</code> and must leave this baseline unchanged.
+            </p>
+            <div class="table-wrapper" style="margin-bottom:14px;">
+              <table class="data-table" style="font-size:13.5px;">
+                <tbody>
+                  <tr>
+                    <td><strong>Git Reference</strong></td>
+                    <td>Tag <code class="inline-code">v1.0-stable</code> (annotated) | Branch <code class="inline-code">stable/v1</code> (Commit <code class="inline-code">336d17b</code>)</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Academic Deliverable</strong></td>
+                    <td>24-page report: <code class="inline-code">report/gpdk045/System_Design_Project_Report_gpdk045.pdf</code> (SHA-256: <code class="inline-code" style="font-size:11px;">f1a2ae52acbb487b9a1a720c68255c623b5351b9897c799ca439ebc305b6f641</code>)</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Cadence VM Snapshot</strong></td>
+                    <td>Snapshot <code class="inline-code">stable-v1</code> in VirtualBox (<code class="inline-code">CadenceVM</code>), captured with guest powered off</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Verified Scope</strong></td>
+                    <td>Design D (1.4 GHz, 0.541 mW, 25.99 ps, 41/45 PVT pass); Design B (6.0 GHz, 0.493 mW, 3.78° error, 21/45 PVT pass); Unsized baseline U8k (m=1, R=8k); DLATCH placement layout (21 Assura DRC errors across 3 rules, no LVS-clean or routed layout, no RCX).</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--line);border-radius:var(--radius-sm);padding:12px 16px;">
+              <div style="font-family:var(--mono);font-size:12px;font-weight:600;margin-bottom:6px;color:var(--ink);">Restore Instructions:</div>
+              <div style="font-family:var(--mono);font-size:12px;color:var(--ink-muted);line-height:1.6;">
+                # Code &amp; Report baseline:<br>
+                git fetch --tags &amp;&amp; git checkout v1.0-stable<br>
+                # Cadence VM restore (host command):<br>
+                VBoxManage snapshot CadenceVM restore stable-v1
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: Research Integrity Audit & Early Draft Findings -->
+          <div class="v2-info-card">
+            <span class="category-chip" style="color:var(--badge-fail-ink);background:var(--badge-fail-bg);">Research Integrity Finding</span>
+            <h3 style="font-family:var(--serif);font-size:20px;font-weight:600;margin:6px 0 10px;color:var(--ink);">Early v2 Manuscript Audit: Unmeasured Claims &amp; Baseline Contradictions</h3>
+            <p class="body-text" style="font-size:14.5px;margin-bottom:14px;">
+              A systematic audit of the early v2 manuscript draft (<code class="inline-code">paper/manuscript_lmwt.*</code>) detailed in <code class="inline-code">v2/CLAIMS_AUDIT.md</code> revealed that its headline numbers were never simulated in Cadence Spectre and directly contradicted our measured GPDK045 evidence. All unsupported claims have been retired to <code class="inline-code">v2/legacy_draft/</code>.
+            </p>
+            <div class="table-wrapper">
+              <table class="data-table" style="font-size:13px;">
+                <thead>
+                  <tr>
+                    <th>Claim Domain</th>
+                    <th>Early v2 Draft Claim (Retired)</th>
+                    <th>Verified GPDK045 Baseline Fact</th>
+                    <th>Audit Verdict</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Technology &amp; Supply</strong></td>
+                    <td>180 nm CMOS, 1.8 V supply</td>
+                    <td>Cadence GPDK045 (45 nm CMOS), nominal 1.0 V supply</td>
+                    <td><span class="status-chip fail">Contradicted</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Power Dissipation</strong></td>
+                    <td>2.2 mW power dissipation</td>
+                    <td>0.5413 mW (Design D) / 0.4929 mW (Design B) at 1.0 V</td>
+                    <td><span class="status-chip fail">Contradicted</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Tail Current Topology</strong></td>
+                    <td>Regulated cascode tail eliminates M7 issue, Vds ≥ 180 mV</td>
+                    <td>Tail M7 is in triode (Vds 8 to 68 mV vs Vdsat 357.8 mV); cascode was never simulated</td>
+                    <td><span class="status-chip fail">Unsupported</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Load Architecture</strong></td>
+                    <td>Active PMOS loads peaking to 3.2 GHz and 45% area cut</td>
+                    <td>Zero PMOS runs exist; 45 nm operation verified with poly resistors R1/R2</td>
+                    <td><span class="status-chip fail">Unsupported</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Phase Tuning</strong></td>
+                    <td>Dynamic phase interpolator locks phases to 45.0° ± 0.5°</td>
+                    <td>No interpolator circuit built; measured phase error is 38.46° (D) and 3.78° (B)</td>
+                    <td><span class="status-chip fail">Unsupported</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Output Voltage Swing</strong></td>
+                    <td>Output swing above 800 mV</td>
+                    <td>Q1 swing is 0.4344 V (Design D) and 0.1349 V (Design B)</td>
+                    <td><span class="status-chip fail">Contradicted</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Physical Layout</strong></td>
+                    <td>Post-layout effects minimal; common-centroid layout</td>
+                    <td>Layout is placement only (21 DRC errors, LVS not clean, no QRC extraction files)</td>
+                    <td><span class="status-chip fail">Unsupported</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="body-text" style="font-size:13px;margin-top:10px;color:var(--ink-muted);">
+              <strong>Enforced Policy (v2 Claims Register):</strong> No numerical value enters the v2 manuscript without an explicit evidence file path in results/ or report/ and a reproducible Spectre or Assura command.
+            </p>
+          </div>
+
+          <!-- Card 3: Architecture Trade Study & Recommended Path -->
+          <div class="v2-info-card">
+            <span class="category-chip">Architecture Trade Study (v2/TRADE_STUDY.md)</span>
+            <h3 style="font-family:var(--serif);font-size:20px;font-weight:600;margin:6px 0 10px;color:var(--ink);">Recommended Enhancement Path: Sizing Exploration &amp; Bias Trim</h3>
+            <p class="body-text" style="font-size:14.5px;margin-bottom:12px;">
+              Seven candidate enhancements (E1 to E7) were scored against five weighted criteria: evidence base (weight 3), VM execution cost (2), voltage headroom fit (3), PVT risk (2), and novelty (1).
+            </p>
+            <div class="table-wrapper" style="margin-bottom:14px;">
+              <table class="data-table" style="font-size:13px;">
+                <thead>
+                  <tr>
+                    <th>Candidate</th>
+                    <th>Description</th>
+                    <th>Score</th>
+                    <th>Feasibility &amp; Physics Analysis in 45 nm / 1.0 V</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>E1: Sizing Exploration (Recommended)</strong></td>
+                    <td>Sweep m (2-8), R (1-8k), vb (0.8/1.0 V) at 1.4 and 6.0 GHz</td>
+                    <td><span class="status-chip done">50 / 60</span></td>
+                    <td>Highest score: directly extends proven 3Ron/m stack rule (5/5 passes in v1); maps f_max vs phase error.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>E6: Bias-Tuned Range (Add-on)</strong></td>
+                    <td>vb or supply trim per frequency band</td>
+                    <td><span class="status-chip done">45 / 60</span></td>
+                    <td>Low VM cost: shifts regeneration threshold without modifying schematic devices; broadens locking range.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>E4: Tail Resize or Removal</strong></td>
+                    <td>Change tail device W/L/m or operate tail-less</td>
+                    <td><span class="status-chip partial">38 / 60</span></td>
+                    <td>Moderate feasibility: addresses M7 triode operation, but requires common-mode retuning.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>E7: Body / Supply Tuning</strong></td>
+                    <td>Back-gate bias or VDD adjustment</td>
+                    <td><span class="status-chip partial">27 / 60</span></td>
+                    <td>Triple-well isolation needed; limited tuning authority in standard bulk CMOS.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>E5: Phase Interpolator</strong></td>
+                    <td>Dynamic phase trim cells</td>
+                    <td><span class="status-chip fail">24 / 60</span></td>
+                    <td>High complexity: adds substantial silicon area, routing parasitics, and power dissipation.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>E3: PMOS Active Loads</strong></td>
+                    <td>Replace load resistors with PMOS loads</td>
+                    <td><span class="status-chip fail">22 / 60</span></td>
+                    <td>Unfavorable: changes regeneration loop gain; highly sensitive to PVT corners; zero v1 evidence base.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>E2: Regulated Cascode Tail</strong></td>
+                    <td>Add cascode devices above M7</td>
+                    <td><span class="status-chip fail">18 / 60</span></td>
+                    <td>Lowest score: available tail headroom is only 8-68 mV. Cascode stack needs ~700 mV (2*Vdsat), impossible under 1.0 V.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+              <div style="background:var(--bg-card);border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px;">
+                <strong style="color:var(--terracotta);display:block;margin-bottom:4px;">Primary Path (E1 + E6):</strong>
+                <p style="font-size:13.5px;color:var(--ink-muted);line-height:1.45;">
+                  Map the m/R/vb parameter space to identify one Design D successor (optimizing power and 1.4 GHz phase step) and one Design B successor (maximizing bandwidth beyond 6.0 GHz with tight phase matching).
+                </p>
+              </div>
+              <div style="background:var(--bg-card);border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px;">
+                <strong style="color:var(--ink);display:block;margin-bottom:4px;">Approved Fallback (Correction Letter):</strong>
+                <p style="font-size:13.5px;color:var(--ink-muted);line-height:1.45;">
+                  If sizing sweeps yield limited gains, publish a concise correction letter documenting that Kuo's paper rule fails at unit size in 45 nm, stating the 3Ron/m stack rule, backed by verified Designs D and B.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 4: Stage Plan with Entry/Exit Gates -->
+          <div class="v2-info-card">
+            <span class="category-chip">Stage Gate Plan (v2/PLAN.md)</span>
+            <h3 style="font-family:var(--serif);font-size:20px;font-weight:600;margin:6px 0 10px;color:var(--ink);">5-Stage Plan With Entry/Exit Criteria &amp; Go/No-Go Gates</h3>
+            <p class="body-text" style="font-size:14.5px;margin-bottom:12px;">
+              Work progresses through five sequential gates. Progress halts if exit criteria are not satisfied.
+            </p>
+            <div class="table-wrapper">
+              <table class="data-table" style="font-size:13px;">
+                <thead>
+                  <tr>
+                    <th>Stage</th>
+                    <th>Entry Criterion</th>
+                    <th>Primary Engineering Work</th>
+                    <th>Exit Gate</th>
+                    <th>Go / No-Go Decision</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>S0: Decisions</strong></td>
+                    <td>v2 plan approved</td>
+                    <td>Select enhancement path (E1), target venue, and extraction file strategy</td>
+                    <td><code class="inline-code">DECISIONS.log</code> signed</td>
+                    <td><span class="status-chip fail">No-Go:</span> proceed without formal decisions</td>
+                  </tr>
+                  <tr>
+                    <td><strong>S1: Re-baseline</strong></td>
+                    <td>S0 signed</td>
+                    <td>Rerun nominal D/B/U8k and PVT sweeps; freeze Python extraction scripts</td>
+                    <td>All SR metrics reproduced; matrix updated</td>
+                    <td><span class="status-chip fail">No-Go:</span> if division fails at nominal target</td>
+                  </tr>
+                  <tr>
+                    <td><strong>S2: Enhancement</strong></td>
+                    <td>S1 exit passed</td>
+                    <td>Build and sweep E1 sizing grid (m=2-8, R=1-8k) and E6 vb trim</td>
+                    <td>Sweep table and headroom check frozen</td>
+                    <td><span class="status-chip partial">Pivot:</span> fall back to correction letter if no gain</td>
+                  </tr>
+                  <tr>
+                    <td><strong>S3: Layout Progress</strong></td>
+                    <td>S2 data frozen</td>
+                    <td>Manual route DLATCH at m=4 R=3k, reduce DRC errors, classify LVS mismatches</td>
+                    <td>DRC count reduced; LVS delta documented</td>
+                    <td><span class="status-chip fail">No-Go:</span> forbid post-layout claims without extraction</td>
+                  </tr>
+                  <tr>
+                    <td><strong>S4: Manuscript</strong></td>
+                    <td>S1-S3 evidence ready</td>
+                    <td>Draft manuscript to IEEE format; enforce claims register verification</td>
+                    <td>Zero unsupported claims in CLAIMS_AUDIT</td>
+                    <td><span class="status-chip fail">No-Go:</span> unverified numbers block submission</td>
+                  </tr>
+                  <tr>
+                    <td><strong>S5: Submission</strong></td>
+                    <td>S4 audit passed</td>
+                    <td>Prepare submission package for IEEE MWTL or TechRxiv preprint</td>
+                    <td>Human author sign-off</td>
+                    <td>Human approves final repository push</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Card 5: Top Risks & Immediate First Actions -->
+          <div class="v2-info-card">
+            <span class="category-chip">Risk Management &amp; Immediate Priorities</span>
+            <h3 style="font-family:var(--serif);font-size:20px;font-weight:600;margin:6px 0 10px;color:var(--ink);">Risk Register (v2/RISKS.md) &amp; Immediate First Actions</h3>
+            <p class="body-text" style="font-size:14.5px;margin-bottom:12px;">
+              Key risks tracked in the v2 risk register, paired with immediate prerequisite actions:
+            </p>
+            <div class="table-wrapper" style="margin-bottom:14px;">
+              <table class="data-table" style="font-size:13px;">
+                <thead>
+                  <tr>
+                    <th>Risk ID</th>
+                    <th>Risk Description</th>
+                    <th>Likelihood / Impact</th>
+                    <th>Concrete Mitigation Strategy</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>R1</strong></td>
+                    <td>Fabricated-claim carryover from legacy draft into v2</td>
+                    <td><span class="status-chip fail">High / High</span></td>
+                    <td>Enforce claims register audit gate (SR-09); automated verification before drafting.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>R2</strong></td>
+                    <td>Layout DRC / LVS blockers prevent tapeout readiness</td>
+                    <td><span class="status-chip partial">High / Medium</span></td>
+                    <td>Scope deliverable to DRC count reduction and mismatch classification; manual route DLATCH m=4.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>R3</strong></td>
+                    <td>Extraction unavailable due to missing PDK QRC files</td>
+                    <td><span class="status-chip partial">High / Medium</span></td>
+                    <td>Document honestly as foundry PDK limitation; forbid speculative post-layout sim claims (SR-08).</td>
+                  </tr>
+                  <tr>
+                    <td><strong>R4</strong></td>
+                    <td>Single VM lane serializes queue and stalls progress</td>
+                    <td><span class="status-chip partial">High / Medium</span></td>
+                    <td>Strict flock protocol (/home/parshu/vm/vm.lock); offload all analysis and drafting to host lane.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>R5</strong></td>
+                    <td>Guest disk full or 32-bit compilation fault in VM</td>
+                    <td><span class="status-chip partial">Medium / High</span></td>
+                    <td>Pre-run df checks; redirect Assura temporary scratch files to /dev/shm memory filesystem.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>R9</strong></td>
+                    <td>Plaintext VM password exposed in repository history</td>
+                    <td><span class="status-chip fail">High / High</span></td>
+                    <td>Immediate security remediation: rotate guest password and scrub PROMPT.md from git history.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div style="background:var(--terracotta-bg);border:1px solid var(--terracotta-border);border-radius:var(--radius-sm);padding:14px;">
+              <strong style="color:var(--terracotta);display:block;margin-bottom:6px;">Immediate First Actions:</strong>
+              <ol class="num-list" style="margin-left:20px;font-size:13.5px;color:var(--ink);">
+                <li><strong>Security Action (W2 / R9):</strong> Rotate the VM login credential and scrub the plaintext password from git commit history or replace PROMPT.md with environment variable references (do not print credentials).</li>
+                <li><strong>Governance Action (W1 / S0):</strong> Formally sign decisions D1 through D6 in DECISIONS.log (confirming E1 sizing exploration path, IEEE MWTL venue, and PDK extraction file pursuit).</li>
+              </ol>
+            </div>
+          </div>
+
+          <!-- Card 6: 4-Week Schedule & Simple Gate Timeline -->
+          <div class="v2-info-card">
+            <span class="category-chip">Schedule &amp; Execution (v2/SCHEDULE.md)</span>
+            <h3 style="font-family:var(--serif);font-size:20px;font-weight:600;margin:6px 0 10px;color:var(--ink);">4-Week Schedule &amp; Gate Timeline</h3>
+            <p class="body-text" style="font-size:14.5px;margin-bottom:14px;">
+              <strong>Critical Path:</strong> W1 (Decisions) → W3 (Re-baseline) → W5 (E1 Sweep) → W7 (Analysis) → W10 (Manuscript) → W11 (Audits) → W12 (Venue Package). Total effort: 61 hours (+62h uncertainty buffer), with ~30 hours of VM time serialized under flock.
+            </p>
+            <div class="v2-gate-timeline">
+              <div class="v2-gate-card">
+                <div class="v2-gate-badge">
+                  <span>Week 1</span>
+                  <span class="status-chip done" style="font-size:10px;">Gates M1–M2</span>
+                </div>
+                <div class="v2-gate-title">Foundations &amp; Re-baseline</div>
+                <div class="v2-gate-desc">
+                  Sign decisions D1–D6; scrub secret from history; rerun nominal Designs D and B under VM lock; check PDK for Monte Carlo model files; begin E1 parameter sweep and manual routing.
+                </div>
+              </div>
+
+              <div class="v2-gate-card">
+                <div class="v2-gate-badge">
+                  <span>Week 2</span>
+                  <span class="status-chip done" style="font-size:10px;">Gate M3</span>
+                </div>
+                <div class="v2-gate-title">Enhancement Sweeps &amp; Analysis</div>
+                <div class="v2-gate-desc">
+                  Execute E1 sizing sweep (m=2–8, R=1–8k) and E6 vb trim; extract frequency limits and phase steps; generate comparison figures on host lane; iterate on DLATCH routing.
+                </div>
+              </div>
+
+              <div class="v2-gate-card">
+                <div class="v2-gate-badge">
+                  <span>Week 3</span>
+                  <span class="status-chip partial" style="font-size:10px;">Gates M4–M5</span>
+                </div>
+                <div class="v2-gate-title">Layout Snapshot &amp; Drafting</div>
+                <div class="v2-gate-desc">
+                  Freeze layout DRC/LVS snapshot; rewrite manuscript following outline; ensure every figure and table cell cites an evidence file; run initial automated claims audit.
+                </div>
+              </div>
+
+              <div class="v2-gate-card">
+                <div class="v2-gate-badge">
+                  <span>Week 4</span>
+                  <span class="status-chip partial" style="font-size:10px;">Gate M6</span>
+                </div>
+                <div class="v2-gate-title">Audits &amp; Final Packaging</div>
+                <div class="v2-gate-desc">
+                  Execute quantitative numbers audit and academic prose audit; compile clean submission package (IEEE MWTL or TechRxiv); obtain author sign-off for final repository push.
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- SECTION 12: CHEAT SHEET -->
+        <section class="card-section" id="cheatsheet">
+          <div class="section-anchor-header">
+            <h2 class="section-heading">
+              <span class="section-number">12</span>
               <span>Defense Cheat Sheet: Numbers to Remember &amp; Talk Tracks</span>
               <a href="#cheatsheet" class="permalink-icon">#</a>
             </h2>
@@ -1392,47 +1793,47 @@
           <h3 class="subsection-heading">The 60-Second Elevator Defense Script</h3>
           <div style="background:var(--bg-panel);border:1px solid var(--line);border-left:4px solid var(--terracotta);border-radius:var(--radius-sm);padding:20px;margin:20px 0;">
             <p style="font-size:15px;line-height:1.65;color:var(--ink);margin-bottom:12px;">
-              <strong>"Good morning, committee members.</strong> In this project, we ported and validated the compact 8-phase divide-by-two CMOS frequency divider proposed by Kuo et al. (IEEE MWTL May 2025) into Cadence GPDK045 at 45 nanometers.
+              <strong>"Good morning, committee members.</strong> In this project, we ported and evaluated the compact 8-phase divide-by-two CMOS frequency divider proposed by Kuo et al. (IEEE MWTL May 2025) into Cadence GPDK045 at 45 nanometers.
             </p>
             <p style="font-size:15px;line-height:1.65;color:var(--ink);margin-bottom:12px;">
-              The architecture replaces traditional 8-latch rings with four differential latches, cutting active device count by 50%. However, our first major finding was that the paper's sizing rule—R = Ron/2—fails completely in 45 nm, oscillating at 2.8 GHz with only 15 mV swing. This occurs because the pull-down path forms a three-transistor stack of 6.9 kΩ, requiring load resistance above 7.6 kΩ to achieve regeneration.
+              The architecture uses four differential D-latches in a closed ring, generating eight phases from a differential input clock without requiring extra divider stages. However, our first major finding was that the paper's sizing rule (R = Ron/2) fails in 45 nm, oscillating at 2.8 GHz with only 15 mV swing. This occurs because the pull-down path forms a three-transistor series stack of 6.9 kΩ, requiring load resistance above 7.6 kΩ to achieve regeneration.
             </p>
             <p style="font-size:15px;line-height:1.65;color:var(--ink);margin-bottom:12px;">
-              By developing the stack regeneration rule (R1 ≥ 1.1 × 3Ron/m), we sized <strong>Design D</strong> (m=4, R=3 kΩ at 1.4 GHz), cutting delay by 2.39x to 25.99 ps with 0.54 mW power, passing 41 of 45 PVT corners. For high-speed applications, <strong>Design B</strong> (m=4, R=2 kΩ) operates at 6.0 GHz, achieving a benchmark phase error of 3.78°, directly matching the published paper.
+              By developing the stack regeneration rule (R1 ≥ 1.1 × 3Ron/m), we sized <strong>Design D</strong> (m=4, R=3 kΩ at 1.4 GHz), cutting delay by 2.39x to 25.99 ps with 0.54 mW power, passing 41 of 45 PVT corners. For high-speed applications, <strong>Design B</strong> (m=4, R=2 kΩ) operates at 6.0 GHz, achieving a benchmark phase error of 3.78°, matching the published paper.
             </p>
             <p style="font-size:15px;line-height:1.65;color:var(--ink);">
               We completed batch Virtuoso schematic synthesis with clean check-and-save, placement layouts with 21 documented Assura DRC errors, and explained the 15.9% schematic-vs-standalone power gap through layout-dependent BSIM4 stress parameters. Thank you."
             </p>
           </div>
 
-          <h3 class="subsection-heading">The 3-Minute Comprehensive Defense Walkthrough</h3>
+          <h3 class="subsection-heading">The 3-Minute Defense Walkthrough</h3>
           <div style="background:var(--bg-panel);border:1px solid var(--line);border-radius:var(--radius-sm);padding:22px;margin:20px 0;">
             
             <div style="margin-bottom:16px;">
               <span class="category-chip" style="margin-bottom:6px;">0:00 – 0:45 | Motivation &amp; Architecture</span>
               <p style="font-size:14.5px;line-height:1.6;color:var(--ink);">
-                "Respected examiners, modern multi-antenna beamforming transceivers require multiphase local oscillator clocks with low power and minimal silicon area. The Kuo et al. paper published in IEEE MWTL May 2025 introduced an elegant architecture: connecting four differential D-latches in a closed ring with alternating cross-connections and inverted clocks. Each latch provides differential complementary outputs, synthesizing all 8 evenly spaced phases (0° through 315°) from just 4 latches, saving 50% device count and area. Our goal was to port this 180 nm topology to Cadence 45 nm GPDK045 and evaluate its physical design in Virtuoso, Spectre, and Assura."
+                "Respected examiners, modern multi-antenna beamforming transceivers require multiphase local oscillator clocks with low power and minimal silicon area. In conventional solutions, 8-phase generation required three divide-by-two dividers and a 4-phase input signal, or a 4-stage LC VCO. The Kuo et al. paper published in IEEE MWTL May 2025 introduced an alternative: connecting four differential D-latches in a closed ring with alternating cross-connections and inverted clocks. Each latch provides differential complementary outputs, synthesizing all 8 evenly spaced phases (0° through 315°) from just 4 latches driven by a differential input clock without LC tanks or extra divider stages (Section I, p. 617; Section II, pp. 617-618). Our goal was to port this 180 nm topology to Cadence 45 nm GPDK045 and evaluate its physical design in Virtuoso, Spectre, and Assura."
               </p>
             </div>
 
             <div style="margin-bottom:16px;">
               <span class="category-chip" style="margin-bottom:6px;">0:45 – 1:30 | Sizing Breakdown &amp; Stack Theory</span>
               <p style="font-size:14.5px;line-height:1.6;color:var(--ink);">
-                "When we directly implemented the paper's published sizing rule (R1 = Ron/2 = 1.15 kΩ) at unit size, the circuit failed completely, oscillating at 2.8 GHz with only 15.3 mV swing. By analyzing the physical discharging network, we established that current flows through a three-transistor NMOS stack: sampling device M1, clock switch M5, and tail current transistor M7. Each presents on-resistance Ron = 2.3 kΩ, creating a 6.90 kΩ stack. For the regenerative pair to achieve loop gain gm R1 &gt; 1, load resistance must satisfy R1 ≥ 1.1 × 3Ron/m = 7.59 kΩ at unit size. The paper's 1.15 kΩ falls far below this threshold. Scaling multiplier to m=4 lowers stack resistance to 1.73 kΩ and critical threshold to 1.90 kΩ, restoring robust regenerative latching."
+                "When we directly implemented the paper's published sizing rule (R1 = Ron/2 = 1.15 kΩ) at unit size, the circuit failed to divide, oscillating at 2.8 GHz with only 15.3 mV swing. By analyzing the physical discharging network, we established that current flows through a three-transistor NMOS stack: sampling device M1, clock switch M5, and tail current transistor M7. Each presents on-resistance Ron = 2.3 kΩ, creating a 6.90 kΩ stack. For the regenerative pair to achieve loop gain gm R1 &gt; 1, load resistance must satisfy R1 ≥ 1.1 × 3Ron/m = 7.59 kΩ at unit size. The paper's 1.15 kΩ falls far below this threshold. Scaling multiplier to m=4 lowers stack resistance to 1.73 kΩ and critical threshold to 1.90 kΩ, restoring regenerative latching."
               </p>
             </div>
 
             <div style="margin-bottom:16px;">
               <span class="category-chip" style="margin-bottom:6px;">1:30 – 2:15 | Simulation Findings &amp; Sizing Trade-Offs</span>
               <p style="font-size:14.5px;line-height:1.6;color:var(--ink);">
-                "We characterized two primary configurations: Design D at 1.4 GHz (m=4, R=3 kΩ) and Design B at 6.0 GHz (m=4, R=2 kΩ). Sizing cuts propagation delay from 62.21 ps (baseline) to 25.99 ps—a 2.39x speedup—and nearly doubles output swing to 0.434 V, at the expense of a 3.94x power increase to 0.541 mW. Across a 45-corner PVT matrix, Design D achieved a 91.1% yield (41/45 pass), with all 4 failures confined to the extreme 125°C / 0.9 V corner. Design B pushed operating bandwidth to 6.0 GHz with 0.493 mW power and an exceptional phase-step error of 3.78°, matching the published 180 nm benchmark. Furthermore, we verified that tail transistor M7 operates deeply in triode (Vds = 8–67 mV ≪ Vdsat = 358 mV), acting as a degeneration resistor."
+                "We characterized two primary configurations: Design D at 1.4 GHz (m=4, R=3 kΩ) and Design B at 6.0 GHz (m=4, R=2 kΩ). Sizing cuts propagation delay from 62.21 ps (baseline) to 25.99 ps (a 2.39x speedup) and nearly doubles output swing to 0.434 V, at the expense of a 3.94x power increase to 0.541 mW. Across a 45-corner PVT matrix, Design D achieved a 91.1% yield (41/45 pass), with all 4 failures confined to the extreme 125°C / 0.9 V corner. Design B pushed operating bandwidth to 6.0 GHz with 0.493 mW power and a phase-step error of 3.78°, matching the published 180 nm benchmark. Furthermore, we verified that tail transistor M7 operates in triode (Vds = 8 to 67 mV, well below Vdsat = 358 mV), acting as a degeneration resistor."
               </p>
             </div>
 
             <div>
               <span class="category-chip" style="margin-bottom:6px;">2:15 – 3:00 | Cadence Tool Flow, Layout &amp; Honesty</span>
               <p style="font-size:14.5px;line-height:1.6;color:var(--ink);">
-                "Every deliverable was produced through scripted Cadence automation inside a 32-bit CentOS VM. We created Virtuoso schematics using SKILL (achieving 0 errors / 0 warnings), and explained the 15.9% power gap between standalone Spectre (0.541 mW) and Virtuoso schematic runs (0.455 mW) through layout-dependent BSIM4 stress parameters. For physical design, we completed an unrouted placement layout of DLATCH and divider_core with 21 Assura DRC errors. An automated routing attempt with Chip Assembly Router routed 136 of 137 connections but produced 134 DRC violations. Because the PDK copy lacked Assura QRC technology files, parasitic extraction was blocked. We adhere strictly to scientific honesty: reporting our verified placement layout and 41/45 PVT robustness. Thank you, and I look forward to your questions."
+                "Every deliverable was produced through scripted Cadence automation inside a 32-bit CentOS VM. We created Virtuoso schematics using SKILL (achieving 0 errors / 0 warnings), and explained the 15.9% power gap between standalone Spectre (0.541 mW) and Virtuoso schematic runs (0.455 mW) through layout-dependent BSIM4 stress parameters. For physical design, we completed an unrouted placement layout of DLATCH and divider_core with 21 Assura DRC errors. An automated routing attempt with Chip Assembly Router routed 136 of 137 connections but produced 134 DRC violations. Because the PDK copy lacked Assura QRC technology files, parasitic extraction was blocked. We adhere strictly to scientific honesty: reporting our verified placement layout and 41/45 PVT yield. Thank you, and I look forward to your questions."
               </p>
             </div>
 
@@ -1441,8 +1842,8 @@
 
         <!-- Footer -->
         <footer style="margin-top:80px;padding-top:24px;border-top:1px solid var(--line);text-align:center;color:var(--ink-muted);font-size:13.5px;">
-          <p>Multiphase Divide-by-Two Frequency Divider in Cadence GPDK045 — University VLSI Defense Prep Site</p>
-          <p style="margin-top:6px;"><a href="glossary.html" class="text-link">Explore the 122 Terms Defense Glossary</a></p>
+          <p>Multiphase Divide-by-Two Frequency Divider in Cadence GPDK045: University VLSI Defense Prep Site</p>
+          <p style="margin-top:6px;"><a href="glossary.html" class="text-link">Explore the 137 Terms Defense Glossary</a></p>
         </footer>
 
       </div>

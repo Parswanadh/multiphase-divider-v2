@@ -1,28 +1,28 @@
 # presentation/backlog_data.py
 """
-12 Backlog Items (a through l) for Multiphase Divider Defense.
+12 Backlog Items (a through l) for Multiphase Divider Defense and v2 Plan.
 """
 
 BACKLOG_ITEMS = [
     {
         "id": "item-a",
         "letter": "a",
-        "title": "Hand-routed, DRC- and LVS-clean layout of DLATCH and divider_core",
+        "title": "Manual routing, DRC reduction, and LVS mismatch audit for DLATCH and divider_core",
         "priority": "High",
-        "effort": "3–5 days",
+        "effort": "3 to 5 days",
         "status": "Pending",
-        "description": "Currently, the layout exists as an unrouted placement of PCells with 21 DRC errors. The automated Chip Assembly Router attempt left 1 unrouted connection on net xs and created 134 DRC errors. Completing a clean manual routing on standard metal grids with proper substrate tap guard-rings is required for tapeout readiness.",
-        "rationale": "Layout mark is currently marked 'Partial' (evaluated at 3/5 marks); an LVS-clean routed layout secures full 5/5 physical design marks."
+        "description": "Currently, the layout exists as an unrouted placement of PCells with 21 DRC errors. The automated Chip Assembly Router attempt left 1 unrouted connection on net xs and created 134 DRC errors. Manual routing on standard metal grids with proper substrate tap guard-rings is required to reduce DRC errors and clarify LVS status (v2 task W8, risk R2).",
+        "rationale": "Layout mark is currently evaluated at 3/5 marks; routing DLATCH cleanly addresses physical design requirements and mitigates risk R2."
     },
     {
         "id": "item-b",
         "letter": "b",
         "title": "Layout at m = 4 with 3 kΩ poly resistors (current layout is m = 1 with 2 kΩ)",
         "priority": "High",
-        "effort": "1–2 days",
+        "effort": "1 to 2 days",
         "status": "Pending",
-        "description": "The existing placement layout was generated with unit-sized devices (m = 1) and 2 kΩ resistors. To reflect the nominal Design D evaluated in simulation, the layout view must be updated to multiplier m = 4 (or 4 parallel fingers) and 3 kΩ g45rnsnp poly resistors with matched aspect ratios.",
-        "rationale": "Ensures complete 1-to-1 fidelity between schematic CDF parameters and physical polygon dimensions."
+        "description": "The existing placement layout was generated with unit-sized devices (m = 1) and 2 kΩ resistors. To reflect the nominal Design D evaluated in simulation, the layout view must be updated to multiplier m = 4 (or 4 parallel fingers) and 3 kΩ g45rnsnp poly resistors with matched aspect ratios (v2 task W8).",
+        "rationale": "Ensures 1-to-1 fidelity between schematic CDF parameters and physical polygon dimensions."
     },
     {
         "id": "item-c",
@@ -31,8 +31,8 @@ BACKLOG_ITEMS = [
         "priority": "High",
         "effort": "1 day (after PDK fix)",
         "status": "Blocked",
-        "description": "Currently blocked because the local GPDK045 copy lacks the Assura QRC technology files (directory `qrcSetupDir /home/buet/pdk/gpdk045_v_6_0/qrc` is absent). Resolving this requires copying the complete QRC rule directory from the university foundry package, then generating view `av_extracted`.",
-        "rationale": "Extracts physical wiring capacitance and resistance to quantify real interconnect delay degradation and phase shifts."
+        "description": "Currently blocked because the local GPDK045 copy lacks the Assura QRC technology files (directory `qrcSetupDir /home/buet/pdk/gpdk045_v_6_0/qrc` is absent). Resolving this requires obtaining the QRC rule directory from the foundry package, then generating view `av_extracted` (v2 task W9, requirement SR-08, risk R3).",
+        "rationale": "Quantifies physical wiring capacitance and resistance to determine real interconnect delay degradation; required before any post-layout claims."
     },
     {
         "id": "item-d",
@@ -41,8 +41,8 @@ BACKLOG_ITEMS = [
         "priority": "Medium",
         "effort": "2 hours",
         "status": "Pending",
-        "description": "The formal academic report template contains a dedicated figure slot for post-layout transient simulation waveforms. Once extraction view `av_extracted` is simulated in Spectre, the resulting ViVA waveform strip must be captured and inserted into the report.",
-        "rationale": "Fulfills the final placeholder requirement in the academic report rubrics."
+        "description": "The formal academic report template contains a dedicated figure slot for post-layout transient simulation waveforms. Once extraction view `av_extracted` is simulated in Spectre, the resulting ViVA waveform strip will be captured and inserted into the report (v2 SR-08).",
+        "rationale": "Fulfills the final placeholder requirement in the academic report rubrics once extraction files are available."
     },
     {
         "id": "item-e",
@@ -52,7 +52,7 @@ BACKLOG_ITEMS = [
         "effort": "4 hours",
         "status": "Pending",
         "description": "In the current report, only Design D at 1.4 GHz features a native Virtuoso ViVA viewer capture (`viva_tran_D_1p4GHz_full.png`). Transient waveform figures for the Unsized Baseline, Design B at 6.0 GHz, and PVT extreme corners are high-resolution Python plots generated from raw Spectre output data.",
-        "rationale": "Replacing script plots with native Virtuoso GUI captures ensures uniform presentation visual aesthetics."
+        "rationale": "Replacing script plots with native Virtuoso GUI captures provides uniform presentation visual aesthetics."
     },
     {
         "id": "item-f",
@@ -61,8 +61,8 @@ BACKLOG_ITEMS = [
         "priority": "Low",
         "effort": "3 hours",
         "status": "Optional",
-        "description": "All 45-corner PVT sweeps were executed on the standalone netlist with default foundry device parameters, yielding 0.541 mW typical power and 14.07 fJ PDP for Design D. Re-running the 45-corner matrix on the Virtuoso schematic netlist (which includes STI stress and well proximity parameters) would lower reported power to ~0.455 mW and PDP to ~12.14 fJ.",
-        "rationale": "Presents more favorable power metrics while maintaining conservative standalone figures as worst-case baseline."
+        "description": "All 45-corner PVT sweeps were executed on the standalone netlist with default foundry device parameters, yielding 0.541 mW typical power and 14.07 fJ PDP for Design D. Re-running the 45-corner matrix on the Virtuoso schematic netlist (which includes STI stress and well proximity parameters) would lower reported power to ~0.455 mW and PDP to ~12.14 fJ (v2 decision D4).",
+        "rationale": "Documents layout-dependent power effects while maintaining conservative standalone figures as worst-case baseline."
     },
     {
         "id": "item-g",
@@ -72,7 +72,7 @@ BACKLOG_ITEMS = [
         "effort": "2 hours",
         "status": "Pending",
         "description": "Resolve the single remaining schCheck warning on `tb_divider` ('Instance name collides with signal name - VDD'), declutter dense interconnect routing in `divider_core` schematic, and insert a dedicated testbench schematic screenshot into the project documentation.",
-        "rationale": "Achieves completely clean 0/0 schCheck across all views and documents stimulus setup."
+        "rationale": "Achieves clean 0/0 schCheck across all views and documents stimulus setup (v2 SR-07)."
     },
     {
         "id": "item-h",
@@ -111,8 +111,8 @@ BACKLOG_ITEMS = [
         "priority": "High",
         "effort": "1 hour",
         "status": "Pending",
-        "description": "A plaintext login password exists in the legacy task prompt file (`PROMPT.md`). The guest account password should be rotated, and git history scrubbed or the file updated to use environment variables or local credentials ignored by git.",
-        "rationale": "Essential security best practice preventing credential leakage in public or academic git repositories."
+        "description": "A plaintext login password exists in the legacy task prompt file (`PROMPT.md`). The guest account password should be rotated, and git history scrubbed or the file updated to use environment variables or local credentials ignored by git (v2 schedule task W2, risk R9, requirement SR-12, decision D6).",
+        "rationale": "Immediate security requirement preventing credential exposure in public git history; must be executed first."
     },
     {
         "id": "item-l",

@@ -149,7 +149,7 @@ GLOSSARY_TERMS = [
     {
         "term": "Design D (1.4 GHz)",
         "category": "Project-specific",
-        "definition": "The nominal, PVT-robust sized frequency divider variant designed for operation at the reference paper's input clock frequency of 1.4 GHz.",
+        "definition": "The nominal sized frequency divider variant designed for operation at the reference paper's input clock frequency of 1.4 GHz.",
         "project": "Configured with multiplier $m = 4$, load resistors $R_1 = R_2 = 3\\text{ k}\\Omega$, achieving 700.0 MHz output, $0.541\\text{ mW}$ power, $25.99\\text{ ps}$ delay, $14.07\\text{ fJ}$ PDP, and 41/45 PVT corner yield.",
         "link": "explainer.html#results"
     },
@@ -604,7 +604,7 @@ GLOSSARY_TERMS = [
     {
         "term": "PVT (Process, Voltage, Temperature)",
         "category": "Verification",
-        "definition": "Comprehensive design robustness characterization assessing circuit functionality and performance across variations in semiconductor manufacturing, supply rail, and ambient temperature.",
+        "definition": "Design characterization assessing circuit functionality and performance across variations in semiconductor manufacturing, supply rail, and ambient temperature.",
         "project": "Tested across a 45-corner matrix (5 process corners $\\times$ 3 temperatures [$-40, 27, 125^\\circ\\text{C}$] $\\times$ 3 supplies [$0.9, 1.0, 1.1\\text{ V}$]). Design D achieved 41/45 pass rate.",
         "link": "explainer.html#results"
     },
@@ -751,15 +751,15 @@ GLOSSARY_TERMS = [
     {
         "term": "Strict Division Check (8-output criteria)",
         "category": "Verification",
-        "definition": "A rigorous multi-channel validation algorithm requiring all eight outputs of the divider to toggle at exactly half the input frequency ($f_{in} / 2 \\pm 0.1\\%$) with swing $\\ge 0.1\\text{ V}$.",
+        "definition": "A multi-channel validation algorithm requiring all eight outputs of the divider to toggle at exactly half the input frequency ($f_{in} / 2 \\pm 0.1\\%$) with swing $\\ge 0.1\\text{ V}$.",
         "project": "Implemented in `measure_guest.py` after earlier Q1-only checks yielded false passes on harmonic distortions at $2.0\\times f_{in}$.",
         "link": "explainer.html#results"
     },
     {
         "term": "Subagent Architecture (Haiku / agy / Gemini)",
         "category": "Project-specific",
-        "definition": "A multi-agent autonomous engineering workflow distributing tasks between specialized LLM agents for VM execution, scripting, text auditing, and verification.",
-        "project": "Haiku workers executed headless VM runs and log shipping; agy/Gemini conducted rigorous quantitative audits (`REVIEW3_numbers.md`, `REVIEW3_prose.md`) to eliminate marketing bias.",
+        "definition": "A multi-agent engineering workflow distributing tasks between specialized LLM agents for VM execution, scripting, text auditing, and verification.",
+        "project": "Haiku workers executed headless VM runs and log shipping; automated quantitative audits (`REVIEW3_numbers.md`, `REVIEW3_prose.md`) were conducted to eliminate promotional bias.",
         "link": "explainer.html#timeline"
     },
     {
@@ -866,6 +866,111 @@ GLOSSARY_TERMS = [
         "definition": "Threshold voltage and mobility shifts in MOSFETs caused by scattered high-energy dopant ion scattering off photoresist edges during retrograde well implantation.",
         "project": "Quantified by BSIM4 instance parameters `sca=226.00151, scb=0.11734, scc=0.02767` extracted by Virtuoso, explaining lower drive current and power in schematic runs.",
         "link": "explainer.html#power-gap"
+    },
+    {
+        "term": "Baseline (Project Baseline)",
+        "category": "Project-specific",
+        "definition": "A frozen, verified state of repository files, netlists, reports, and VM images that serves as an authoritative reference point for future work.",
+        "project": "Recorded in STABLE.md at git tag `v1.0-stable` (commit 336d17b) and VM snapshot `stable-v1`, preserving verified 45 nm metrics for Designs D and B so v2 research proceeds independently on `main`.",
+        "link": "explainer.html#v2-plan"
+    },
+    {
+        "term": "Claims Register",
+        "category": "Verification",
+        "definition": "An institutional ledger recording every numerical assertion and benchmark in a manuscript draft, linking each claim to an evidentiary simulation file and audit verdict.",
+        "project": "Introduced in v2/CLAIMS_AUDIT.md to audit manuscript claims; enforces the rule that no metric enters the paper without an evidence path and rerunnable execution script.",
+        "link": "explainer.html#v2-plan"
+    },
+    {
+        "term": "Correction Letter",
+        "category": "Project-specific",
+        "definition": "A concise peer-reviewed paper documenting where a published circuit design equation breaks down under advanced process nodes, providing a revised physical model and measured data.",
+        "project": "Designated in v2/PLAN.md as the fallback paper strategy: documenting that Kuo's R = Ron/2 rule fails at unit size in 45 nm, and demonstrating the stack rule R1 >= 1.1 * 3Ron/m with measured Designs D and B.",
+        "link": "explainer.html#v2-plan"
+    },
+    {
+        "term": "Critical Path",
+        "category": "Project-specific",
+        "definition": "The longest sequence of dependent tasks that dictates the minimum calendar duration required to complete an engineering project milestone.",
+        "project": "Outlined in v2/SCHEDULE.md as W1 (Decisions) -> W3 (Re-baseline) -> W5 (E1 Sweep) -> W7 (Analysis) -> W10 (Manuscript) -> W11 (Audits) -> W12 (Package), spanning 4 weeks with serialized VM runs.",
+        "link": "explainer.html#v2-plan"
+    },
+    {
+        "term": "Figure of Merit (FoM)",
+        "category": "Metrics",
+        "definition": "A composite performance index that combines disparate circuit metrics (operating frequency, power consumption, area, phase error) into a single scalar value for cross-technology comparison.",
+        "project": "Used in published divider benchmark tables (Kuo et al., Table I); v2 requirements require primary source retrieval for all benchmark entries rather than copying unverified table rows.",
+        "link": "explainer.html#paper"
+    },
+    {
+        "term": "Go/No-Go Gate",
+        "category": "Project-specific",
+        "definition": "A mandatory review milestone between project stages where strict technical criteria must be fulfilled before committing time and VM resources to subsequent tasks.",
+        "project": "Structured across stages S0 to S5 in v2/PLAN.md; for example, Stage S1 exit requires successful nominal rerun of Designs D and B before launching Stage S2 enhancement sweeps.",
+        "link": "explainer.html#v2-plan"
+    },
+    {
+        "term": "Monte Carlo Simulation",
+        "category": "Verification",
+        "definition": "A statistical circuit simulation method evaluating parametric yield by randomly varying device model parameters according to foundry-measured statistical and mismatch distributions.",
+        "project": "Subject to requirement SR-06: permitted in v2 only after inspecting the GPDK045 Spectre model files to verify that mismatch sections exist, preventing ungrounded statistical yield claims.",
+        "link": "explainer.html#v2-plan"
+    },
+    {
+        "term": "Regeneration Margin",
+        "category": "Circuit",
+        "definition": "The excess load resistance or loop gain beyond the critical oscillation threshold needed to ensure reliable latching across process, voltage, and temperature variations.",
+        "project": "At multiplier m = 4, theoretical regeneration threshold is R_crit = 1.90 kΩ. Design D uses R = 3.0 kΩ (giving 1.10 kΩ margin, passing 41/45 PVT corners); Design B uses R = 2.0 kΩ (0.10 kΩ margin, passing 21/45 corners).",
+        "link": "explainer.html#theory"
+    },
+    {
+        "term": "Requirement (System Requirement / SR)",
+        "category": "Verification",
+        "definition": "A formal, verifiable technical statement specifying a functional capability, performance target, or constraint, with an explicit acceptance criterion and evidence file.",
+        "project": "Formulated in v2/REQUIREMENTS.md as 12 formal requirements (SR-01 to SR-12), including SR-01 for divide-by-two functionality, SR-05 for 45-corner PVT sweeps, and SR-08 forbidding post-layout claims without extraction.",
+        "link": "explainer.html#v2-plan"
+    },
+    {
+        "term": "Risk Register",
+        "category": "Project-specific",
+        "definition": "A formal project management record cataloging identified technical, security, and schedule risks, assessing likelihood and impact, and defining concrete triggers and mitigations.",
+        "project": "Maintained in v2/RISKS.md across 12 risks (R1 to R12), identifying unmeasured draft claim carryover (R1), missing QRC extraction files (R3), VM lane queue serialization (R4), and repository credential exposure (R9).",
+        "link": "explainer.html#v2-plan"
+    },
+    {
+        "term": "Traceability",
+        "category": "Verification",
+        "definition": "The property that enables any reported number, plot, or conclusion to be tracked directly to an underlying raw simulation log, netlist, and rerun script.",
+        "project": "Every number in the explainer and report maps directly to a specific log or JSON artifact in `results/gpdk045/` or `report/gpdk045/report_data.json` with an exact command to reproduce it.",
+        "link": "explainer.html#results"
+    },
+    {
+        "term": "Trade Study",
+        "category": "Project-specific",
+        "definition": "A structured comparative evaluation of alternative design choices against weighted technical feasibility, cost, headroom, and risk criteria.",
+        "project": "Conducted in v2/TRADE_STUDY.md across 7 architecture candidates (E1 to E7); E1 (sizing exploration) scored 50/60 as the recommended primary path, whereas cascode tail (E2) scored 18/60 and was rejected.",
+        "link": "explainer.html#v2-plan"
+    },
+    {
+        "term": "Tuning Range (Frequency Tuning Range / FTR)",
+        "category": "Metrics",
+        "definition": "The continuous frequency span over which a circuit maintains correct operation, expressed in MHz/GHz or as percentage fractional bandwidth: 2 * (f_max - f_min) / (f_max + f_min) * 100%.",
+        "project": "Kuo et al. reported a 173.3% range (100 MHz to 1.4 GHz) in 180 nm; in 45 nm, our sweeps demonstrate that frequency range depends on sizing (Design D operates up to 5.5 GHz; Design B up to 6.0 GHz).",
+        "link": "explainer.html#paper"
+    },
+    {
+        "term": "Verification Matrix",
+        "category": "Verification",
+        "definition": "A tabular cross-reference mapping each system requirement to its acceptance criterion, verification method (test, inspection, analysis), and specific evidence log path.",
+        "project": "Documented in v2/VERIFICATION_MATRIX.md to verify that all system requirements (SR-01 to SR-12) are satisfied before manuscript submission.",
+        "link": "explainer.html#v2-plan"
+    },
+    {
+        "term": "Voltage Headroom",
+        "category": "Device physics",
+        "definition": "The allowable DC voltage range across active transistors in a series stack before devices are forced into linear/triode operation or encounter supply rail limits.",
+        "project": "Under 1.0 V supply with a three-transistor series stack and load resistor IR drop, available headroom above the tail node is only 8 to 68 mV, precluding cascode topologies that require ~700 mV headroom.",
+        "link": "explainer.html#theory"
     }
 ]
 

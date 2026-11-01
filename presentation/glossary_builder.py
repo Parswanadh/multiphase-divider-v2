@@ -74,7 +74,8 @@ def build_glossary_html():
             "gallery": "Section 8: Screenshots Gallery",
             "qna": "Section 9: Defense Q&A",
             "backlog": "Section 10: Pending Backlog",
-            "cheatsheet": "Section 11: Defense Cheat Sheet"
+            "v2-plan": "Section 11: v2 Plan for the Paper",
+            "cheatsheet": "Section 12: Defense Cheat Sheet"
         }.get(section_name, "Explainer Site")
         
         terms_html_parts.append(f"""
@@ -108,7 +109,7 @@ def build_glossary_html():
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>VLSI Defense Glossary — Multiphase Divide-by-Two CMOS Frequency Divider</title>
+  <title>VLSI Defense Glossary: Multiphase Divide-by-Two CMOS Frequency Divider</title>
   <style>
 {SHARED_CSS}
   </style>
@@ -133,7 +134,7 @@ def build_glossary_html():
           <span>Technical Reference</span>
         </div>
         <h2 class="sidebar-title">Defense Glossary</h2>
-        <div class="sidebar-subtitle">122 Verified VLSI & EDA Terms</div>
+        <div class="sidebar-subtitle">{len(sorted_terms)} Verified VLSI &amp; Systems Terms</div>
       </div>
 
       <div class="nav-links-container">
@@ -181,7 +182,7 @@ def build_glossary_html():
             <div class="hero-meta-item">Total Terms: <strong>{len(sorted_terms)}</strong></div>
             <div class="hero-meta-item">Categories: <strong>{len(categories)}</strong></div>
             <div class="hero-meta-item">Process Node: <strong>Cadence GPDK045 (45 nm)</strong></div>
-            <div class="hero-meta-item">Status: <strong>100% Traceable to Evidence Logs</strong></div>
+            <div class="hero-meta-item">Status: <strong>Traceable to Repo Evidence Logs</strong></div>
           </div>
         </header>
 
@@ -218,7 +219,7 @@ def build_glossary_html():
         </div>
 
         <footer style="margin-top:80px;padding-top:24px;border-top:1px solid var(--line);text-align:center;color:var(--ink-muted);font-size:13.5px;">
-          <p>Cadence GPDK045 Multiphase Frequency Divider Project Defense — 100% Static & Self-Contained</p>
+          <p>Cadence GPDK045 Multiphase Frequency Divider Project Defense: Static &amp; Self-Contained</p>
           <p style="margin-top:6px;"><a href="explainer.html" class="text-link">Return to Main Defense Explainer</a></p>
         </footer>
 
