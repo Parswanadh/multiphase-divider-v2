@@ -984,6 +984,7 @@ def build_data():
         f"per output. Simulations employ 40 ns transient analysis runs in Cadence Spectre.",
         rb_text,
         f"Circuit schematics for the DLATCH and divider core are illustrated in Figure {slot_no['circuit']} and Figure {slot_no['core']} (ring architecture in Figure {extra_no['ring']}).",
+        "Origin of the figures: the schematic and layout editor views, the Assura DRC summary and the ViVA waveform of design D are screenshots of Cadence tool windows. The other waveforms, sweeps and PVT maps are plots made with Python (matplotlib) from the Spectre result files, and the circuit diagrams are drawn by a script from the netlist. No figure was produced by an image-generation model, and every plotted point comes from a Spectre result file.",
     ]
 
     pin_area = lay["pin_w"] * lay["pin_h"]
