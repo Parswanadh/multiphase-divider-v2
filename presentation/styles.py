@@ -1424,6 +1424,48 @@ details.qna-card[open] .qna-chevron {
     text-decoration: none !important;
   }
 }
+
+/* Phone layout and accessible controls */
+img { max-width: 100%; height: auto; }
+main, section, .content-wrap, .table-wrapper, .code-block, .glossary-controls-bar { min-width: 0; }
+.body-text, .glossary-definition, .glossary-project-box, .qna-answer, .tldr-text, .gallery-desc, li { font-size: max(1rem, 1em); }
+p, li { overflow-wrap: anywhere; }
+p.body-text, .hero-subtitle, .qna-answer, .glossary-definition { max-width: 68ch; }
+a, button, input, select, textarea, summary { min-height: 44px; }
+a { display: inline-flex; align-items: center; }
+button, input, select, textarea { font-size: 16px; }
+.table-wrapper { max-width: 100%; }
+pre.code-content { max-width: 100%; }
+.gallery-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr)); }
+.gallery-card img { height: auto; }
+.letter-jump-link { width: 44px; height: 44px; flex: 0 0 44px; }
+.category-filter-chips, .letter-jump-bar { flex-wrap: nowrap; overflow-x: auto; max-width: 100%; }
+.category-filter-chips .filter-chip-btn { white-space: nowrap; flex: none; }
+.pvt-controls .filter-chip-btn { white-space: normal; max-width: 100%; }
+.timeline-item > div { min-width: 0; }
+.permalink-icon, .copy-btn { min-width: 44px; justify-content: center; }
+.glossary-entry-header { flex-wrap: wrap; gap: 6px; }
+.glossary-entry-header > * { min-width: 0; overflow-wrap: anywhere; }
+code.inline-code, .source-tag, .glossary-project-box, .glossary-def { overflow-wrap: anywhere; word-break: break-word; }
+input.checklist-cb { width: 44px; height: 44px; flex: 0 0 44px; }
+p.body-text, ul.bullet-list li, ol.num-list li, .glossary-def { font-size: 16px; }
+.search-input { font-size: 16px; }
+#sidebar .nav-item, .mobile-menu-btn { min-height: 44px; }
+:focus-visible { outline: 3px solid var(--terracotta); outline-offset: 2px; }
+@media (max-width: 1024px) {
+  html { scroll-padding-top: 90px; }
+  .mobile-header { padding: max(8px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) 8px max(12px, env(safe-area-inset-left)); gap: 8px; }
+  .mobile-brand { font-size: 14px; }
+  #sidebar { left: 0; top: 0; width: min(310px, 90vw); height: 100dvh; transform: translateX(-110%); padding-bottom: max(40px, env(safe-area-inset-bottom)); }
+  #sidebar.open { transform: translateX(0); }
+  main.main-content { padding: 24px max(16px, env(safe-area-inset-right)) max(80px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+  section.card-section { padding: 20px 16px; }
+  .glossary-controls-bar { top: 60px; }
+  .pvt-grid-container { min-width: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
 """
 
 SHARED_JS = """
@@ -1474,9 +1516,12 @@ if (window.matchMedia) {
 // Mobile Sidebar Drawer
 function toggleMobileMenu() {
   const sidebar = document.getElementById('sidebar');
-  if (sidebar) {
-    sidebar.classList.toggle('open');
-  }
+  if (!sidebar) return;
+  const btn = document.querySelector('[aria-controls="sidebar"]');
+  const open = sidebar.classList.toggle('open');
+  if (btn) btn.setAttribute('aria-expanded', String(open));
+  if (open) sidebar.querySelector('a,button')?.focus();
+  else btn?.focus();
 }
 
 // Copy Code Button Logic
@@ -1524,9 +1569,34 @@ document.addEventListener('keydown', (e) => {
     closeLightbox();
     const sidebar = document.getElementById('sidebar');
     if (sidebar && sidebar.classList.contains('open')) {
-      sidebar.classList.remove('open');
+      toggleMobileMenu();
     }
   }
+});
+
+
+document.addEventListener('keydown', e => {
+  const sidebar = document.getElementById('sidebar');
+  if (e.key !== 'Tab' || !sidebar?.classList.contains('open')) return;
+  const items = [...sidebar.querySelectorAll('a[href], button:not([disabled])')];
+  if (!items.length) return;
+  if (e.shiftKey && document.activeElement === items[0]) { e.preventDefault(); items[items.length-1].focus(); }
+  else if (!e.shiftKey && document.activeElement === items[items.length-1]) { e.preventDefault(); items[0].focus(); }
+});
+document.addEventListener('click', e => {
+  const sidebar = document.getElementById('sidebar');
+  if (sidebar?.classList.contains('open') && e.target.closest('#sidebar a')) toggleMobileMenu();
+});
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.gallery-card[onclick], img[onclick]').forEach(el => {
+    el.tabIndex = 0; el.setAttribute('role', 'button');
+    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.click(); } });
+  });
+  let startY = null;
+  const wrap = document.querySelector('.lightbox-img-wrap');
+  wrap?.addEventListener('click', closeLightbox);
+  wrap?.addEventListener('touchstart', e => { if (e.touches.length === 1) startY = e.touches[0].clientY; }, {passive:true});
+  wrap?.addEventListener('touchend', e => { if (startY !== null && e.changedTouches[0].clientY - startY > 100) closeLightbox(); startY = null; }, {passive:true});
 });
 
 // Scrollspy for Sidebar

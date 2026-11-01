@@ -1427,6 +1427,48 @@ details.qna-card[open] .qna-chevron {
   }
 }
 
+/* Phone layout and accessible controls */
+img { max-width: 100%; height: auto; }
+main, section, .content-wrap, .table-wrapper, .code-block, .glossary-controls-bar { min-width: 0; }
+.body-text, .glossary-definition, .glossary-project-box, .qna-answer, .tldr-text, .gallery-desc, li { font-size: max(1rem, 1em); }
+p, li { overflow-wrap: anywhere; }
+p.body-text, .hero-subtitle, .qna-answer, .glossary-definition { max-width: 68ch; }
+a, button, input, select, textarea, summary { min-height: 44px; }
+a { display: inline-flex; align-items: center; }
+button, input, select, textarea { font-size: 16px; }
+.table-wrapper { max-width: 100%; }
+pre.code-content { max-width: 100%; }
+.gallery-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr)); }
+.gallery-card img { height: auto; }
+.letter-jump-link { width: 44px; height: 44px; flex: 0 0 44px; }
+.category-filter-chips, .letter-jump-bar { flex-wrap: nowrap; overflow-x: auto; max-width: 100%; }
+.category-filter-chips .filter-chip-btn { white-space: nowrap; flex: none; }
+.pvt-controls .filter-chip-btn { white-space: normal; max-width: 100%; }
+.timeline-item > div { min-width: 0; }
+.permalink-icon, .copy-btn { min-width: 44px; justify-content: center; }
+.glossary-entry-header { flex-wrap: wrap; gap: 6px; }
+.glossary-entry-header > * { min-width: 0; overflow-wrap: anywhere; }
+code.inline-code, .source-tag, .glossary-project-box, .glossary-def { overflow-wrap: anywhere; word-break: break-word; }
+input.checklist-cb { width: 44px; height: 44px; flex: 0 0 44px; }
+p.body-text, ul.bullet-list li, ol.num-list li, .glossary-def { font-size: 16px; }
+.search-input { font-size: 16px; }
+#sidebar .nav-item, .mobile-menu-btn { min-height: 44px; }
+:focus-visible { outline: 3px solid var(--terracotta); outline-offset: 2px; }
+@media (max-width: 1024px) {
+  html { scroll-padding-top: 90px; }
+  .mobile-header { padding: max(8px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) 8px max(12px, env(safe-area-inset-left)); gap: 8px; }
+  .mobile-brand { font-size: 14px; }
+  #sidebar { left: 0; top: 0; width: min(310px, 90vw); height: 100dvh; transform: translateX(-110%); padding-bottom: max(40px, env(safe-area-inset-bottom)); }
+  #sidebar.open { transform: translateX(0); }
+  main.main-content { padding: 24px max(16px, env(safe-area-inset-right)) max(80px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+  section.card-section { padding: 20px 16px; }
+  .glossary-controls-bar { top: 60px; }
+  .pvt-grid-container { min-width: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+
   </style>
 </head>
 <body>
@@ -1436,7 +1478,7 @@ details.qna-card[open] .qna-chevron {
     <div class="mobile-brand">Multiphase Divider Defense</div>
     <div style="display:flex;gap:8px;">
       <a href="glossary.html" class="mobile-menu-btn" style="text-decoration:none;font-weight:600;">Glossary</a>
-      <button class="mobile-menu-btn" onclick="toggleMobileMenu()">Sections ☰</button>
+      <button class="mobile-menu-btn" aria-controls="sidebar" aria-expanded="false" onclick="toggleMobileMenu()">Sections ☰</button>
     </div>
   </header>
 
@@ -1565,7 +1607,7 @@ details.qna-card[open] .qna-chevron {
             The project satisfies the dual evaluation requirements: the <strong>23ECE302 Theory Assignment (15 marks)</strong> and the <strong>23ECE383 System Design Project (40 marks)</strong>, totaling 55 marks. Every single mark is evidenced by concrete simulation results, logs, and screenshots.
           </p>
 
-          <div class="table-wrapper">
+          <div class="table-wrapper" tabindex="0" role="region" aria-label="Results table">
             <table class="data-table">
               <thead>
                 <tr>
@@ -1675,14 +1717,14 @@ details.qna-card[open] .qna-chevron {
 
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:24px 0;">
             <figure class="content-figure">
-              <img src="assets/fig_circuit_latch.png" alt="Differential DLATCH Transistor Schematic Diagram" onclick="openLightbox('assets/fig_circuit_latch.png', 'Differential DLATCH Stage Schematic (M1-M7, R1, R2)')">
+              <img src="assets/fig_circuit_latch.webp" alt="Differential DLATCH Transistor Schematic Diagram" onclick="openLightbox('assets/fig_circuit_latch.webp', 'Differential DLATCH Stage Schematic (M1-M7, R1, R2)')" width="1200" height="877" loading="eager" decoding="async">
               <figcaption class="figure-caption">
                 <strong>Figure 1.1:</strong> DLATCH stage schematic showing sampling pair M1–M2, hold cross-coupled pair M3–M4, clock switches M5–M6, tail current source M7, and resistive loads R1–R2.
               </figcaption>
             </figure>
 
             <figure class="content-figure">
-              <img src="assets/fig_circuit_ring.png" alt="4-Latch Ring Connection Topology" onclick="openLightbox('assets/fig_circuit_ring.png', '4-Latch Closed Ring Topology with Alternating Cross-Connections')">
+              <img src="assets/fig_circuit_ring.webp" alt="4-Latch Ring Connection Topology" onclick="openLightbox('assets/fig_circuit_ring.webp', '4-Latch Closed Ring Topology with Alternating Cross-Connections')" width="1200" height="994" loading="lazy" decoding="async">
               <figcaption class="figure-caption">
                 <strong>Figure 1.2:</strong> Closed ring cascade of four DLATCH stages (XD1 to XD4) showing alternating cross-connections and inverted clocks on XD2 and XD3.
               </figcaption>
@@ -1760,7 +1802,7 @@ details.qna-card[open] .qna-chevron {
             R1 ≥ 1.1 × (3 Ron / m)
           </p>
 
-          <div class="table-wrapper">
+          <div class="table-wrapper" tabindex="0" role="region" aria-label="Results table">
             <table class="data-table">
               <thead>
                 <tr>
@@ -1826,14 +1868,14 @@ details.qna-card[open] .qna-chevron {
 
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:24px 0;">
             <figure class="content-figure">
-              <img src="assets/fig_phase_steps.png" alt="Phase Steps Diagram" onclick="openLightbox('assets/fig_phase_steps.png', 'Phase Steps across the 8 Outputs for Baseline, Design D, and Design B')">
+              <img src="assets/fig_phase_steps.webp" alt="Phase Steps Diagram" onclick="openLightbox('assets/fig_phase_steps.webp', 'Phase Steps across the 8 Outputs for Baseline, Design D, and Design B')" width="1200" height="959" loading="lazy" decoding="async">
               <figcaption class="figure-caption">
                 <strong>Figure 2.1:</strong> Measured phase steps between adjacent outputs showing alternating 83.5°/6.5° steps in Design D vs 48.8°/41.2° steps in Design B.
               </figcaption>
             </figure>
 
             <figure class="content-figure">
-              <img src="assets/fig_tail_saturation_D_1p4.png" alt="Tail Transistor Saturation Voltage" onclick="openLightbox('assets/fig_tail_saturation_D_1p4.png', 'Tail Transistor M7 Drain Voltage vs Vdsat in Design D')">
+              <img src="assets/fig_tail_saturation_D_1p4.webp" alt="Tail Transistor Saturation Voltage" onclick="openLightbox('assets/fig_tail_saturation_D_1p4.webp', 'Tail Transistor M7 Drain Voltage vs Vdsat in Design D')" width="1200" height="736" loading="lazy" decoding="async">
               <figcaption class="figure-caption">
                 <strong>Figure 2.2:</strong> M7 drain voltage V(tail) remains between 8.1 mV and 66.9 mV, strictly below BSIM4 Vdsat = 357.8 mV, confirming triode operation.
               </figcaption>
@@ -1892,7 +1934,7 @@ details.qna-card[open] .qna-chevron {
               <div>
                 <h4 style="font-family:var(--serif);font-size:17px;font-weight:600;margin-bottom:4px;color:var(--ink);">Cadence VM Orchestration &amp; 32-Bit Tooling Fixes (Oct 31)</h4>
                 <p class="body-text" style="font-size:14.5px;margin-bottom:6px;">
-                  Built an automated headless test harness for the 32-bit CentOS 6.5 Cadence virtual machine (<code class="inline-code">CadenceVM</code>) hosting Virtuoso IC615, Spectre 12.1, and Assura 4.1. Resolved missing 32-bit perl and gcc libraries required for BSIM4 C-model compilation. Developed a headless virtual serial console (<code class="inline-code">vmx.sh</code>, <code class="inline-code">serial.txt</code>) with completion tokens (<code class="inline-code">__DONE_$n</code>), automated ISO file staging (<code class="inline-code">xorriso</code>) to virtual CD-ROM (<code class="inline-code">/mnt/r</code>), and mutual exclusion via <code class="inline-code">flock /home/parshu/vm/vm.lock</code>.
+                  Built an automated headless test harness for the 32-bit CentOS 6.5 Cadence virtual machine (<code class="inline-code">CadenceVM</code>) hosting Virtuoso IC615, Spectre 12.1, and Assura 4.1. Resolved missing 32-bit perl and gcc libraries required for BSIM4 C-model compilation. Developed a headless virtual serial console (<code class="inline-code">vmx.sh</code>, <code class="inline-code">serial.txt</code>) with completion tokens (<code class="inline-code">__DONE_$n</code>), automated ISO file staging (<code class="inline-code">xorriso</code>) to virtual CD-ROM (<code class="inline-code">/mnt/r</code>), and mutual exclusion via <code class="inline-code">flock vm.lock</code>.
                 </p>
                 <span class="source-tag">Source: cadence/vm/run_gpdk045.sh, cadence/skill/verify/run_verify.sh</span>
               </div>
@@ -1978,7 +2020,7 @@ details.qna-card[open] .qna-chevron {
             Performance metrics extracted from Cadence Spectre simulations in GPDK045 at the typical corner (tt, 27°C, VDD = 1.0 V), compared against Kuo et al.'s published 180 nm benchmark.
           </p>
 
-          <div class="table-wrapper">
+          <div class="table-wrapper" tabindex="0" role="region" aria-label="Results table">
             <table class="data-table">
               <thead>
                 <tr>
@@ -3054,7 +3096,7 @@ details.qna-card[open] .qna-chevron {
             A critical engineering discovery occurred when comparing the standalone Spectre netlist (<code class="inline-code">spectre/divider_gpdk45.scs</code>) against the schematic-driven simulation executed directly from the Cadence Virtuoso database via OCEAN (<code class="inline-code">cadence/ocean/run_schematic_tb_param.ocn</code>).
           </p>
 
-          <div class="table-wrapper">
+          <div class="table-wrapper" tabindex="0" role="region" aria-label="Results table">
             <table class="data-table">
               <thead>
                 <tr>
@@ -3151,14 +3193,14 @@ details.qna-card[open] .qna-chevron {
 
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:24px 0;">
             <figure class="content-figure">
-              <img src="assets/layout_dlatch_full.png" alt="Virtuoso DLATCH Layout Placement" onclick="openLightbox('assets/layout_dlatch_full.png', 'Virtuoso Layout Editor: DLATCH Placement Layout (7 NMOS + 2 Poly Resistors)')">
+              <img src="assets/layout_dlatch_full.webp" alt="Virtuoso DLATCH Layout Placement" onclick="openLightbox('assets/layout_dlatch_full.webp', 'Virtuoso Layout Editor: DLATCH Placement Layout (7 NMOS + 2 Poly Resistors)')" width="1200" height="900" loading="lazy" decoding="async">
               <figcaption class="figure-caption">
                 <strong>Figure 6.1:</strong> Virtuoso layout editor showing DLATCH placement: 7 unit NMOS PCells, 2 poly resistors, and Metal1 landing pads.
               </figcaption>
             </figure>
 
             <figure class="content-figure">
-              <img src="assets/layout_core_full.png" alt="Virtuoso Divider Core 2x2 Layout" onclick="openLightbox('assets/layout_core_full.png', 'Virtuoso Layout Editor: divider_core 2x2 Array Placement')">
+              <img src="assets/layout_core_full.webp" alt="Virtuoso Divider Core 2x2 Layout" onclick="openLightbox('assets/layout_core_full.webp', 'Virtuoso Layout Editor: divider_core 2x2 Array Placement')" width="1200" height="900" loading="lazy" decoding="async">
               <figcaption class="figure-caption">
                 <strong>Figure 6.2:</strong> Virtuoso layout editor showing divider_core: four DLATCH stages in 2x2 array with balanced star clock geometry.
               </figcaption>
@@ -3169,7 +3211,7 @@ details.qna-card[open] .qna-chevron {
           <p class="body-text">
             Running Assura 4.1 DRC on view <code class="inline-code">DLATCH/layout</code> against <code class="inline-code">assuraDRC.rul</code> produces exactly 21 real errors across 3 rules:
           </p>
-          <div class="table-wrapper">
+          <div class="table-wrapper" tabindex="0" role="region" aria-label="Results table">
             <table class="data-table">
               <thead>
                 <tr>
@@ -3229,7 +3271,7 @@ details.qna-card[open] .qna-chevron {
           <h3 class="subsection-heading">4. Assura LVS &amp; Parasitic Extraction (RCX) Status</h3>
           <ul class="bullet-list">
             <li><strong>LVS Discrepancies:</strong> Assura LVS aborted with device unbound errors because the schematic instantiated 2-terminal ideal resistors (<code class="inline-code">analogLib/res</code>), whereas GPDK045 physical resistors (<code class="inline-code">g45rnsnp</code>) possess 3 terminals including a p-substrate bulk tie. A diagnostic run filtering resistors completed with 10 net and 15 device mismatches caused by the open net <code class="inline-code">xs</code> and split fingers.</li>
-            <li><strong>RCX Blocked by PDK Copy:</strong> Assura Parasitic Extraction requires foundry QRC technology files. In our local GPDK045 distribution, directory <code class="inline-code">/home/buet/pdk/gpdk045_v_6_0/qrc</code> does not exist (only CapTbl files are present). Consequently, parasitic RC extraction and post-layout simulation were impossible.</li>
+            <li><strong>RCX Blocked by PDK Copy:</strong> Assura Parasitic Extraction requires foundry QRC technology files. In our local GPDK045 distribution, directory <code class="inline-code">qrc</code> does not exist (only CapTbl files are present). Consequently, parasitic RC extraction and post-layout simulation were impossible.</li>
           </ul>
         </section>
 
@@ -3254,7 +3296,7 @@ details.qna-card[open] .qna-chevron {
             Below is an itemized tour of every electronic design automation (EDA) tool utilized in the multiphase divider verification flow, along with its specific script and execution command.
           </p>
 
-          <div class="table-wrapper">
+          <div class="table-wrapper" tabindex="0" role="region" aria-label="Results table">
             <table class="data-table">
               <thead>
                 <tr>
@@ -3340,7 +3382,7 @@ details.qna-card[open] .qna-chevron {
               <span>Virtuoso Schematic Replay (Host Side via VM Runner)</span>
               <button class="copy-btn" onclick="copyCode(this, 'code-cmd-sch')">Copy</button>
             </div>
-            <pre class="code-content" id="code-cmd-sch">flock /home/parshu/vm/vm.lock skill_run.sh build_schematic_v2.il</pre>
+            <pre class="code-content" id="code-cmd-sch">flock vm.lock skill_run.sh build_schematic_v2.il</pre>
           </div>
 
           <div class="code-block-wrapper">
@@ -3364,7 +3406,7 @@ details.qna-card[open] .qna-chevron {
               <span>Chip Assembly Router (vcar) Automated Routing</span>
               <button class="copy-btn" onclick="copyCode(this, 'code-cmd-vcar')">Copy</button>
             </div>
-            <pre class="code-content" id="code-cmd-vcar">flock /home/parshu/vm/vm.lock skill_run.sh run_route.il route_dlatch.il</pre>
+            <pre class="code-content" id="code-cmd-vcar">flock vm.lock skill_run.sh run_route.il route_dlatch.il</pre>
           </div>
         </section>
 
@@ -3387,80 +3429,80 @@ details.qna-card[open] .qna-chevron {
 
           <div class="gallery-grid">
 
-            <div class="gallery-card" onclick="openLightbox('assets/viva_tran_D_1p4GHz_full.png', 'Full-screen ViVA Waveform Capture: 8 Divided Outputs of Design D at 1.4 GHz (700 MHz)')">
-              <img src="assets/viva_tran_D_1p4GHz_full.png" alt="ViVA Transient Waveform of Design D at 1.4 GHz">
+            <div class="gallery-card" onclick="openLightbox('assets/viva_tran_D_1p4GHz_full.webp', 'Full-screen ViVA Waveform Capture: 8 Divided Outputs of Design D at 1.4 GHz (700 MHz)')">
+              <img src="assets/viva_tran_D_1p4GHz_full.webp" alt="ViVA Transient Waveform of Design D at 1.4 GHz" width="1200" height="900" loading="lazy" decoding="async">
               <div class="gallery-info">
                 <div class="gallery-title">ViVA Waveform: Design D (1.4 GHz)</div>
                 <div class="gallery-desc">Native Virtuoso ViVA viewer showing all 8 divided phases (700 MHz) with complementary clocks.</div>
               </div>
             </div>
 
-            <div class="gallery-card" onclick="openLightbox('assets/schematic_dlatch_full.png', 'Virtuoso Schematic Editor: DLATCH Stage with Clean Routing and Sizing Applied')">
-              <img src="assets/schematic_dlatch_full.png" alt="Virtuoso Schematic Editor DLATCH View">
+            <div class="gallery-card" onclick="openLightbox('assets/schematic_dlatch_full.webp', 'Virtuoso Schematic Editor: DLATCH Stage with Clean Routing and Sizing Applied')">
+              <img src="assets/schematic_dlatch_full.webp" alt="Virtuoso Schematic Editor DLATCH View" width="1200" height="900" loading="lazy" decoding="async">
               <div class="gallery-info">
                 <div class="gallery-title">Virtuoso Schematic: DLATCH Stage</div>
                 <div class="gallery-desc">Clean wired schematic of single latch stage (0 errors / 0 warnings in schCheck).</div>
               </div>
             </div>
 
-            <div class="gallery-card" onclick="openLightbox('assets/schematic_core_full.png', 'Virtuoso Schematic Editor: divider_core 4-Latch Closed Ring Interconnection')">
-              <img src="assets/schematic_core_full.png" alt="Virtuoso Schematic Editor divider_core View">
+            <div class="gallery-card" onclick="openLightbox('assets/schematic_core_full.webp', 'Virtuoso Schematic Editor: divider_core 4-Latch Closed Ring Interconnection')">
+              <img src="assets/schematic_core_full.webp" alt="Virtuoso Schematic Editor divider_core View" width="1200" height="900" loading="lazy" decoding="async">
               <div class="gallery-info">
                 <div class="gallery-title">Virtuoso Schematic: divider_core Ring</div>
                 <div class="gallery-desc">Ring cascade of 4 DLATCH instances (XD1 to XD4) with feedback cross-connections.</div>
               </div>
             </div>
 
-            <div class="gallery-card" onclick="openLightbox('assets/layout_dlatch_full.png', 'Virtuoso Layout Editor: DLATCH Cell Placement (7 NMOS + 2 Poly Resistors)')">
-              <img src="assets/layout_dlatch_full.png" alt="Virtuoso Layout Editor DLATCH View">
+            <div class="gallery-card" onclick="openLightbox('assets/layout_dlatch_full.webp', 'Virtuoso Layout Editor: DLATCH Cell Placement (7 NMOS + 2 Poly Resistors)')">
+              <img src="assets/layout_dlatch_full.webp" alt="Virtuoso Layout Editor DLATCH View" width="1200" height="900" loading="lazy" decoding="async">
               <div class="gallery-info">
                 <div class="gallery-title">Virtuoso Layout: DLATCH Placement</div>
                 <div class="gallery-desc">Placed PCells showing 7 NMOS transistors, 2 poly resistors, and Metal1 pin pads.</div>
               </div>
             </div>
 
-            <div class="gallery-card" onclick="openLightbox('assets/layout_core_full.png', 'Virtuoso Layout Editor: divider_core 2x2 Array Placement')">
-              <img src="assets/layout_core_full.png" alt="Virtuoso Layout Editor divider_core View">
+            <div class="gallery-card" onclick="openLightbox('assets/layout_core_full.webp', 'Virtuoso Layout Editor: divider_core 2x2 Array Placement')">
+              <img src="assets/layout_core_full.webp" alt="Virtuoso Layout Editor divider_core View" width="1200" height="900" loading="lazy" decoding="async">
               <div class="gallery-info">
                 <div class="gallery-title">Virtuoso Layout: divider_core 2x2</div>
                 <div class="gallery-desc">Placed 2x2 core array ensuring symmetrical star clock routing lines across stages.</div>
               </div>
             </div>
 
-            <div class="gallery-card" onclick="openLightbox('assets/drc_result.png', 'Assura DRC Error Summary Log: 21 Violations Across 3 Rules')">
-              <img src="assets/drc_result.png" alt="Assura DRC Error Summary Log">
+            <div class="gallery-card" onclick="openLightbox('assets/drc_result.webp', 'Assura DRC Error Summary Log: 21 Violations Across 3 Rules')">
+              <img src="assets/drc_result.webp" alt="Assura DRC Error Summary Log" width="675" height="240" loading="lazy" decoding="async">
               <div class="gallery-info">
                 <div class="gallery-title">Assura DRC Summary: 21 Errors</div>
                 <div class="gallery-desc">Assura verification report detailing substrate stamp errors (220, 221) and Metal1 area (595).</div>
               </div>
             </div>
 
-            <div class="gallery-card" onclick="openLightbox('assets/virtuoso_ciw_gpdk045_loaded.png', 'Virtuoso Command Interpreter Window Confirming GPDK045 Kit Initialization')">
-              <img src="assets/virtuoso_ciw_gpdk045_loaded.png" alt="Virtuoso CIW Initialization Window">
+            <div class="gallery-card" onclick="openLightbox('assets/virtuoso_ciw_gpdk045_loaded.webp', 'Virtuoso Command Interpreter Window Confirming GPDK045 Kit Initialization')">
+              <img src="assets/virtuoso_ciw_gpdk045_loaded.webp" alt="Virtuoso CIW Initialization Window" width="1200" height="900" loading="lazy" decoding="async">
               <div class="gallery-info">
                 <div class="gallery-title">Virtuoso CIW: GPDK045 Loaded</div>
                 <div class="gallery-desc">Console log confirming successful initialization of gpdk045_v_6_0 and batch execution.</div>
               </div>
             </div>
 
-            <div class="gallery-card" onclick="openLightbox('assets/fig_pvt_heatmap_D_1p4.png', 'PVT Pass/Fail Heatmap for Design D (1.4 GHz) Across 45 Corners')">
-              <img src="assets/fig_pvt_heatmap_D_1p4.png" alt="PVT Heatmap for Design D Across 45 Corners">
+            <div class="gallery-card" onclick="openLightbox('assets/fig_pvt_heatmap_D_1p4.webp', 'PVT Pass/Fail Heatmap for Design D (1.4 GHz) Across 45 Corners')">
+              <img src="assets/fig_pvt_heatmap_D_1p4.webp" alt="PVT Heatmap for Design D Across 45 Corners" width="1200" height="589" loading="lazy" decoding="async">
               <div class="gallery-info">
                 <div class="gallery-title">PVT Heatmap: Design D (41/45 Pass)</div>
                 <div class="gallery-desc">Environmental characterization across 5 corners, 3 temps, and 3 supplies (91.1% yield).</div>
               </div>
             </div>
 
-            <div class="gallery-card" onclick="openLightbox('assets/fig_pvt_heatmap_B_6g.png', 'PVT Pass/Fail Heatmap for Design B (6.0 GHz) Across 45 Corners')">
-              <img src="assets/fig_pvt_heatmap_B_6g.png" alt="PVT Heatmap for Design B Across 45 Corners">
+            <div class="gallery-card" onclick="openLightbox('assets/fig_pvt_heatmap_B_6g.webp', 'PVT Pass/Fail Heatmap for Design B (6.0 GHz) Across 45 Corners')">
+              <img src="assets/fig_pvt_heatmap_B_6g.webp" alt="PVT Heatmap for Design B Across 45 Corners" width="1200" height="589" loading="lazy" decoding="async">
               <div class="gallery-info">
                 <div class="gallery-title">PVT Heatmap: Design B (21/45 Pass)</div>
                 <div class="gallery-desc">High-speed characterization across 45 corners showing cold and room temperature stability.</div>
               </div>
             </div>
 
-            <div class="gallery-card" onclick="openLightbox('assets/fig_fsweep.png', 'Frequency Sweeps for Designs B, D, and E Showing Operating Limits')">
-              <img src="assets/fig_fsweep.png" alt="Frequency Sweeps for Designs B, D, and E">
+            <div class="gallery-card" onclick="openLightbox('assets/fig_fsweep.webp', 'Frequency Sweeps for Designs B, D, and E Showing Operating Limits')">
+              <img src="assets/fig_fsweep.webp" alt="Frequency Sweeps for Designs B, D, and E" width="1200" height="503" loading="lazy" decoding="async">
               <div class="gallery-info">
                 <div class="gallery-title">Frequency Sweeps: Operating Limits</div>
                 <div class="gallery-desc">Phase error vs. input frequency, demonstrating phase accuracy convergence near limits.</div>
@@ -3805,7 +3847,7 @@ details.qna-card[open] .qna-chevron {
                 <span class="qna-chevron">▼</span>
               </summary>
               <div class="qna-body">
-                <p class="qna-answer">Assura LVS failed due to two fundamental discrepancies: first, the unrouted net `xs` caused an electrical open; second, schematic load resistors were instantiated from `analogLib/res` (2-terminal ideal devices), whereas Layout XL placed GPDK045 `g45rnsnp` polysilicon resistors, which possess a 3rd physical substrate bulk tie terminal. Furthermore, automated parasitic extraction (RCX / QRC) was completely blocked because the university GPDK045 PDK distribution lacked the required Quantus QRC technology rule directory (`qrcSetupDir /home/buet/pdk/gpdk045_v_6_0/qrc` is absent). Consequently, post-layout simulation could not be executed.</p>
+                <p class="qna-answer">Assura LVS failed due to two fundamental discrepancies: first, the unrouted net `xs` caused an electrical open; second, schematic load resistors were instantiated from `analogLib/res` (2-terminal ideal devices), whereas Layout XL placed GPDK045 `g45rnsnp` polysilicon resistors, which possess a 3rd physical substrate bulk tie terminal. Furthermore, automated parasitic extraction (RCX / QRC) was completely blocked because the university GPDK045 PDK distribution lacked the required Quantus QRC technology rule directory (`qrcSetupDir qrc` is absent). Consequently, post-layout simulation could not be executed.</p>
                 <div class="qna-quote-box">
                   <strong>Numbers to quote:</strong> LVS aborts: Device &#x27;res(RES)&#x27; unbound (2-term schematic vs 3-term layout g45rnsnp); RCX blocked due to missing PDK qrc/ directory.
                 </div>
@@ -3853,7 +3895,7 @@ details.qna-card[open] .qna-chevron {
                 <span class="qna-chevron">▼</span>
               </summary>
               <div class="qna-body">
-                <p class="qna-answer">Because the legacy Cadence tools run inside a headless VirtualBox VM without network sharing, host scripts communicate via a virtual serial port (`/dev/ttyS0`). The host injects shell commands into the guest using `VBoxManage controlvm CadenceVM keyboardputstring`, and monitors host file `/home/parshu/vm/serial.txt` until a unique completion token (`echo __DONE_$n &gt; /dev/ttyS0`) appears. Large scripts and RSF templates are packaged dynamically into temporary ISO9660 filesystems via `xorriso` and attached to the virtual CD-ROM drive (`/mnt/r`). Concurrency across background subagents is strictly serialized using POSIX file lock `flock /home/parshu/vm/vm.lock`.</p>
+                <p class="qna-answer">Because the legacy Cadence tools run inside a headless VirtualBox VM without network sharing, host scripts communicate via a virtual serial port (`/dev/ttyS0`). The host injects shell commands into the guest using `VBoxManage controlvm CadenceVM keyboardputstring`, and monitors host file `serial.txt` until a unique completion token (`echo __DONE_$n &gt; /dev/ttyS0`) appears. Large scripts and RSF templates are packaged dynamically into temporary ISO9660 filesystems via `xorriso` and attached to the virtual CD-ROM drive (`/mnt/r`). Concurrency across background subagents is strictly serialized using POSIX file lock `flock vm.lock`.</p>
                 <div class="qna-quote-box">
                   <strong>Numbers to quote:</strong> Serial console: /dev/ttyS0; completion token __DONE_$n; ISO staging via xorriso mounted at /mnt/r; mutual exclusion enforced via flock vm.lock.
                 </div>
@@ -4076,7 +4118,7 @@ details.qna-card[open] .qna-chevron {
                 <span class="category-chip">1 day (after PDK fix)</span>
               </div>
             </div>
-            <p class="checklist-desc">Currently blocked because the local GPDK045 copy lacks the Assura QRC technology files (directory `qrcSetupDir /home/buet/pdk/gpdk045_v_6_0/qrc` is absent). Resolving this requires obtaining the QRC rule directory from the foundry package, then generating view `av_extracted` (v2 task W9, requirement SR-08, risk R3).</p>
+            <p class="checklist-desc">Currently blocked because the local GPDK045 copy lacks the Assura QRC technology files (directory `qrcSetupDir qrc` is absent). Resolving this requires obtaining the QRC rule directory from the foundry package, then generating view `av_extracted` (v2 task W9, requirement SR-08, risk R3).</p>
             <p class="checklist-rationale"><strong>Rationale / Impact:</strong> Quantifies physical wiring capacitance and resistance to determine real interconnect delay degradation; required before any post-layout claims.</p>
           </div>
         </div>
@@ -4248,7 +4290,7 @@ details.qna-card[open] .qna-chevron {
             <p class="body-text" style="font-size:14.5px;margin-bottom:14px;">
               This records the finished, verified state of the project. Work after this point (v2 paper, layout optimization, additional sweeps) occurs on <code class="inline-code">main</code> and must leave this baseline unchanged.
             </p>
-            <div class="table-wrapper" style="margin-bottom:14px;">
+            <div class="table-wrapper" tabindex="0" role="region" aria-label="Results table" style="margin-bottom:14px;">
               <table class="data-table" style="font-size:13.5px;">
                 <tbody>
                   <tr>
@@ -4288,7 +4330,7 @@ details.qna-card[open] .qna-chevron {
             <p class="body-text" style="font-size:14.5px;margin-bottom:14px;">
               A systematic audit of the early v2 manuscript draft (<code class="inline-code">paper/manuscript_lmwt.*</code>) detailed in <code class="inline-code">v2/CLAIMS_AUDIT.md</code> revealed that its headline numbers were never simulated in Cadence Spectre and directly contradicted our measured GPDK045 evidence. All unsupported claims have been retired to <code class="inline-code">v2/legacy_draft/</code>.
             </p>
-            <div class="table-wrapper">
+            <div class="table-wrapper" tabindex="0" role="region" aria-label="Results table">
               <table class="data-table" style="font-size:13px;">
                 <thead>
                   <tr>
@@ -4356,7 +4398,7 @@ details.qna-card[open] .qna-chevron {
             <p class="body-text" style="font-size:14.5px;margin-bottom:12px;">
               Seven candidate enhancements (E1 to E7) were scored against five weighted criteria: evidence base (weight 3), VM execution cost (2), voltage headroom fit (3), PVT risk (2), and novelty (1).
             </p>
-            <div class="table-wrapper" style="margin-bottom:14px;">
+            <div class="table-wrapper" tabindex="0" role="region" aria-label="Results table" style="margin-bottom:14px;">
               <table class="data-table" style="font-size:13px;">
                 <thead>
                   <tr>
@@ -4435,7 +4477,7 @@ details.qna-card[open] .qna-chevron {
             <p class="body-text" style="font-size:14.5px;margin-bottom:12px;">
               Work progresses through five sequential gates. Progress halts if exit criteria are not satisfied.
             </p>
-            <div class="table-wrapper">
+            <div class="table-wrapper" tabindex="0" role="region" aria-label="Results table">
               <table class="data-table" style="font-size:13px;">
                 <thead>
                   <tr>
@@ -4501,7 +4543,7 @@ details.qna-card[open] .qna-chevron {
             <p class="body-text" style="font-size:14.5px;margin-bottom:12px;">
               Key risks tracked in the v2 risk register, paired with immediate prerequisite actions:
             </p>
-            <div class="table-wrapper" style="margin-bottom:14px;">
+            <div class="table-wrapper" tabindex="0" role="region" aria-label="Results table" style="margin-bottom:14px;">
               <table class="data-table" style="font-size:13px;">
                 <thead>
                   <tr>
@@ -4534,7 +4576,7 @@ details.qna-card[open] .qna-chevron {
                     <td><strong>R4</strong></td>
                     <td>Single VM lane serializes queue and stalls progress</td>
                     <td><span class="status-chip partial">High / Medium</span></td>
-                    <td>Strict flock protocol (/home/parshu/vm/vm.lock); offload all analysis and drafting to host lane.</td>
+                    <td>Strict flock protocol (vm.lock); offload all analysis and drafting to host lane.</td>
                   </tr>
                   <tr>
                     <td><strong>R5</strong></td>
@@ -4634,7 +4676,7 @@ details.qna-card[open] .qna-chevron {
           </div>
 
           <h3 class="subsection-heading">The 'Numbers to Remember' Defense Table</h3>
-          <div class="table-wrapper">
+          <div class="table-wrapper" tabindex="0" role="region" aria-label="Results table">
             <table class="data-table">
               <thead>
                 <tr>
@@ -4840,9 +4882,12 @@ if (window.matchMedia) {
 // Mobile Sidebar Drawer
 function toggleMobileMenu() {
   const sidebar = document.getElementById('sidebar');
-  if (sidebar) {
-    sidebar.classList.toggle('open');
-  }
+  if (!sidebar) return;
+  const btn = document.querySelector('[aria-controls="sidebar"]');
+  const open = sidebar.classList.toggle('open');
+  if (btn) btn.setAttribute('aria-expanded', String(open));
+  if (open) sidebar.querySelector('a,button')?.focus();
+  else btn?.focus();
 }
 
 // Copy Code Button Logic
@@ -4890,9 +4935,34 @@ document.addEventListener('keydown', (e) => {
     closeLightbox();
     const sidebar = document.getElementById('sidebar');
     if (sidebar && sidebar.classList.contains('open')) {
-      sidebar.classList.remove('open');
+      toggleMobileMenu();
     }
   }
+});
+
+
+document.addEventListener('keydown', e => {
+  const sidebar = document.getElementById('sidebar');
+  if (e.key !== 'Tab' || !sidebar?.classList.contains('open')) return;
+  const items = [...sidebar.querySelectorAll('a[href], button:not([disabled])')];
+  if (!items.length) return;
+  if (e.shiftKey && document.activeElement === items[0]) { e.preventDefault(); items[items.length-1].focus(); }
+  else if (!e.shiftKey && document.activeElement === items[items.length-1]) { e.preventDefault(); items[0].focus(); }
+});
+document.addEventListener('click', e => {
+  const sidebar = document.getElementById('sidebar');
+  if (sidebar?.classList.contains('open') && e.target.closest('#sidebar a')) toggleMobileMenu();
+});
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.gallery-card[onclick], img[onclick]').forEach(el => {
+    el.tabIndex = 0; el.setAttribute('role', 'button');
+    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.click(); } });
+  });
+  let startY = null;
+  const wrap = document.querySelector('.lightbox-img-wrap');
+  wrap?.addEventListener('click', closeLightbox);
+  wrap?.addEventListener('touchstart', e => { if (e.touches.length === 1) startY = e.touches[0].clientY; }, {passive:true});
+  wrap?.addEventListener('touchend', e => { if (startY !== null && e.changedTouches[0].clientY - startY > 100) closeLightbox(); startY = null; }, {passive:true});
 });
 
 // Scrollspy for Sidebar

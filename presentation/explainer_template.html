@@ -15,7 +15,7 @@
     <div class="mobile-brand">Multiphase Divider Defense</div>
     <div style="display:flex;gap:8px;">
       <a href="glossary.html" class="mobile-menu-btn" style="text-decoration:none;font-weight:600;">Glossary</a>
-      <button class="mobile-menu-btn" onclick="toggleMobileMenu()">Sections ☰</button>
+      <button class="mobile-menu-btn" aria-controls="sidebar" aria-expanded="false" onclick="toggleMobileMenu()">Sections ☰</button>
     </div>
   </header>
 
@@ -144,7 +144,7 @@
             The project satisfies the dual evaluation requirements: the <strong>23ECE302 Theory Assignment (15 marks)</strong> and the <strong>23ECE383 System Design Project (40 marks)</strong>, totaling 55 marks. Every single mark is evidenced by concrete simulation results, logs, and screenshots.
           </p>
 
-          <div class="table-wrapper">
+          <div class="table-wrapper" tabindex="0" role="region" aria-label="Results table">
             <table class="data-table">
               <thead>
                 <tr>
@@ -339,7 +339,7 @@
             R1 ≥ 1.1 × (3 Ron / m)
           </p>
 
-          <div class="table-wrapper">
+          <div class="table-wrapper" tabindex="0" role="region" aria-label="Results table">
             <table class="data-table">
               <thead>
                 <tr>
@@ -557,7 +557,7 @@
             Performance metrics extracted from Cadence Spectre simulations in GPDK045 at the typical corner (tt, 27°C, VDD = 1.0 V), compared against Kuo et al.'s published 180 nm benchmark.
           </p>
 
-          <div class="table-wrapper">
+          <div class="table-wrapper" tabindex="0" role="region" aria-label="Results table">
             <table class="data-table">
               <thead>
                 <tr>
@@ -823,7 +823,7 @@
             A critical engineering discovery occurred when comparing the standalone Spectre netlist (<code class="inline-code">spectre/divider_gpdk45.scs</code>) against the schematic-driven simulation executed directly from the Cadence Virtuoso database via OCEAN (<code class="inline-code">cadence/ocean/run_schematic_tb_param.ocn</code>).
           </p>
 
-          <div class="table-wrapper">
+          <div class="table-wrapper" tabindex="0" role="region" aria-label="Results table">
             <table class="data-table">
               <thead>
                 <tr>
@@ -938,7 +938,7 @@
           <p class="body-text">
             Running Assura 4.1 DRC on view <code class="inline-code">DLATCH/layout</code> against <code class="inline-code">assuraDRC.rul</code> produces exactly 21 real errors across 3 rules:
           </p>
-          <div class="table-wrapper">
+          <div class="table-wrapper" tabindex="0" role="region" aria-label="Results table">
             <table class="data-table">
               <thead>
                 <tr>
@@ -1023,7 +1023,7 @@
             Below is an itemized tour of every electronic design automation (EDA) tool utilized in the multiphase divider verification flow, along with its specific script and execution command.
           </p>
 
-          <div class="table-wrapper">
+          <div class="table-wrapper" tabindex="0" role="region" aria-label="Results table">
             <table class="data-table">
               <thead>
                 <tr>
@@ -1325,7 +1325,7 @@
             <p class="body-text" style="font-size:14.5px;margin-bottom:14px;">
               This records the finished, verified state of the project. Work after this point (v2 paper, layout optimization, additional sweeps) occurs on <code class="inline-code">main</code> and must leave this baseline unchanged.
             </p>
-            <div class="table-wrapper" style="margin-bottom:14px;">
+            <div class="table-wrapper" tabindex="0" role="region" aria-label="Results table" style="margin-bottom:14px;">
               <table class="data-table" style="font-size:13.5px;">
                 <tbody>
                   <tr>
@@ -1365,7 +1365,7 @@
             <p class="body-text" style="font-size:14.5px;margin-bottom:14px;">
               A systematic audit of the early v2 manuscript draft (<code class="inline-code">paper/manuscript_lmwt.*</code>) detailed in <code class="inline-code">v2/CLAIMS_AUDIT.md</code> revealed that its headline numbers were never simulated in Cadence Spectre and directly contradicted our measured GPDK045 evidence. All unsupported claims have been retired to <code class="inline-code">v2/legacy_draft/</code>.
             </p>
-            <div class="table-wrapper">
+            <div class="table-wrapper" tabindex="0" role="region" aria-label="Results table">
               <table class="data-table" style="font-size:13px;">
                 <thead>
                   <tr>
@@ -1433,7 +1433,7 @@
             <p class="body-text" style="font-size:14.5px;margin-bottom:12px;">
               Seven candidate enhancements (E1 to E7) were scored against five weighted criteria: evidence base (weight 3), VM execution cost (2), voltage headroom fit (3), PVT risk (2), and novelty (1).
             </p>
-            <div class="table-wrapper" style="margin-bottom:14px;">
+            <div class="table-wrapper" tabindex="0" role="region" aria-label="Results table" style="margin-bottom:14px;">
               <table class="data-table" style="font-size:13px;">
                 <thead>
                   <tr>
@@ -1512,7 +1512,7 @@
             <p class="body-text" style="font-size:14.5px;margin-bottom:12px;">
               Work progresses through five sequential gates. Progress halts if exit criteria are not satisfied.
             </p>
-            <div class="table-wrapper">
+            <div class="table-wrapper" tabindex="0" role="region" aria-label="Results table">
               <table class="data-table" style="font-size:13px;">
                 <thead>
                   <tr>
@@ -1578,7 +1578,7 @@
             <p class="body-text" style="font-size:14.5px;margin-bottom:12px;">
               Key risks tracked in the v2 risk register, paired with immediate prerequisite actions:
             </p>
-            <div class="table-wrapper" style="margin-bottom:14px;">
+            <div class="table-wrapper" tabindex="0" role="region" aria-label="Results table" style="margin-bottom:14px;">
               <table class="data-table" style="font-size:13px;">
                 <thead>
                   <tr>
@@ -1711,7 +1711,7 @@
           </div>
 
           <h3 class="subsection-heading">The 'Numbers to Remember' Defense Table</h3>
-          <div class="table-wrapper">
+          <div class="table-wrapper" tabindex="0" role="region" aria-label="Results table">
             <table class="data-table">
               <thead>
                 <tr>

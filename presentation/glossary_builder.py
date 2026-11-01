@@ -11,6 +11,7 @@ import html
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from presentation.glossary_data import GLOSSARY_TERMS
 from presentation.styles import SHARED_CSS, SHARED_JS
+from presentation.explainer_builder import prepare_output
 
 def build_glossary_html():
     # Sort terms alphabetically by term name (case-insensitive)
@@ -121,7 +122,7 @@ def build_glossary_html():
     <div class="mobile-brand">Multiphase Divider Defense</div>
     <div style="display:flex;gap:8px;">
       <a href="explainer.html" class="mobile-menu-btn" style="text-decoration:none;font-weight:600;">Explainer</a>
-      <button class="mobile-menu-btn" onclick="toggleMobileMenu()">Categories ☰</button>
+      <button class="mobile-menu-btn" aria-controls="sidebar" aria-expanded="false" onclick="toggleMobileMenu()">Categories ☰</button>
     </div>
   </header>
 
@@ -202,7 +203,7 @@ def build_glossary_html():
           </div>
 
           <div style="margin-top:10px;font-size:13px;color:var(--ink-muted);display:flex;justify-content:space-between;align-items:center;">
-            <span id="terms-count-display">Showing {len(sorted_terms)} of {len(sorted_terms)} terms</span>
+            <span id="terms-count-display" aria-live="polite">Showing {len(sorted_terms)} of {len(sorted_terms)} terms</span>
             <button onclick="resetFilters()" style="background:none;border:none;color:var(--terracotta);font-size:12.5px;cursor:pointer;text-decoration:underline;">Reset Filters</button>
           </div>
         </div>
@@ -320,6 +321,7 @@ function resetFilters() {{
 </html>
 """
 
+    glossary_page = prepare_output(glossary_page)
     out_path = os.path.join("presentation", "glossary.html")
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(glossary_page)

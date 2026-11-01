@@ -13,6 +13,38 @@ from presentation.styles import SHARED_CSS, SHARED_JS
 from presentation.qna_data import QNA_CARDS
 from presentation.backlog_data import BACKLOG_ITEMS
 
+def prepare_output(output):
+    """Convert referenced images and strip machine-specific absolute paths."""
+    import re
+    from pathlib import Path
+    from PIL import Image
+    asset_dir = Path("presentation/assets")
+    refs = set(re.findall(r"assets/([\w.-]+\.png)", output))
+    dimensions = {}
+    for name in sorted(refs):
+        source = asset_dir / name
+        target = source.with_suffix(".webp")
+        with Image.open(source) as im:
+            if im.width > 1200:
+                im.thumbnail((1200, 100000), Image.Resampling.LANCZOS)
+            im.save(target, "WEBP", quality=82, method=6)
+            dimensions[target.name] = im.size
+        output = output.replace("assets/" + name, "assets/" + target.name)
+    first = True
+    def image_attributes(match):
+        nonlocal first
+        tag = match.group(0)
+        src = re.search(r'src="assets/([^"]+\.webp)"', tag)
+        if not src:
+            return tag
+        width, height = dimensions[src.group(1)]
+        loading = "eager" if first else "lazy"
+        first = False
+        return tag[:-1] + f' width="{width}" height="{height}" loading="{loading}" decoding="async">'
+    output = re.sub(r'<img\b[^>]*>', image_attributes, output)
+    output = re.sub(r'/home/[^\s<`"\)]+', lambda m: m.group(0).split('/')[-1], output)
+    return output
+
 def build_explainer_html():
     # Load PVT JSON data
     pvt_path = os.path.join("presentation", "assets", "pvt_data.json")
@@ -153,6 +185,7 @@ def build_explainer_html():
     output = output.replace("<!-- [[BACKLOG_BODY]] -->", backlog_body_str)
     output = output.replace("/* [[PVT_DATA_JSON]] */", pvt_json_str)
 
+    output = prepare_output(output)
     out_path = os.path.join("presentation", "explainer.html")
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(output)
