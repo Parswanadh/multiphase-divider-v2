@@ -1,21 +1,23 @@
-# Ignore trash directory (do not delete files, move irrelevant files to .trash)
-.trash/
+# Local reference copies (papers, photos)
+reference/
 
-# Simulation raw outputs & logs
+# Simulator raw output and logs
 *.raw
 *.vcd
 *.jou
 *.log
 *.str
 
-# Python artifacts
+# Python and editor files
 __pycache__/
 *.pyc
+.vscode/
+.idea/
 
-# OS & Editor files
-.DS_Store
-*.swp
-*~
+# Large local artefacts
+*.iso
+*.vdi
+*.vmdk
 
-# generated proxy waveform (reproducible with spice/divider_45nm_proxy.cir)
-results/proxy_tran.txt
+# Scratch and duplicate report builds
+report/gpdk045/23ECE383_System_Design_Report.*

@@ -1,0 +1,3478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VLSI Defense Glossary — Multiphase Divide-by-Two CMOS Frequency Divider</title>
+  <style>
+
+:root {
+  --bg: #FAF9F5;
+  --bg-panel: #F2EFE8;
+  --bg-card: #FFFFFF;
+  --ink: #1F1E1D;
+  --ink-muted: #6B6A63;
+  --ink-faint: #8E8C84;
+  --line: #E8E6DC;
+  --line-subtle: #F0EDE4;
+  --terracotta: #C96442;
+  --terracotta-hover: #B55434;
+  --terracotta-bg: #FDF5F2;
+  --terracotta-border: #F3D3C7;
+  --code-bg: #F5F3EC;
+  --badge-done-bg: #E6F4EA;
+  --badge-done-ink: #137333;
+  --badge-partial-bg: #FEF7E0;
+  --badge-partial-ink: #B06000;
+  --badge-fail-bg: #FCE8E6;
+  --badge-fail-ink: #C5221F;
+  --serif: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+  --sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, Monaco, monospace;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.03);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.05);
+  --shadow-lg: 0 12px 32px rgba(0,0,0,0.08);
+}
+
+[data-theme="dark"] {
+  --bg: #1F1E1D;
+  --bg-panel: #272523;
+  --bg-card: #2B2927;
+  --ink: #ECEAE4;
+  --ink-muted: #A3A096;
+  --ink-faint: #78756D;
+  --line: #3D3A36;
+  --line-subtle: #33312F;
+  --terracotta: #D97757;
+  --terracotta-hover: #E8896A;
+  --terracotta-bg: #352622;
+  --terracotta-border: #4D332B;
+  --code-bg: #262422;
+  --badge-done-bg: #1B3826;
+  --badge-done-ink: #81C995;
+  --badge-partial-bg: #3E3013;
+  --badge-partial-ink: #FDD663;
+  --badge-fail-bg: #3C1C1A;
+  --badge-fail-ink: #F28B82;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.2);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.25);
+  --shadow-lg: 0 12px 32px rgba(0,0,0,0.4);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 30px;
+  font-size: 16px;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Layout Architecture */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Left Sidebar Table of Contents */
+#sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  width: 310px;
+  flex: none;
+  background-color: var(--bg-panel);
+  border-right: 1px solid var(--line);
+  padding: 32px 20px 40px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  z-index: 100;
+  transition: transform 0.3s ease;
+}
+
+.sidebar-header {
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.brand-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--sans);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--terracotta);
+  margin-bottom: 6px;
+}
+
+.brand-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--terracotta);
+}
+
+.sidebar-title {
+  font-family: var(--serif);
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--ink);
+}
+
+.sidebar-subtitle {
+  font-size: 12.5px;
+  color: var(--ink-muted);
+  margin-top: 4px;
+}
+
+.nav-links-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.nav-group-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 16px 10px 6px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  font-size: 13.5px;
+  color: var(--ink);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.nav-item:hover {
+  background-color: rgba(201, 100, 66, 0.08);
+  color: var(--terracotta);
+}
+
+.nav-item.active {
+  background-color: var(--bg-card);
+  color: var(--terracotta);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+  border-left: 3px solid var(--terracotta);
+}
+
+.nav-num {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--ink-muted);
+  margin-right: 8px;
+}
+
+.nav-item.active .nav-num {
+  color: var(--terracotta);
+  font-weight: 700;
+}
+
+.sidebar-footer {
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.theme-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+}
+
+.theme-toggle-btn:hover {
+  border-color: var(--terracotta);
+  color: var(--terracotta);
+}
+
+.page-switcher-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--terracotta);
+  border: 1px solid var(--terracotta);
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.page-switcher-btn:hover {
+  background-color: var(--terracotta-hover);
+}
+
+/* Mobile Header Bar */
+.mobile-header {
+  display: none;
+  position: sticky;
+  top: 0;
+  background-color: var(--bg-panel);
+  border-bottom: 1px solid var(--line);
+  padding: 12px 20px;
+  z-index: 90;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mobile-brand {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.mobile-menu-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+/* Main Content Area */
+main.main-content {
+  flex: 1;
+  min-width: 0;
+  padding: 56px 64px 120px;
+}
+
+.content-wrap {
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+/* Hero Header */
+header.hero-header {
+  margin-bottom: 48px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid var(--line);
+}
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--terracotta);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.hero-eyebrow span.chip {
+  background-color: var(--terracotta-bg);
+  border: 1px solid var(--terracotta-border);
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+h1.hero-title {
+  font-family: var(--serif);
+  font-size: 40px;
+  line-height: 1.18;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  margin-bottom: 16px;
+  color: var(--ink);
+}
+
+p.hero-subtitle {
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--ink-muted);
+}
+
+.hero-meta-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 28px;
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px dashed var(--line);
+  font-size: 13.5px;
+  color: var(--ink-muted);
+}
+
+.hero-meta-item strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* Card Sections */
+section.card-section {
+  background-color: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 36px 40px;
+  margin-bottom: 44px;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+section.card-section:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.section-anchor-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+h2.section-heading {
+  font-family: var(--serif);
+  font-size: 27px;
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.section-number {
+  font-family: var(--mono);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--terracotta);
+  background-color: var(--terracotta-bg);
+  border: 1px solid var(--terracotta-border);
+  padding: 2px 10px;
+  border-radius: 6px;
+}
+
+.permalink-icon {
+  opacity: 0;
+  font-size: 18px;
+  color: var(--terracotta);
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+}
+
+h2.section-heading:hover .permalink-icon {
+  opacity: 1;
+}
+
+/* TL;DR Executive Callout */
+.tldr-box {
+  background-color: var(--terracotta-bg);
+  border: 1px solid var(--terracotta-border);
+  border-left: 4px solid var(--terracotta);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  margin-bottom: 26px;
+}
+
+.tldr-label {
+  font-family: var(--sans);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--terracotta);
+  margin-bottom: 4px;
+}
+
+.tldr-text {
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--ink);
+}
+
+/* Subheadings & Typography */
+h3.subsection-heading {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.35;
+  margin: 32px 0 12px;
+  color: var(--ink);
+  border-bottom: 1px solid var(--line-subtle);
+  padding-bottom: 6px;
+}
+
+p.body-text {
+  font-size: 15.5px;
+  line-height: 1.7;
+  color: var(--ink);
+  margin-bottom: 16px;
+}
+
+p.lead-text {
+  font-size: 17px;
+  line-height: 1.65;
+  color: var(--ink);
+  margin-bottom: 20px;
+}
+
+ul.bullet-list, ol.num-list {
+  padding-left: 24px;
+  margin-bottom: 20px;
+}
+
+ul.bullet-list li, ol.num-list li {
+  font-size: 15px;
+  line-height: 1.65;
+  margin-bottom: 8px;
+  color: var(--ink);
+}
+
+a.text-link {
+  color: var(--terracotta);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.15s ease;
+}
+
+a.text-link:hover {
+  color: var(--terracotta-hover);
+}
+
+/* Status Chips & Badges */
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.status-chip.done {
+  background-color: var(--badge-done-bg);
+  color: var(--badge-done-ink);
+}
+
+.status-chip.partial {
+  background-color: var(--badge-partial-bg);
+  color: var(--badge-partial-ink);
+}
+
+.status-chip.fail {
+  background-color: var(--badge-fail-bg);
+  color: var(--badge-fail-ink);
+}
+
+.category-chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  background-color: var(--bg-panel);
+  border: 1px solid var(--line);
+  color: var(--ink-muted);
+}
+
+/* Responsive Tables */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-card);
+  margin: 20px 0 28px;
+  box-shadow: var(--shadow-sm);
+}
+
+table.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  text-align: left;
+}
+
+table.data-table th, table.data-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+table.data-table th {
+  background-color: var(--bg-panel);
+  font-weight: 600;
+  font-size: 12.5px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+table.data-table tr:last-child td {
+  border-bottom: none;
+}
+
+table.data-table tr:hover td {
+  background-color: rgba(201, 100, 66, 0.03);
+}
+
+table.data-table td.num {
+  font-family: var(--mono);
+  font-size: 13.5px;
+  white-space: nowrap;
+}
+
+.source-tag {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-faint);
+  background-color: var(--bg-panel);
+  border: 1px solid var(--line);
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-top: 4px;
+}
+
+/* Code Blocks with Copy Button */
+.code-block-wrapper {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background-color: var(--code-bg);
+  margin: 18px 0 26px;
+  overflow: hidden;
+}
+
+.code-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background-color: var(--bg-panel);
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--ink-muted);
+  font-family: var(--mono);
+}
+
+.copy-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 11.5px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.copy-btn:hover {
+  border-color: var(--terracotta);
+  color: var(--terracotta);
+}
+
+.copy-btn.copied {
+  background-color: var(--badge-done-bg);
+  border-color: var(--badge-done-ink);
+  color: var(--badge-done-ink);
+}
+
+pre.code-content {
+  padding: 16px 20px;
+  overflow-x: auto;
+  font-family: var(--mono);
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--ink);
+}
+
+code.inline-code {
+  font-family: var(--mono);
+  font-size: 13.5px;
+  background-color: var(--code-bg);
+  border: 1px solid var(--line);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--ink);
+}
+
+/* Figures & Gallery */
+figure.content-figure {
+  margin: 24px 0 32px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-card);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+figure.content-figure img {
+  width: 100%;
+  height: auto;
+  display: block;
+  cursor: zoom-in;
+  transition: opacity 0.2s ease;
+}
+
+figure.content-figure img:hover {
+  opacity: 0.95;
+}
+
+figcaption.figure-caption {
+  padding: 12px 18px;
+  font-size: 13.5px;
+  color: var(--ink-muted);
+  background-color: var(--bg-panel);
+  border-top: 1px solid var(--line);
+  line-height: 1.5;
+}
+
+figcaption.figure-caption strong {
+  color: var(--ink);
+}
+
+/* Gallery Grid */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 20px;
+  margin: 24px 0;
+}
+
+.gallery-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-card);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.gallery-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--terracotta);
+}
+
+.gallery-card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  display: block;
+}
+
+.gallery-info {
+  padding: 12px 16px;
+}
+
+.gallery-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+
+.gallery-desc {
+  font-size: 12.5px;
+  color: var(--ink-muted);
+  line-height: 1.4;
+}
+
+/* Lightbox Modal */
+#lightbox-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(15, 14, 13, 0.92);
+  z-index: 9999;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  backdrop-filter: blur(4px);
+}
+
+#lightbox-overlay.active {
+  display: flex;
+}
+
+.lightbox-content-box {
+  max-width: 92vw;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+
+.lightbox-img-wrap {
+  flex: 1;
+  min-height: 0;
+  background: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#lightbox-img {
+  max-width: 100%;
+  max-height: 80vh;
+  object-fit: contain;
+  display: block;
+}
+
+.lightbox-caption-bar {
+  padding: 16px 24px;
+  background: var(--bg-card);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  border-top: 1px solid var(--line);
+}
+
+#lightbox-caption {
+  font-size: 14px;
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+.lightbox-close-btn {
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* Accordion / Q&A Cards */
+.qna-accordion-group {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 20px 0 32px;
+}
+
+details.qna-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-card);
+  overflow: hidden;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+details.qna-card[open] {
+  border-color: var(--terracotta);
+  box-shadow: var(--shadow-sm);
+}
+
+summary.qna-summary {
+  padding: 16px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 15.5px;
+  color: var(--ink);
+  list-style: none;
+  user-select: none;
+}
+
+summary.qna-summary::-webkit-details-marker {
+  display: none;
+}
+
+.qna-question-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.qna-badge {
+  font-family: var(--mono);
+  font-size: 12px;
+  background-color: var(--bg-panel);
+  border: 1px solid var(--line);
+  padding: 2px 7px;
+  border-radius: 5px;
+  color: var(--ink-muted);
+}
+
+.qna-chevron {
+  font-size: 14px;
+  color: var(--ink-faint);
+  transition: transform 0.2s ease;
+}
+
+details.qna-card[open] .qna-chevron {
+  transform: rotate(180deg);
+  color: var(--terracotta);
+}
+
+.qna-body {
+  padding: 16px 20px 20px;
+  border-top: 1px solid var(--line-subtle);
+  background-color: var(--bg);
+}
+
+.qna-answer {
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--ink);
+  margin-bottom: 12px;
+}
+
+.qna-quote-box {
+  background-color: var(--terracotta-bg);
+  border: 1px solid var(--terracotta-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+.qna-quote-box strong {
+  color: var(--terracotta);
+}
+
+/* Checklist Cards (Section 10) */
+.checklist-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 20px 0 32px;
+}
+
+.checklist-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-card);
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.checklist-card.completed {
+  background-color: var(--bg-panel);
+  border-color: var(--line-subtle);
+  opacity: 0.85;
+}
+
+.checklist-card.completed .checklist-title {
+  text-decoration: line-through;
+  color: var(--ink-muted);
+}
+
+.checklist-cb {
+  width: 19px;
+  height: 19px;
+  margin-top: 3px;
+  accent-color: var(--terracotta);
+  cursor: pointer;
+}
+
+.checklist-content {
+  flex: 1;
+}
+
+.checklist-header-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.checklist-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.checklist-meta {
+  display: flex;
+  gap: 8px;
+}
+
+.checklist-desc {
+  font-size: 13.5px;
+  color: var(--ink-muted);
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+
+.checklist-rationale {
+  font-size: 12.5px;
+  color: var(--terracotta);
+  font-style: italic;
+}
+
+/* Progress bar for Backlog */
+.progress-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin-bottom: 20px;
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13.5px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.progress-bar-outer {
+  width: 100%;
+  height: 8px;
+  background: var(--line);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar-inner {
+  height: 100%;
+  background: var(--terracotta);
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+/* PVT Matrix Grid */
+.pvt-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.pvt-grid-container {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.pvt-cell {
+  aspect-ratio: 1.3;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.pvt-cell:hover {
+  transform: scale(1.08);
+  box-shadow: var(--shadow-sm);
+  z-index: 5;
+}
+
+.pvt-cell.pass {
+  background-color: var(--badge-done-bg);
+  color: var(--badge-done-ink);
+  border-color: #B7E1CD;
+}
+
+.pvt-cell.fail {
+  background-color: var(--badge-fail-bg);
+  color: var(--badge-fail-ink);
+  border-color: #F4C7C3;
+}
+
+.pvt-cell.selected {
+  outline: 2px solid var(--ink);
+  outline-offset: 1px;
+}
+
+.pvt-inspector-box {
+  background-color: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  font-size: 13.5px;
+  margin-top: 12px;
+}
+
+/* SVG Chart Wrappers */
+.chart-box {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 20px 24px;
+  margin: 18px 0;
+}
+
+.chart-title {
+  font-size: 14.5px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--ink);
+}
+
+/* Glossary Page Specific Styles */
+.glossary-controls-bar {
+  position: sticky;
+  top: 0;
+  background-color: var(--bg);
+  padding: 16px 0 20px;
+  z-index: 50;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 30px;
+}
+
+.search-input-wrap {
+  position: relative;
+  margin-bottom: 14px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px 18px 12px 42px;
+  font-size: 15px;
+  font-family: var(--sans);
+  background-color: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+  box-shadow: var(--shadow-sm);
+}
+
+.search-input:focus {
+  outline: 2px solid var(--terracotta);
+  border-color: transparent;
+}
+
+.search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ink-faint);
+  font-size: 16px;
+}
+
+.category-filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.filter-chip-btn {
+  background-color: var(--bg-card);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-size: 12.5px;
+  font-weight: 500;
+  padding: 5px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.filter-chip-btn:hover {
+  border-color: var(--terracotta);
+  color: var(--terracotta);
+}
+
+.filter-chip-btn.active {
+  background-color: var(--terracotta);
+  border-color: var(--terracotta);
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.letter-jump-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 6px 0;
+}
+
+.letter-jump-link {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 26px;
+  height: 26px;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: none;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.letter-jump-link:hover {
+  background-color: var(--terracotta-bg);
+  color: var(--terracotta);
+}
+
+.letter-jump-link.disabled {
+  color: var(--ink-faint);
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+.glossary-terms-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.glossary-entry-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 24px 28px;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.glossary-entry-card:hover {
+  border-color: var(--terracotta);
+  box-shadow: var(--shadow-md);
+}
+
+.glossary-entry-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.glossary-term-name {
+  font-family: var(--serif);
+  font-size: 21px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.glossary-def {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink);
+  margin-bottom: 12px;
+}
+
+.glossary-project-box {
+  background-color: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 13.5px;
+  color: var(--ink);
+  margin-bottom: 10px;
+}
+
+.glossary-project-box strong {
+  color: var(--terracotta);
+}
+
+.glossary-cross-link {
+  font-size: 13px;
+  color: var(--terracotta);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 1024px) {
+  #sidebar {
+    position: fixed;
+    left: -320px;
+    box-shadow: var(--shadow-lg);
+  }
+
+  #sidebar.open {
+    transform: translateX(320px);
+  }
+
+  .mobile-header {
+    display: flex;
+  }
+
+  main.main-content {
+    padding: 32px 24px 80px;
+  }
+
+  section.card-section {
+    padding: 24px 20px;
+  }
+
+  .pvt-grid-container {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  h1.hero-title {
+    font-size: 30px;
+  }
+
+  h2.section-heading {
+    font-size: 22px;
+  }
+
+  .pvt-grid-container {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Print Friendly Styles */
+@media print {
+  #sidebar, .mobile-header, .theme-toggle-btn, .page-switcher-btn, .copy-btn, #lightbox-overlay, .pvt-controls, .glossary-controls-bar {
+    display: none !important;
+  }
+
+  body {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    font-size: 12pt;
+  }
+
+  main.main-content {
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  .content-wrap {
+    max-width: 100% !important;
+  }
+
+  section.card-section {
+    border: 1px solid #CCCCCC !important;
+    box-shadow: none !important;
+    padding: 16px !important;
+    margin-bottom: 20px !important;
+    page-break-inside: avoid;
+  }
+
+  a {
+    color: #000000 !important;
+    text-decoration: none !important;
+  }
+}
+
+  </style>
+</head>
+<body>
+
+  <!-- Mobile Header -->
+  <header class="mobile-header">
+    <div class="mobile-brand">Multiphase Divider Defense</div>
+    <div style="display:flex;gap:8px;">
+      <a href="explainer.html" class="mobile-menu-btn" style="text-decoration:none;font-weight:600;">Explainer</a>
+      <button class="mobile-menu-btn" onclick="toggleMobileMenu()">Categories ☰</button>
+    </div>
+  </header>
+
+  <div class="app-container">
+    <!-- Left Navigation Sidebar -->
+    <nav id="sidebar" aria-label="Glossary Navigation">
+      <div class="sidebar-header">
+        <div class="brand-badge">
+          <span class="brand-dot"></span>
+          <span>Technical Reference</span>
+        </div>
+        <h2 class="sidebar-title">Defense Glossary</h2>
+        <div class="sidebar-subtitle">122 Verified VLSI & EDA Terms</div>
+      </div>
+
+      <div class="nav-links-container">
+        <div class="nav-group-label">Quick Links</div>
+        <a href="explainer.html" class="nav-item">
+          <span>← Back to Defense Explainer</span>
+        </a>
+        <a href="#search-anchor" class="nav-item" onclick="document.getElementById('glossary-search').focus()">
+          <span>🔍 Live Search</span>
+        </a>
+
+        <div class="nav-group-label">Browse by Category</div>
+        <a href="javascript:void(0)" onclick="filterCategory('all')" class="nav-item active" id="nav-cat-all">
+          <span>All Terms</span>
+          <span class="category-chip" style="font-size:10.5px;">122</span>
+        </a>
+        <a href="javascript:void(0)" onclick="filterCategory('Cadence/EDA')" class="nav-item"><span>Cadence/EDA</span><span class="category-chip" style="font-size:10.5px;">18</span></a><a href="javascript:void(0)" onclick="filterCategory('Circuit')" class="nav-item"><span>Circuit</span><span class="category-chip" style="font-size:10.5px;">21</span></a><a href="javascript:void(0)" onclick="filterCategory('Device physics')" class="nav-item"><span>Device physics</span><span class="category-chip" style="font-size:10.5px;">20</span></a><a href="javascript:void(0)" onclick="filterCategory('Layout')" class="nav-item"><span>Layout</span><span class="category-chip" style="font-size:10.5px;">10</span></a><a href="javascript:void(0)" onclick="filterCategory('Metrics')" class="nav-item"><span>Metrics</span><span class="category-chip" style="font-size:10.5px;">11</span></a><a href="javascript:void(0)" onclick="filterCategory('Project-specific')" class="nav-item"><span>Project-specific</span><span class="category-chip" style="font-size:10.5px;">16</span></a><a href="javascript:void(0)" onclick="filterCategory('Sizing')" class="nav-item"><span>Sizing</span><span class="category-chip" style="font-size:10.5px;">11</span></a><a href="javascript:void(0)" onclick="filterCategory('Verification')" class="nav-item"><span>Verification</span><span class="category-chip" style="font-size:10.5px;">15</span></a>
+      </div>
+
+      <div class="sidebar-footer">
+        <button class="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle Color Theme">
+          <span>🌓</span>
+          <span class="theme-toggle-text">Dark Theme</span>
+        </button>
+        <a href="explainer.html" class="page-switcher-btn">
+          <span>Explore Main Explainer →</span>
+        </a>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="content-wrap">
+
+        <header class="hero-header" id="search-anchor">
+          <div class="hero-eyebrow">
+            <span class="chip">Self-Contained Companion</span>
+            <span>Comprehensive Terminology Guide</span>
+          </div>
+          <h1 class="hero-title">VLSI Defense & EDA Glossary</h1>
+          <p class="hero-subtitle">
+            An alphabetical encyclopedia of 122 circuit design, device physics, sizing theory, physical layout, Cadence tool flow, and verification terms grounded in the 45&nbsp;nm GPDK045 multiphase frequency divider implementation.
+          </p>
+          <div class="hero-meta-bar">
+            <div class="hero-meta-item">Total Terms: <strong>122</strong></div>
+            <div class="hero-meta-item">Categories: <strong>8</strong></div>
+            <div class="hero-meta-item">Process Node: <strong>Cadence GPDK045 (45 nm)</strong></div>
+            <div class="hero-meta-item">Status: <strong>100% Traceable to Evidence Logs</strong></div>
+          </div>
+        </header>
+
+        <!-- Sticky Controls Bar -->
+        <div class="glossary-controls-bar">
+          <div class="search-input-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="glossary-search" class="search-input" placeholder="Search across terms, definitions, values, and project notes (e.g., Elmore, triode, M7, Assura, DRC, Ron)..." oninput="handleSearch(this.value)">
+          </div>
+
+          <div class="category-filter-chips">
+            <button class="filter-chip-btn active" data-category="all" onclick="filterCategory('all', this)">All (122)</button><button class="filter-chip-btn" data-category="Cadence/EDA" onclick="filterCategory('Cadence/EDA', this)">Cadence/EDA (18)</button><button class="filter-chip-btn" data-category="Circuit" onclick="filterCategory('Circuit', this)">Circuit (21)</button><button class="filter-chip-btn" data-category="Device physics" onclick="filterCategory('Device physics', this)">Device physics (20)</button><button class="filter-chip-btn" data-category="Layout" onclick="filterCategory('Layout', this)">Layout (10)</button><button class="filter-chip-btn" data-category="Metrics" onclick="filterCategory('Metrics', this)">Metrics (11)</button><button class="filter-chip-btn" data-category="Project-specific" onclick="filterCategory('Project-specific', this)">Project-specific (16)</button><button class="filter-chip-btn" data-category="Sizing" onclick="filterCategory('Sizing', this)">Sizing (11)</button><button class="filter-chip-btn" data-category="Verification" onclick="filterCategory('Verification', this)">Verification (15)</button>
+          </div>
+
+          <div class="letter-jump-bar">
+            <a href="#letter-A" class="letter-jump-link">A</a><a href="#letter-B" class="letter-jump-link">B</a><a href="#letter-C" class="letter-jump-link">C</a><a href="#letter-D" class="letter-jump-link">D</a><a href="#letter-E" class="letter-jump-link">E</a><a href="#letter-F" class="letter-jump-link">F</a><a href="#letter-G" class="letter-jump-link">G</a><a href="#letter-H" class="letter-jump-link">H</a><a href="#letter-I" class="letter-jump-link">I</a><a href="#letter-J" class="letter-jump-link">J</a><span class="letter-jump-link disabled">K</span><a href="#letter-L" class="letter-jump-link">L</a><a href="#letter-M" class="letter-jump-link">M</a><a href="#letter-N" class="letter-jump-link">N</a><a href="#letter-O" class="letter-jump-link">O</a><a href="#letter-P" class="letter-jump-link">P</a><a href="#letter-Q" class="letter-jump-link">Q</a><a href="#letter-R" class="letter-jump-link">R</a><a href="#letter-S" class="letter-jump-link">S</a><a href="#letter-T" class="letter-jump-link">T</a><a href="#letter-U" class="letter-jump-link">U</a><a href="#letter-V" class="letter-jump-link">V</a><a href="#letter-W" class="letter-jump-link">W</a><span class="letter-jump-link disabled">X</span><span class="letter-jump-link disabled">Y</span><span class="letter-jump-link disabled">Z</span>
+          </div>
+
+          <div style="margin-top:10px;font-size:13px;color:var(--ink-muted);display:flex;justify-content:space-between;align-items:center;">
+            <span id="terms-count-display">Showing 122 of 122 terms</span>
+            <button onclick="resetFilters()" style="background:none;border:none;color:var(--terracotta);font-size:12.5px;cursor:pointer;text-decoration:underline;">Reset Filters</button>
+          </div>
+        </div>
+
+        <!-- Terms Output Grid -->
+        <div class="glossary-terms-grid" id="glossary-container">
+          <div class="letter-section-marker" id="letter-A"><h3 style="font-family:var(--serif);font-size:24px;border-bottom:2px solid var(--line);padding-bottom:6px;margin:24px 0 16px;color:var(--terracotta);">A</h3></div>
+        <article class="glossary-entry-card" id="term-ade--analog-design-environment" data-category="Cadence/EDA" data-term="ade (analog design environment)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">ADE (Analog Design Environment)</h3>
+            <span class="category-chip">Cadence/EDA</span>
+          </div>
+          <p class="glossary-def">The graphical user interface in Cadence Virtuoso used to configure simulation models, analyses (transient, DC, AC), design variables, corners, and output expressions.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> ADE L session states were scripted into batch OCEAN scripts (`run_schematic_tb_param.ocn`) to execute automated Spectre runs on `divider_lib/tb_divider` without launching the GUI.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#tools" class="glossary-cross-link">→ View in Section 7: Cadence Tool Tour</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-ade--analog-design-environment</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-agy" data-category="Project-specific" data-term="agy">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">agy</h3>
+            <span class="category-chip">Project-specific</span>
+          </div>
+          <p class="glossary-def">The Antigravity CLI and agent runtime developed by Google DeepMind for advanced agentic pair-programming and multi-agent coordination.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Used to coordinate high-level architecture, execute prose audits, synthesize technical documentation, and verify simulation consistency against source evidence.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#timeline" class="glossary-cross-link">→ View in Section 3: Project Timeline</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-agy</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-analoglib" data-category="Cadence/EDA" data-term="analoglib">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">analogLib</h3>
+            <span class="category-chip">Cadence/EDA</span>
+          </div>
+          <p class="glossary-def">Cadence standard primitive component library containing ideal electrical elements such as independent sources (vpulse, vdc), ground symbols (gnd!), and ideal passive resistors (res) and capacitors (cap).</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Used in `divider_lib` schematics for supply sources (`vdc`), differential clock stimuli (`vpulse`), and ideal load resistors (`res`). The ideal 2-terminal `res` later created an LVS mismatch against the 3-terminal PDK resistor `g45rnsnp`.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#layout" class="glossary-cross-link">→ View in Section 6: Layout &amp; Physical Verification</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-analoglib</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-antenna-effect" data-category="Layout" data-term="antenna effect">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Antenna Effect</h3>
+            <span class="category-chip">Layout</span>
+          </div>
+          <p class="glossary-def">Plasma-induced gate oxide damage occurring during reactive ion etching when long, unconnected metal interconnect lines accumulate charge that discharges through thin transistor gate oxides.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Monitored during Assura DRC checks; in our placement layout, transistor gates are kept at unit lengths and connected to landing pads to prevent oxide breakdown during future routing passes.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#layout" class="glossary-cross-link">→ View in Section 6: Layout &amp; Physical Verification</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-antenna-effect</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-aspect-ratio--w-l" data-category="Sizing" data-term="aspect ratio (w/l)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Aspect Ratio (W/L)</h3>
+            <span class="category-chip">Sizing</span>
+          </div>
+          <p class="glossary-def">The ratio of channel width to channel length in a MOSFET, governing current drive capacity ($I_{ds} \propto W/L$), transconductance ($g_m$), and parasitic gate capacitance.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Unit NMOS devices (M1–M6) use $W/L = 240\text{ nm} / 45\text{ nm} = 5.33$, closely matching Kuo et al.&#x27;s reference ratio of $5.00$ ($900\text{ nm} / 180\text{ nm}$). Tail device M7 uses $480\text{ nm} / 90\text{ nm} = 5.33$.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-aspect-ratio--w-l</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-assura" data-category="Verification" data-term="assura">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Assura</h3>
+            <span class="category-chip">Verification</span>
+          </div>
+          <p class="glossary-def">Cadence physical verification suite performing Design Rule Checking (DRC), Layout Versus Schematic (LVS), and Parasitic Extraction (RCX) on IC layouts.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Assura 4.1 was run in batch mode inside the CentOS VM via `run_verify.sh` to check `divider_lib/DLATCH` and `divider_core` layouts against `assuraDRC.rul` and `extract.rul`.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#tools" class="glossary-cross-link">→ View in Section 7: Cadence Tool Tour</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-assura</span>
+          </div>
+        </article>
+        <div class="letter-section-marker" id="letter-B"><h3 style="font-family:var(--serif);font-size:24px;border-bottom:2px solid var(--line);padding-bottom:6px;margin:24px 0 16px;color:var(--terracotta);">B</h3></div>
+        <article class="glossary-entry-card" id="term-bias-voltage--vb" data-category="Circuit" data-term="bias voltage (vb)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Bias Voltage (vb)</h3>
+            <span class="category-chip">Circuit</span>
+          </div>
+          <p class="glossary-def">A steady DC control potential applied to the gate of an MOS transistor to set its quiescent gate-to-source bias ($V_{gs}$) and determine its operating current.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Nominal tail bias $v_b = 1.0\text{ V}$ is applied to M7&#x27;s gate. Swept between $0.8\text{ V}$ and $1.0\text{ V}$ during initial sizing exploration; $1.0\text{ V}$ was selected to maximize pull-down drive headroom.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-bias-voltage--vb</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-body-effect--substrate-bias" data-category="Device physics" data-term="body effect (substrate bias)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Body Effect (Substrate Bias)</h3>
+            <span class="category-chip">Device physics</span>
+          </div>
+          <p class="glossary-def">The shift in a MOSFET&#x27;s threshold voltage ($V_{th}$) caused by a non-zero voltage difference between source and substrate ($V_{sb} &gt; 0$), widening the depletion region.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> In the stacked NMOS sampling network (M1 above M5 above M7), sources of M1 and M5 sit above ground ($V_s &gt; 0$), raising their effective $V_{th}$ and increasing stack on-resistance.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-body-effect--substrate-bias</span>
+          </div>
+        </article>
+        <div class="letter-section-marker" id="letter-C"><h3 style="font-family:var(--serif);font-size:24px;border-bottom:2px solid var(--line);padding-bottom:6px;margin:24px 0 16px;color:var(--terracotta);">C</h3></div>
+        <article class="glossary-entry-card" id="term-cadence-virtuoso" data-category="Cadence/EDA" data-term="cadence virtuoso">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Cadence Virtuoso</h3>
+            <span class="category-chip">Cadence/EDA</span>
+          </div>
+          <p class="glossary-def">The industry-standard electronic design automation (EDA) software platform by Cadence Design Systems for schematic entry, layout editing, and mixed-signal IC design.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Virtuoso IC615 (6.1.5.500.15) was executed inside the CentOS VM to generate schematics, symbols, Layout XL placements, and routing views for `divider_lib`.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#tools" class="glossary-cross-link">→ View in Section 7: Cadence Tool Tour</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-cadence-virtuoso</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-cadencevm" data-category="Project-specific" data-term="cadencevm">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">CadenceVM</h3>
+            <span class="category-chip">Project-specific</span>
+          </div>
+          <p class="glossary-def">A headless 32-bit CentOS 6.5 VirtualBox guest machine used to host the Cadence IC615, Spectre 12.1, and Assura 4.1 software suite.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Driven from the Linux host through an automated pipeline utilizing headless serial port communication (`vmx.sh`, `serial.txt`) and dynamic ISO staging (`xorriso`).
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#timeline" class="glossary-cross-link">→ View in Section 3: Project Timeline</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-cadencevm</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-cdf--component-description-format" data-category="Cadence/EDA" data-term="cdf (component description format)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">CDF (Component Description Format)</h3>
+            <span class="category-chip">Cadence/EDA</span>
+          </div>
+          <p class="glossary-def">Cadence proprietary data structure that defines component parameters, simulation models, terminal labels, and callback procedures for Virtuoso library cells.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Interacted with via SKILL (`cdfGetInstCDF`) in `build_schematic_v2.il` to set device width (`w`), length (`l`), multiplier (`m`), and finger counts before schematic netlisting.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#tools" class="glossary-cross-link">→ View in Section 7: Cadence Tool Tour</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-cdf--component-description-format</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-channel-length-modulation--lambda" data-category="Device physics" data-term="channel length modulation (lambda)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Channel Length Modulation (lambda)</h3>
+            <span class="category-chip">Device physics</span>
+          </div>
+          <p class="glossary-def">The shortening of the effective inverted channel length in a MOSFET as drain-to-source voltage ($V_{ds}$) increases beyond pinch-off, causing a finite output conductance $g_{ds}$.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Accounted for by the BSIM4 model in GPDK045; tail transistor M7 uses a double-length channel ($L = 90\text{ nm}$) to mitigate channel length modulation and improve output resistance.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-channel-length-modulation--lambda</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-channel-on-resistance--ron" data-category="Sizing" data-term="channel on-resistance (ron)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Channel On-Resistance (Ron)</h3>
+            <span class="category-chip">Sizing</span>
+          </div>
+          <p class="glossary-def">The effective electrical resistance between drain and source terminals of an MOS transistor operating in the deep linear (triode) conduction region: $R_{on} \approx [\mu C_{ox} (W/L) (V_{gs} - V_{th})]^{-1}$.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Measured via DC sweep in GPDK045 for unit NMOS ($240\text{ nm} / 45\text{ nm}$) at $V_{gs} = 1.0\text{ V}, V_{ds} = 10\text{--}100\text{ mV}$ to be $R_{on} = 2.3\text{ k}\Omega$ ($2.28\text{--}2.73\text{ k}\Omega$).
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-channel-on-resistance--ron</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-chip-assembly-router--vcar" data-category="Cadence/EDA" data-term="chip assembly router (vcar)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Chip Assembly Router (vcar)</h3>
+            <span class="category-chip">Cadence/EDA</span>
+          </div>
+          <p class="glossary-def">The Cadence automated grid-based and shape-based interconnect router used to execute global, track, and detail routing passes on physical layouts.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Invoked in batch mode via `cadence/skill/auto/route_dlatch.il` on `DLATCH/layout_lxl`, routing 136 of 137 connections (99.27% completion) with 1 unrouted net (`xs`).
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#layout" class="glossary-cross-link">→ View in Section 6: Layout &amp; Physical Verification</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-chip-assembly-router--vcar</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-ciw--command-interpreter-window" data-category="Cadence/EDA" data-term="ciw (command interpreter window)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">CIW (Command Interpreter Window)</h3>
+            <span class="category-chip">Cadence/EDA</span>
+          </div>
+          <p class="glossary-def">The primary control and console logging window of Cadence Virtuoso where user commands, SKILL expressions, load logs, and tool error messages are output.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Captured in `virtuoso_ciw_gpdk045_loaded.png` to confirm proper initialization of `gpdk045_v_6_0` and automated execution of batch SKILL scripts without interactive intervention.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#tools" class="glossary-cross-link">→ View in Section 7: Cadence Tool Tour</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-ciw--command-interpreter-window</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-ck---ckb" data-category="Circuit" data-term="ck / ckb">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">CK / CKb</h3>
+            <span class="category-chip">Circuit</span>
+          </div>
+          <p class="glossary-def">Complementary differential clock signals where CKb is 180° out of phase with CK, providing non-overlapping control for sampling and regeneration phases.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Input differential clocks run at 1.4 GHz (Design D) and 6.0 GHz (Design B). Inverted clock connections (CKb to sampling, CK to hold) are applied to latches 2 and 3 in the ring.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#paper" class="glossary-cross-link">→ View in Section 1: The Paper (Kuo et al.)</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-ck---ckb</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-cmos--complementary-mos" data-category="Device physics" data-term="cmos (complementary mos)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">CMOS (Complementary MOS)</h3>
+            <span class="category-chip">Device physics</span>
+          </div>
+          <p class="glossary-def">Integrated circuit technology combining both n-type (NMOS) and p-type (PMOS) field-effect transistors on a single silicon substrate to achieve high noise immunity and low static power.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> The core ring divider employs an NMOS current-steering topology with resistive loads to maximize switching speed and eliminate PMOS gate-loading capacitance.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-cmos--complementary-mos</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-cross-coupled-pair" data-category="Circuit" data-term="cross-coupled pair">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Cross-Coupled Pair</h3>
+            <span class="category-chip">Circuit</span>
+          </div>
+          <p class="glossary-def">Two active transistors where the drain of each is cross-connected to the gate of the other, forming a regenerative positive feedback loop with high differential negative resistance.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Transistors M3 and M4 in each DLATCH form the cross-coupled regeneration pair, holding and regenerating the sampled state when clock switch M6 is enabled by CKb.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-cross-coupled-pair</span>
+          </div>
+        </article>
+        <div class="letter-section-marker" id="letter-D"><h3 style="font-family:var(--serif);font-size:24px;border-bottom:2px solid var(--line);padding-bottom:6px;margin:24px 0 16px;color:var(--terracotta);">D</h3></div>
+        <article class="glossary-entry-card" id="term-design-b--6-0-ghz" data-category="Project-specific" data-term="design b (6.0 ghz)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Design B (6.0 GHz)</h3>
+            <span class="category-chip">Project-specific</span>
+          </div>
+          <p class="glossary-def">The high-speed sized frequency divider variant designed to maximize operating frequency and achieve benchmark phase accuracy near its speed limit.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Configured with device multiplier $m = 4$, load resistors $R_1 = R_2 = 2\text{ k}\Omega$, achieving 3000.0 MHz output, $0.493\text{ mW}$ power, $27.94\text{ ps}$ delay, $13.77\text{ fJ}$ PDP, and $3.78^\circ$ phase error.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#results" class="glossary-cross-link">→ View in Section 4: Results Dashboard</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-design-b--6-0-ghz</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-design-d--1-4-ghz" data-category="Project-specific" data-term="design d (1.4 ghz)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Design D (1.4 GHz)</h3>
+            <span class="category-chip">Project-specific</span>
+          </div>
+          <p class="glossary-def">The nominal, PVT-robust sized frequency divider variant designed for operation at the reference paper&#x27;s input clock frequency of 1.4 GHz.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Configured with multiplier $m = 4$, load resistors $R_1 = R_2 = 3\text{ k}\Omega$, achieving 700.0 MHz output, $0.541\text{ mW}$ power, $25.99\text{ ps}$ delay, $14.07\text{ fJ}$ PDP, and 41/45 PVT corner yield.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#results" class="glossary-cross-link">→ View in Section 4: Results Dashboard</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-design-d--1-4-ghz</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-dfiitovldb" data-category="Verification" data-term="dfiitovldb">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">dfIIToVldb</h3>
+            <span class="category-chip">Verification</span>
+          </div>
+          <p class="glossary-def">Cadence executable that converts a Design Framework II (DFII) schematic view into a Volume Layout Database (VLDB) netlist file required by Assura LVS.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Called automatically within `cadence/skill/verify/run_verify.sh` using template `netlist.vlr.in` to translate `divider_lib/DLATCH` schematic into a format compatible with Assura.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#tools" class="glossary-cross-link">→ View in Section 7: Cadence Tool Tour</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-dfiitovldb</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-differential-pair" data-category="Circuit" data-term="differential pair">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Differential Pair</h3>
+            <span class="category-chip">Circuit</span>
+          </div>
+          <p class="glossary-def">A symmetrical two-transistor circuit topology that amplifies differential input voltage signals while rejecting common-mode noise and power supply fluctuations.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Transistors M1 and M2 in DLATCH form the input sampling differential pair, steering tail current between differential nodes Q and Qb based on inputs D and Db.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-differential-pair</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-diffusion-area---perimeter--as--ad--ps--pd" data-category="Device physics" data-term="diffusion area / perimeter (as, ad, ps, pd)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Diffusion Area / Perimeter (as, ad, ps, pd)</h3>
+            <span class="category-chip">Device physics</span>
+          </div>
+          <p class="glossary-def">Geometric layout parameters specifying source/drain junction area (`as`, `ad`) and perimeter (`ps`, `pd`), directly determining junction parasitic capacitances.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Automatically calculated by Virtuoso PCell callbacks (`as=16.8f, ad=16.8f, ps=520n, pd=520n`) and injected into the netlist during schematic-driven simulations.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#power-gap" class="glossary-cross-link">→ View in Section 5: Schematic vs Standalone</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-diffusion-area---perimeter--as--ad--ps--pd</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-diffusion-series-resistance--nrd--nrs" data-category="Device physics" data-term="diffusion series resistance (nrd, nrs)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Diffusion Series Resistance (nrd, nrs)</h3>
+            <span class="category-chip">Device physics</span>
+          </div>
+          <p class="glossary-def">Parameters representing the number of diffusion squares in series with drain (`nrd`) and source (`nrs`), determining extrinsic source/drain parasitic sheet resistance.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Extracted as `nrd=1.16667, nrs=1.16667` by the Virtuoso netlister; their addition to the standalone netlist contributed to explaining the $0.541\text{ mW} \to 0.455\text{ mW}$ power gap.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#power-gap" class="glossary-cross-link">→ View in Section 5: Schematic vs Standalone</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-diffusion-series-resistance--nrd--nrs</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-divide-by-two" data-category="Circuit" data-term="divide-by-two">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Divide-by-Two</h3>
+            <span class="category-chip">Circuit</span>
+          </div>
+          <p class="glossary-def">A frequency division function where the fundamental frequency of the output signal is exactly half that of the input clock ($f_{out} = f_{in} / 2$).</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Produces 700 MHz output from 1.4 GHz input (Design D) and 3000 MHz output from 6.0 GHz input (Design B) across all eight differential output phases.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#paper" class="glossary-cross-link">→ View in Section 1: The Paper (Kuo et al.)</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-divide-by-two</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-dlatch" data-category="Circuit" data-term="dlatch">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">DLATCH</h3>
+            <span class="category-chip">Circuit</span>
+          </div>
+          <p class="glossary-def">Differential D-type latch stage comprising a differential sampling pair, a regenerative cross-coupled pair, clock gating switches, resistive loads, and a tail current device.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> The fundamental building block of the 8-phase divider; contains 7 NMOS transistors (M1–M7) and 2 load resistors (R1, R2). Four instances (XD1–XD4) form the closed ring.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#paper" class="glossary-cross-link">→ View in Section 1: The Paper (Kuo et al.)</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-dlatch</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-drc--design-rule-checking" data-category="Verification" data-term="drc (design rule checking)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">DRC (Design Rule Checking)</h3>
+            <span class="category-chip">Verification</span>
+          </div>
+          <p class="glossary-def">Physical verification process confirming that a layout geometry complies with all semiconductor foundry manufacturing constraints (widths, spacings, overlaps, enclosures).</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Executed using Assura 4.1 against `assuraDRC.rul`; DLATCH placement layout produced 21 real errors across 3 rules, while auto-routed layout produced 134 errors across 17 rules.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#layout" class="glossary-cross-link">→ View in Section 6: Layout &amp; Physical Verification</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-drc--design-rule-checking</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-duty-cycle" data-category="Metrics" data-term="duty cycle">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Duty Cycle</h3>
+            <span class="category-chip">Metrics</span>
+          </div>
+          <p class="glossary-def">The ratio of high-logic duration to total waveform period ($T_{high} / T_{period} \times 100\%$).</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Outputs exhibit balanced $50.0\% \pm 0.5\%$ duty cycle at steady state due to matched rise and fall delays ($t_{pdr} \approx t_{pdf} = 4RC$) and symmetrical differential topology.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-duty-cycle</span>
+          </div>
+        </article>
+        <div class="letter-section-marker" id="letter-E"><h3 style="font-family:var(--serif);font-size:24px;border-bottom:2px solid var(--line);padding-bottom:6px;margin:24px 0 16px;color:var(--terracotta);">E</h3></div>
+        <article class="glossary-entry-card" id="term-elmore-delay-model" data-category="Sizing" data-term="elmore delay model">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Elmore Delay Model</h3>
+            <span class="category-chip">Sizing</span>
+          </div>
+          <p class="glossary-def">An analytical RC network delay approximation model that estimates signal propagation delay as the sum of resistances multiplied by the downstream downstream capacitances.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Applied to derive latch propagation delay: $t_{pdf} = (8C)(R/2) = 4RC$ and $t_{pdr} = (8C)(R_1) = 4RC$, demonstrating symmetric charging and discharging dynamics.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-elmore-delay-model</span>
+          </div>
+        </article>
+        <div class="letter-section-marker" id="letter-F"><h3 style="font-family:var(--serif);font-size:24px;border-bottom:2px solid var(--line);padding-bottom:6px;margin:24px 0 16px;color:var(--terracotta);">F</h3></div>
+        <article class="glossary-entry-card" id="term-fabrication-discovery--audit---recovery" data-category="Project-specific" data-term="fabrication discovery (audit &amp; recovery)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Fabrication Discovery (Audit &amp; Recovery)</h3>
+            <span class="category-chip">Project-specific</span>
+          </div>
+          <p class="glossary-def">The critical project milestone where synthetic agent-generated baseline data and an empty 178-byte GDSII layout were identified, rejected, and replaced with verified Cadence simulation.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> In commit `a805b27`, all hardcoded scripts and fabricated results were eliminated, establishing real Spectre MMSIM121 and Virtuoso IC615 verification pipelines in GPDK045.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#timeline" class="glossary-cross-link">→ View in Section 3: Project Timeline</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-fabrication-discovery--audit---recovery</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-fan-out--fo" data-category="Sizing" data-term="fan-out (fo)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Fan-Out (FO)</h3>
+            <span class="category-chip">Sizing</span>
+          </div>
+          <p class="glossary-def">The number of standard logic gate inputs driven by a single output node, determining effective capacitive loading and signal transition slew rates.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Each DLATCH output in the ring drives exactly one subsequent differential input pair ($FO = 1$) plus an assumed $10\text{ fF}$ interconnect and probing testbench capacitance.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-fan-out--fo</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-femtojoule--fj" data-category="Metrics" data-term="femtojoule (fj)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Femtojoule (fJ)</h3>
+            <span class="category-chip">Metrics</span>
+          </div>
+          <p class="glossary-def">A unit of electrical energy equal to $10^{-15}$ Joules ($1\text{ fJ} = 1\text{ mW} \times 1\text{ ps}$), commonly used to quantify power-delay product in nanoscale VLSI circuits.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Standard unit for PDP across all report tables: $14.067\text{ fJ}$ for Design D, $13.768\text{ fJ}$ for Design B, and $8.557\text{ fJ}$ for the Unsized Baseline.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#results" class="glossary-cross-link">→ View in Section 4: Results Dashboard</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-femtojoule--fj</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-figure-of-merit--fom-phi" data-category="Metrics" data-term="figure of merit (fom_phi)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Figure of Merit (FoM_phi)</h3>
+            <span class="category-chip">Metrics</span>
+          </div>
+          <p class="glossary-def">A composite performance metric in frequency divider literature balancing operating frequency, power dissipation, and phase accuracy: $\text{FoM}_\phi = 10 \log_{10}[f_{in} / (P \cdot \Delta\phi_{max})]$.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Calculated to compare 45 nm GPDK045 implementation efficiency against published 180 nm benchmark data from Kuo et al.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#results" class="glossary-cross-link">→ View in Section 4: Results Dashboard</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-figure-of-merit--fom-phi</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-file-lock--flock---vm-lock" data-category="Project-specific" data-term="file lock (flock / vm.lock)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">File Lock (flock / vm.lock)</h3>
+            <span class="category-chip">Project-specific</span>
+          </div>
+          <p class="glossary-def">A POSIX file advisory locking mechanism used on the host operating system to serialize access to shared hardware resources.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Used via `flock /home/parshu/vm/vm.lock` across all host automation scripts (`vmx.sh`, `skill_run.sh`, `run_verify.sh`) to prevent concurrent execution conflicts on the VirtualBox guest.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#timeline" class="glossary-cross-link">→ View in Section 3: Project Timeline</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-file-lock--flock---vm-lock</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-finger--nf" data-category="Sizing" data-term="finger (nf)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Finger (nf)</h3>
+            <span class="category-chip">Sizing</span>
+          </div>
+          <p class="glossary-def">Dividing a wide transistor channel into multiple parallel narrower fingers sharing common source and drain diffusions to reduce gate resistance and diffusion capacitance.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Used in Layout XL generation where multiplier $m = 4$ devices were instantiated as 4 parallel fingers, resulting in 28 active MOS channels in view `layout_lxl`.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#layout" class="glossary-cross-link">→ View in Section 6: Layout &amp; Physical Verification</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-finger--nf</span>
+          </div>
+        </article>
+        <div class="letter-section-marker" id="letter-G"><h3 style="font-family:var(--serif);font-size:24px;border-bottom:2px solid var(--line);padding-bottom:6px;margin:24px 0 16px;color:var(--terracotta);">G</h3></div>
+        <article class="glossary-entry-card" id="term-g45n1svt--nmos1v" data-category="Device physics" data-term="g45n1svt (nmos1v)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">g45n1svt (nmos1v)</h3>
+            <span class="category-chip">Device physics</span>
+          </div>
+          <p class="glossary-def">The standard-threshold, 1.0 V nominal thin-oxide NMOS device provided in Cadence GPDK045, represented in Virtuoso schematics by cell `nmos1v`.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> All active transistors (M1–M7) in `divider_lib` are instantiated using this model section with $W = 240\text{ nm}, L = 45\text{ nm}$ ($L = 90\text{ nm}$ for M7).
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-g45n1svt--nmos1v</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-g45rnsnp" data-category="Project-specific" data-term="g45rnsnp">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">g45rnsnp</h3>
+            <span class="category-chip">Project-specific</span>
+          </div>
+          <p class="glossary-def">The non-silicided n-plus polysilicon resistor cell in Cadence GPDK045, featuring 3 electrical terminals (plus, minus, and substrate bulk tie).</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Used in the physical layout placement of DLATCH for load resistors R1 and R2; requires a substrate connection that caused device mismatches against 2-terminal ideal schematic resistors.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#layout" class="glossary-cross-link">→ View in Section 6: Layout &amp; Physical Verification</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-g45rnsnp</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-gds--output-conductance" data-category="Device physics" data-term="gds (output conductance)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">gds (Output Conductance)</h3>
+            <span class="category-chip">Device physics</span>
+          </div>
+          <p class="glossary-def">The small-signal output conductance of a transistor ($g_{ds} = \partial I_{ds} / \partial V_{ds}$), representing the inverse of small-signal output channel resistance $r_o$.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Higher $g_{ds}$ in 45 nm short-channel devices lowers the intrinsic gain $g_m / g_{ds}$, necessitating higher load resistance values ($R_1$) to satisfy regeneration loop gain.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-gds--output-conductance</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-generate-from-source--lxgenfromsource" data-category="Cadence/EDA" data-term="generate from source (lxgenfromsource)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Generate From Source (lxGenFromSource)</h3>
+            <span class="category-chip">Cadence/EDA</span>
+          </div>
+          <p class="glossary-def">Virtuoso Layout Suite XL command that automatically translates schematic instances and connectivity bindings into placed layout PCells and boundary pins.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Executed in batch via `cadence/skill/auto/lxl_flow.il` on `DLATCH` schematic, generating view `layout_lxl` containing 28 NMOS transistors and 9 I/O pins.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#layout" class="glossary-cross-link">→ View in Section 6: Layout &amp; Physical Verification</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-generate-from-source--lxgenfromsource</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-gm--transconductance" data-category="Device physics" data-term="gm (transconductance)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">gm (Transconductance)</h3>
+            <span class="category-chip">Device physics</span>
+          </div>
+          <p class="glossary-def">The ratio of change in drain current to the change in gate-to-source voltage ($g_m = \partial I_{ds} / \partial V_{gs}$), measuring device amplification strength.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Regeneration requires loop gain $g_m R_1 &gt; 1$ in the cross-coupled pair M3–M4. Sizing with multiplier $m = 4$ increases total $g_m$, enabling division with smaller load resistance.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-gm--transconductance</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-gpdk045" data-category="Project-specific" data-term="gpdk045">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">GPDK045</h3>
+            <span class="category-chip">Project-specific</span>
+          </div>
+          <p class="glossary-def">Cadence Generic Process Design Kit for 45 nm CMOS technology, providing BSIM4 SPICE models, Virtuoso PCells, techfiles, and Assura verification rule decks.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> The primary process node for this project (`gpdk045_v_6_0`), evaluating thin-oxide 1.0 V standard devices under nominal and PVT extreme corners.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#timeline" class="glossary-cross-link">→ View in Section 3: Project Timeline</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-gpdk045</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-ground--gnd----vss" data-category="Circuit" data-term="ground (gnd! / vss)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Ground (gnd! / VSS)</h3>
+            <span class="category-chip">Circuit</span>
+          </div>
+          <p class="glossary-def">The common reference potential node (0 V) in the circuit.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Virtuoso schematics require global ground net `gnd!` using the `analogLib/gnd` symbol. Standalone Spectre decks reference node `0`.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#tools" class="glossary-cross-link">→ View in Section 7: Cadence Tool Tour</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-ground--gnd----vss</span>
+          </div>
+        </article>
+        <div class="letter-section-marker" id="letter-H"><h3 style="font-family:var(--serif);font-size:24px;border-bottom:2px solid var(--line);padding-bottom:6px;margin:24px 0 16px;color:var(--terracotta);">H</h3></div>
+        <article class="glossary-entry-card" id="term-haiku-subagent" data-category="Project-specific" data-term="haiku subagent">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Haiku Subagent</h3>
+            <span class="category-chip">Project-specific</span>
+          </div>
+          <p class="glossary-def">Lightweight, rapid AI worker agents deployed in background sessions to execute repetitive commands inside the Cadence VM.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Dispatched to automate command replays, file shipping, log parsing, and DRC error extraction under the coordination of the lead model.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#timeline" class="glossary-cross-link">→ View in Section 3: Project Timeline</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-haiku-subagent</span>
+          </div>
+        </article>
+        <div class="letter-section-marker" id="letter-I"><h3 style="font-family:var(--serif);font-size:24px;border-bottom:2px solid var(--line);padding-bottom:6px;margin:24px 0 16px;color:var(--terracotta);">I</h3></div>
+        <article class="glossary-entry-card" id="term-inverter---complementary-inversion" data-category="Circuit" data-term="inverter / complementary inversion">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Inverter / Complementary Inversion</h3>
+            <span class="category-chip">Circuit</span>
+          </div>
+          <p class="glossary-def">Signal inversion logic function where logic high maps to low and vice versa.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> In the differential ring divider, inversion is implemented without active inverters simply by cross-coupling complementary differential pairs ($Q_4 \to D_{1b}, Q_{4b} \to D_1$).
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#paper" class="glossary-cross-link">→ View in Section 1: The Paper (Kuo et al.)</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-inverter---complementary-inversion</span>
+          </div>
+        </article>
+        <div class="letter-section-marker" id="letter-J"><h3 style="font-family:var(--serif);font-size:24px;border-bottom:2px solid var(--line);padding-bottom:6px;margin:24px 0 16px;color:var(--terracotta);">J</h3></div>
+        <article class="glossary-entry-card" id="term-jitter" data-category="Metrics" data-term="jitter">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Jitter</h3>
+            <span class="category-chip">Metrics</span>
+          </div>
+          <p class="glossary-def">Undesired short-term variations and phase fluctuations of the significant clock transition edges from their ideal positions in time.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Minimized by symmetric differential switching and equalized rise/fall times; simulated waveforms exhibit sharp transitions with jitter $&lt; 1.2\text{ ps}$.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-jitter</span>
+          </div>
+        </article>
+        <div class="letter-section-marker" id="letter-L"><h3 style="font-family:var(--serif);font-size:24px;border-bottom:2px solid var(--line);padding-bottom:6px;margin:24px 0 16px;color:var(--terracotta);">L</h3></div>
+        <article class="glossary-entry-card" id="term-latch-up" data-category="Layout" data-term="latch-up">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Latch-up</h3>
+            <span class="category-chip">Layout</span>
+          </div>
+          <p class="glossary-def">A destructive low-impedance short-circuit path formed between power and ground rails by parasitic bipolar transistors (p-n-p-n SCR structures) in bulk CMOS.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Governed by rule `LATCHUP.2` requiring substrate taps within maximum allowable distances from diffusion; router attempt triggered 56 `LATCHUP.2` violations due to tap spacing.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#layout" class="glossary-cross-link">→ View in Section 6: Layout &amp; Physical Verification</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-latch-up</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-latchup-2-rule" data-category="Layout" data-term="latchup.2 rule">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">LATCHUP.2 Rule</h3>
+            <span class="category-chip">Layout</span>
+          </div>
+          <p class="glossary-def">Assura DRC rule in GPDK045 mandating that NMOS source/drain diffusions must reside within a specified proximity to a p-substrate tie tap.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> The single largest category of DRC violations (56 errors) produced during the automatic router attempt, requiring dedicated guard-ring and tap placement.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#layout" class="glossary-cross-link">→ View in Section 6: Layout &amp; Physical Verification</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-latchup-2-rule</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-layout-versus-schematic--lvs" data-category="Verification" data-term="layout versus schematic (lvs)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Layout Versus Schematic (LVS)</h3>
+            <span class="category-chip">Verification</span>
+          </div>
+          <p class="glossary-def">Physical verification stage that compares extracted circuit connectivity from layout against the original schematic netlist to verify 1-to-1 equivalence.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Assura LVS run via `run_verify.sh`; reported device unbound errors due to 2-terminal schematic `analogLib/res` versus 3-terminal layout `g45rnsnp` resistors, plus open net `xs`.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#layout" class="glossary-cross-link">→ View in Section 6: Layout &amp; Physical Verification</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-layout-versus-schematic--lvs</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-layout-xl--virtuoso-layout-suite-xl" data-category="Cadence/EDA" data-term="layout xl (virtuoso layout suite xl)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Layout XL (Virtuoso Layout Suite XL)</h3>
+            <span class="category-chip">Cadence/EDA</span>
+          </div>
+          <p class="glossary-def">Connectivity-aware layout environment in Cadence Virtuoso that maintains real-time binding with the schematic, enabling guided placement, flying wires, and DRC checking.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Utilized in batch mode via `lxGenFromSource` (`cadence/skill/auto/lxl_flow.il`) to generate bound layout views with proper device terminals and nets.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#tools" class="glossary-cross-link">→ View in Section 7: Cadence Tool Tour</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-layout-xl--virtuoso-layout-suite-xl</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-load-capacitance--c-l" data-category="Sizing" data-term="load capacitance (c_l)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Load Capacitance (C_L)</h3>
+            <span class="category-chip">Sizing</span>
+          </div>
+          <p class="glossary-def">The total lumped capacitive load present at an output node, consisting of gate oxide capacitances, junction diffusion capacitances, and interconnect parasitics.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Fixed at $10\text{ fF}$ per output terminal across all nominal and PVT characterization testbenches to model downstream loading and pad capacitance.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-load-capacitance--c-l</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-load-resistor--r1--r2" data-category="Circuit" data-term="load resistor (r1, r2)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Load Resistor (R1, R2)</h3>
+            <span class="category-chip">Circuit</span>
+          </div>
+          <p class="glossary-def">Passive pull-up resistive elements connected between the positive supply rail (VDD) and the differential output nodes (Q, Qb).</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Selected as $8\text{ k}\Omega$ for Unsized Baseline, $3\text{ k}\Omega$ for Design D, and $2\text{ k}\Omega$ for Design B; direct implementation of paper value ($1.15\text{ k}\Omega$) fails to divide.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-load-resistor--r1--r2</span>
+          </div>
+        </article>
+        <div class="letter-section-marker" id="letter-M"><h3 style="font-family:var(--serif);font-size:24px;border-bottom:2px solid var(--line);padding-bottom:6px;margin:24px 0 16px;color:var(--terracotta);">M</h3></div>
+        <article class="glossary-entry-card" id="term-m1--m2--sampling-pair" data-category="Circuit" data-term="m1, m2 (sampling pair)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">M1, M2 (Sampling Pair)</h3>
+            <span class="category-chip">Circuit</span>
+          </div>
+          <p class="glossary-def">Differential NMOS transistor pair responsible for sensing input signals D and Db during the clock sampling phase.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Configured with $W = 240\text{ nm}, L = 45\text{ nm}$, multiplier $m = 4$ in Design D. Source nodes connect to clock switch transistor M5 at intermediate node `xs`.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-m1--m2--sampling-pair</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-m3--m4--hold-cross-coupled-pair" data-category="Circuit" data-term="m3, m4 (hold cross-coupled pair)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">M3, M4 (Hold Cross-Coupled Pair)</h3>
+            <span class="category-chip">Circuit</span>
+          </div>
+          <p class="glossary-def">Cross-coupled NMOS transistor pair providing positive regenerative feedback to latch and store logic states during hold phase.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Configured identically to sampling devices with $W = 240\text{ nm}, L = 45\text{ nm}$, multiplier $m = 4$ in Design D. Sources connect to switch M6 at node `xh`.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-m3--m4--hold-cross-coupled-pair</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-m5--sampling-clock-switch" data-category="Circuit" data-term="m5 (sampling clock switch)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">M5 (Sampling Clock Switch)</h3>
+            <span class="category-chip">Circuit</span>
+          </div>
+          <p class="glossary-def">Clock-controlled switch transistor activated when CK is high to connect the sampling pair M1–M2 to the tail node.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Gate connected to clock signal CK; drain connects to sampling pair common source `xs`, source connects to tail node `tail`.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-m5--sampling-clock-switch</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-m6--hold-clock-switch" data-category="Circuit" data-term="m6 (hold clock switch)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">M6 (Hold Clock Switch)</h3>
+            <span class="category-chip">Circuit</span>
+          </div>
+          <p class="glossary-def">Clock-controlled switch transistor activated when complementary clock CKb is high to enable regenerative latching.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Gate connected to complementary clock CKb; drain connects to cross-coupled pair common source `xh`, source connects to tail node `tail`.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-m6--hold-clock-switch</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-m7--tail-current-source" data-category="Circuit" data-term="m7 (tail current source)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">M7 (Tail Current Source)</h3>
+            <span class="category-chip">Circuit</span>
+          </div>
+          <p class="glossary-def">NMOS transistor connected between common tail node and ground, biased at gate voltage vb to establish total bias current.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Sized with channel length $L = 90\text{ nm}$ and width $W = 480\text{ nm}$. Operates in triode region ($V_{ds} = 8\text{--}67\text{ mV} &lt; V_{dsat} = 358\text{ mV}$) across all designs.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-m7--tail-current-source</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-metal-layer---routing-track--metal1--metal11" data-category="Layout" data-term="metal layer / routing track (metal1..metal11)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Metal Layer / Routing Track (Metal1..Metal11)</h3>
+            <span class="category-chip">Layout</span>
+          </div>
+          <p class="glossary-def">Planar conductive aluminum/copper interconnect layers separated by dielectric insulating oxide in a CMOS process stack.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> GPDK045 features 11 metal layers. Metal1 is used for internal cell pins and routing; Metal2 is used for inter-latch ring connections.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#layout" class="glossary-cross-link">→ View in Section 6: Layout &amp; Physical Verification</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-metal-layer---routing-track--metal1--metal11</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-metal1-a-1-rule" data-category="Layout" data-term="metal1.a.1 rule">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">METAL1.A.1 Rule</h3>
+            <span class="category-chip">Layout</span>
+          </div>
+          <p class="glossary-def">Assura DRC rule specifying that any polygon drawn on Metal1 must have a minimum planar surface area of at least $0.02\text{ }\mu\text{m}^2$.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Produced 14 real errors in the DLATCH placement layout where small square contact pin shapes fell below the minimum area constraint.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#layout" class="glossary-cross-link">→ View in Section 6: Layout &amp; Physical Verification</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-metal1-a-1-rule</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-minimum-load-resistance--r-crit" data-category="Sizing" data-term="minimum load resistance (r_crit)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Minimum Load Resistance (R_crit)</h3>
+            <span class="category-chip">Sizing</span>
+          </div>
+          <p class="glossary-def">The minimum load resistance required to establish a regenerative loop gain greater than unity ($g_m R_L &gt; 1$) in a differential latch.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Derived as $R_{crit} = 1.1 \times (3R_{on} / m) = 7.59\text{ k}\Omega$ for $m=1$, and $1.90\text{ k}\Omega$ for $m=4$. Explains the failure of Kuo et al.&#x27;s $1.15\text{ k}\Omega$ rule.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-minimum-load-resistance--r-crit</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-mobility--mu-n--mu-p" data-category="Device physics" data-term="mobility (mu_n, mu_p)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Mobility (mu_n, mu_p)</h3>
+            <span class="category-chip">Device physics</span>
+          </div>
+          <p class="glossary-def">The drift velocity acquired by charge carriers (electrons in NMOS, holes in PMOS) per unit applied electric field: $v_d = \mu E$.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Higher electron mobility ($\mu_n \approx 3\times \mu_p$) motivated an all-NMOS pull-down switching network with resistive loads for high-frequency operation.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-mobility--mu-n--mu-p</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-model-section--tt--ff--ss--fs--sf" data-category="Verification" data-term="model section (tt, ff, ss, fs, sf)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Model Section (tt, ff, ss, fs, sf)</h3>
+            <span class="category-chip">Verification</span>
+          </div>
+          <p class="glossary-def">Named configuration blocks within SPICE model libraries defining statistical process corner variations for NMOS and PMOS transistors.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Specified in Spectre runs via `section=tt` (typical-typical), `section=ff` (fast-fast), `section=ss` (slow-slow), `section=fs` (fast-slow), and `section=sf` (slow-fast).
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#results" class="glossary-cross-link">→ View in Section 4: Results Dashboard</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-model-section--tt--ff--ss--fs--sf</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-mosfet---mos-transistor" data-category="Device physics" data-term="mosfet / mos transistor">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">MOSFET / MOS Transistor</h3>
+            <span class="category-chip">Device physics</span>
+          </div>
+          <p class="glossary-def">Metal-Oxide-Semiconductor Field-Effect Transistor, a voltage-controlled switching and amplifying device utilizing an insulated gate.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> The fundamental semiconductor device used throughout the frequency divider core in the Cadence GPDK045 45 nm technology kit.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-mosfet---mos-transistor</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-multiphase" data-category="Circuit" data-term="multiphase">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Multiphase</h3>
+            <span class="category-chip">Circuit</span>
+          </div>
+          <p class="glossary-def">An electrical clock generation architecture that produces multiple periodic output signals possessing equal frequency but systematically staggered phase angles.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> The 4-latch divider produces eight distinct phases: $\phi_0 = 0^\circ, \phi_1 = 45^\circ, \phi_2 = 90^\circ, \phi_3 = 135^\circ, \phi_4 = 180^\circ, \phi_5 = 225^\circ, \phi_6 = 270^\circ, \phi_7 = 315^\circ$.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#paper" class="glossary-cross-link">→ View in Section 1: The Paper (Kuo et al.)</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-multiphase</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-multiplier--m" data-category="Sizing" data-term="multiplier (m)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Multiplier (m)</h3>
+            <span class="category-chip">Sizing</span>
+          </div>
+          <p class="glossary-def">A parameter in Cadence schematic and SPICE netlists that instantiates multiple identical parallel copies of a transistor to scale total width.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Set to $m = 1$ in the unsized baseline, and $m = 4$ in Design D and Design B, effectively quadrupling transistor current drive and reducing stack resistance.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-multiplier--m</span>
+          </div>
+        </article>
+        <div class="letter-section-marker" id="letter-N"><h3 style="font-family:var(--serif);font-size:24px;border-bottom:2px solid var(--line);padding-bottom:6px;margin:24px 0 16px;color:var(--terracotta);">N</h3></div>
+        <article class="glossary-entry-card" id="term-netlist---netlister" data-category="Cadence/EDA" data-term="netlist / netlister">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Netlist / Netlister</h3>
+            <span class="category-chip">Cadence/EDA</span>
+          </div>
+          <p class="glossary-def">A text-based description of circuit connectivity, device models, and parameter instances used by simulation and verification engines.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Generated via Cadence Virtuoso netlister (`dfII`) to produce `results/gpdk045/virtuoso_netlist_tb_divider.scs`, diffed against standalone Spectre netlist.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#tools" class="glossary-cross-link">→ View in Section 7: Cadence Tool Tour</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-netlist---netlister</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-nmos--nmos1v" data-category="Device physics" data-term="nmos (nmos1v)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">NMOS (nmos1v)</h3>
+            <span class="category-chip">Device physics</span>
+          </div>
+          <p class="glossary-def">N-channel Metal-Oxide-Semiconductor field-effect transistor conducting electrons through an n-type inverted channel formed in a p-type substrate.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Used exclusively for all 7 active devices in each DLATCH cell (`g45n1svt`), operating at nominal 1.0 V supply voltage.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-nmos--nmos1v</span>
+          </div>
+        </article>
+        <div class="letter-section-marker" id="letter-O"><h3 style="font-family:var(--serif);font-size:24px;border-bottom:2px solid var(--line);padding-bottom:6px;margin:24px 0 16px;color:var(--terracotta);">O</h3></div>
+        <article class="glossary-entry-card" id="term-ocean--open-command-environment-for-analysis" data-category="Cadence/EDA" data-term="ocean (open command environment for analysis)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">OCEAN (Open Command Environment for Analysis)</h3>
+            <span class="category-chip">Cadence/EDA</span>
+          </div>
+          <p class="glossary-def">Cadence specialized SKILL-based command-line scripting language designed to automate simulation setup, batch execution, and waveform post-processing.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Utilized in `cadence/ocean/run_schematic_tb_param.ocn` to automate schematic-driven simulation of `tb_divider` at 1.4 GHz directly in batch mode.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#tools" class="glossary-cross-link">→ View in Section 7: Cadence Tool Tour</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-ocean--open-command-environment-for-analysis</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-output-voltage-swing--pk-pk" data-category="Metrics" data-term="output voltage swing (pk-pk)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Output Voltage Swing (pk-pk)</h3>
+            <span class="category-chip">Metrics</span>
+          </div>
+          <p class="glossary-def">The peak-to-peak voltage differential between the minimum and maximum steady-state logic output levels ($V_{swing} = V_{max} - V_{min}$).</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Measured as $0.4344\text{ V}$ ($0.583\text{--}1.017\text{ V}$) for Design D, $0.1349\text{ V}$ ($0.818\text{--}0.953\text{ V}$) for Design B, and $0.0153\text{ V}$ for paper sizing (non-dividing).
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#results" class="glossary-cross-link">→ View in Section 4: Results Dashboard</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-output-voltage-swing--pk-pk</span>
+          </div>
+        </article>
+        <div class="letter-section-marker" id="letter-P"><h3 style="font-family:var(--serif);font-size:24px;border-bottom:2px solid var(--line);padding-bottom:6px;margin:24px 0 16px;color:var(--terracotta);">P</h3></div>
+        <article class="glossary-entry-card" id="term-paper-rule-implementation--45-nm-fail" data-category="Project-specific" data-term="paper-rule implementation (45 nm fail)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Paper-Rule Implementation (45 nm fail)</h3>
+            <span class="category-chip">Project-specific</span>
+          </div>
+          <p class="glossary-def">Direct port of Kuo et al.&#x27;s sizing rule ($m=1, R_1 = R_2 = R_{on}/2 = 1.15\text{ k}\Omega$) into GPDK045 at 1.4 GHz, which fails to divide.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Simulation confirmed output oscillates at 2799.8 MHz ($2.0\times f_{in}$) with only $15.3\text{ mV}$ swing, failing the division criteria due to sub-threshold loop gain.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#results" class="glossary-cross-link">→ View in Section 4: Results Dashboard</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-paper-rule-implementation--45-nm-fail</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-parasitic-capacitance" data-category="Device physics" data-term="parasitic capacitance">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Parasitic Capacitance</h3>
+            <span class="category-chip">Device physics</span>
+          </div>
+          <p class="glossary-def">Unwanted intrinsic capacitances formed by gate-to-channel overlap ($C_{gs}, C_{gd}$), channel-to-bulk ($C_{gb}$), and reverse-biased source/drain p-n junctions ($C_{sb}, C_{db}$).</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Limits the maximum operating frequency of Design B to 6.0 GHz; single-edge delay of $66.1\text{ ps}$ is $3.3\times$ the intrinsic parasitic-free RC bound of $20\text{ ps}$.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-parasitic-capacitance</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-pass-gate---transmission-gate" data-category="Circuit" data-term="pass-gate / transmission gate">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Pass-Gate / Transmission Gate</h3>
+            <span class="category-chip">Circuit</span>
+          </div>
+          <p class="glossary-def">A switching circuit arrangement using MOS transistors to pass or block bidirectional analog or digital signals under clock control.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Switch transistors M5 and M6 act as clock-controlled pass switches directing current between sampling/regeneration pairs and the tail current source.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-pass-gate---transmission-gate</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-pcell--parameterized-cell" data-category="Cadence/EDA" data-term="pcell (parameterized cell)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">PCell (Parameterized Cell)</h3>
+            <span class="category-chip">Cadence/EDA</span>
+          </div>
+          <p class="glossary-def">A programmable Virtuoso layout or schematic generator whose geometric dimensions and terminal structures update dynamically based on CDF parameters.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> All transistor placements in `divider_lib` utilize GPDK045 `nmos1v` PCells that automatically adjust diffusion shapes and contacts when $W, L, m$ are altered.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#tools" class="glossary-cross-link">→ View in Section 7: Cadence Tool Tour</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-pcell--parameterized-cell</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-pdk--process-design-kit" data-category="Cadence/EDA" data-term="pdk (process design kit)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">PDK (Process Design Kit)</h3>
+            <span class="category-chip">Cadence/EDA</span>
+          </div>
+          <p class="glossary-def">A comprehensive package of device models, technology files, PCells, and verification rule decks provided by a foundry for designing ICs in a specific fabrication process.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Cadence GPDK045 version 6.0 (`gpdk045_v_6_0`) installed in guest `/home/buet/pdk/gpdk045_v_6_0`.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#timeline" class="glossary-cross-link">→ View in Section 3: Project Timeline</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-pdk--process-design-kit</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-phase-error--deg" data-category="Metrics" data-term="phase error (deg)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Phase Error (deg)</h3>
+            <span class="category-chip">Metrics</span>
+          </div>
+          <p class="glossary-def">The maximum absolute angular deviation of an actual output phase step from the ideal theoretical spacing of 45.0 degrees: $\Delta\phi_{max} = \max |\Delta\phi_i - 45^\circ|$.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Design D at 1.4 GHz exhibits $38.46^\circ$ error ($83.46^\circ$ and $6.54^\circ$ steps); Design B at 6.0 GHz achieves $3.78^\circ$ error ($48.78^\circ$ and $41.22^\circ$), matching paper benchmark.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#results" class="glossary-cross-link">→ View in Section 4: Results Dashboard</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-phase-error--deg</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-phase-step--alpha" data-category="Metrics" data-term="phase step (alpha)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Phase Step (alpha)</h3>
+            <span class="category-chip">Metrics</span>
+          </div>
+          <p class="glossary-def">The angular difference between consecutive output phases in an 8-phase frequency divider: $\alpha = 180 \times t_{pair} \times f_{in}$ degrees.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Calculated from inter-pair edge delay $t_{pair}$; yields alternating steps of $\alpha$ and $(90^\circ - \alpha)$ across the eight output terminals.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-phase-step--alpha</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-physical-layout" data-category="Layout" data-term="physical layout">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Physical Layout</h3>
+            <span class="category-chip">Layout</span>
+          </div>
+          <p class="glossary-def">The geometrical polygon representation of semiconductor layers, diffusions, polysilicon gates, metal interconnects, and vias used to manufacture integrated circuits.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Created for DLATCH and divider_core using SKILL scripts; contains placed PCells and pins in `layout`, and auto-routed tracks in `layout_routed`.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#layout" class="glossary-cross-link">→ View in Section 6: Layout &amp; Physical Verification</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-physical-layout</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-placement-only-layout" data-category="Layout" data-term="placement-only layout">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Placement-Only Layout</h3>
+            <span class="category-chip">Layout</span>
+          </div>
+          <p class="glossary-def">An IC layout stage containing positioned transistor cells, passives, and I/O boundary pins, but lacking detailed interconnect routing between terminals.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> The primary verified layout milestone in this report; contains 7 NMOS PCells and 2 poly resistors in DLATCH, and a 2x2 array in divider_core with 21 DRC errors.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#layout" class="glossary-cross-link">→ View in Section 6: Layout &amp; Physical Verification</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-placement-only-layout</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-pmos--pmos1v" data-category="Device physics" data-term="pmos (pmos1v)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">PMOS (pmos1v)</h3>
+            <span class="category-chip">Device physics</span>
+          </div>
+          <p class="glossary-def">P-channel Metal-Oxide-Semiconductor field-effect transistor conducting positive charge carriers (holes) through an inverted p-type channel in an n-well.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Excluded from the high-speed divider core pull-down networks to avoid carrier mobility penalties and parasitic gate loading, but available in GPDK045 as `pmos1v`.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-pmos--pmos1v</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-power-dissipation" data-category="Metrics" data-term="power dissipation">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Power Dissipation</h3>
+            <span class="category-chip">Metrics</span>
+          </div>
+          <p class="glossary-def">Total electrical energy consumed per unit time by the circuit, calculated as average supply current multiplied by nominal supply voltage: $P = V_{DD} \times I_{avg}$.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Measured across steady-state clock cycles: $0.1375\text{ mW}$ for Baseline U8k, $0.5413\text{ mW}$ for Design D standalone ($0.4555\text{ mW}$ schematic-driven), and $0.4929\text{ mW}$ for Design B.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#results" class="glossary-cross-link">→ View in Section 4: Results Dashboard</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-power-dissipation</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-power-delay-product--pdp" data-category="Metrics" data-term="power-delay product (pdp)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Power-Delay Product (PDP)</h3>
+            <span class="category-chip">Metrics</span>
+          </div>
+          <p class="glossary-def">Energy consumed per switching event, calculated as the product of total power dissipation and average propagation delay: $\text{PDP} = P_{avg} \times t_{pd}$.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Computed in femtojoules (fJ): $8.557\text{ fJ}$ for Baseline U8k, $14.067\text{ fJ}$ for Design D ($12.142\text{ fJ}$ schematic-driven), and $13.768\text{ fJ}$ for Design B.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#results" class="glossary-cross-link">→ View in Section 4: Results Dashboard</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-power-delay-product--pdp</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-pristine-snapshot" data-category="Project-specific" data-term="pristine snapshot">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Pristine Snapshot</h3>
+            <span class="category-chip">Project-specific</span>
+          </div>
+          <p class="glossary-def">A frozen, clean virtual machine disk state stored prior to batch simulation and routing experiments, allowing instant rollback in case of disk exhaustion or environment corruption.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Maintained on the host machine to ensure reproducible Cadence Virtuoso and Spectre execution without guest image drift.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#timeline" class="glossary-cross-link">→ View in Section 3: Project Timeline</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-pristine-snapshot</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-process-corner" data-category="Verification" data-term="process corner">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Process Corner</h3>
+            <span class="category-chip">Verification</span>
+          </div>
+          <p class="glossary-def">Statistical fabrication process variations representing extreme speed boundaries for NMOS and PMOS devices: typical (tt), fast-fast (ff), slow-slow (ss), fast-slow (fs), slow-fast (sf).</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> All 5 process corners were evaluated across temperatures and voltages in 45-run PVT sweeps; Design D passed across tt, ff, ss, fs, and sf corners.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#results" class="glossary-cross-link">→ View in Section 4: Results Dashboard</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-process-corner</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-propagation-delay--t-pd" data-category="Metrics" data-term="propagation delay (t_pd)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Propagation Delay (t_pd)</h3>
+            <span class="category-chip">Metrics</span>
+          </div>
+          <p class="glossary-def">The elapsed time between an input clock transition (50% level) and the corresponding transition at an output terminal.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Defined as the multi-phase average delay from CK rising edge to the next transition across any output: $25.99\text{ ps}$ for Design D, $27.94\text{ ps}$ for Design B, and $62.21\text{ ps}$ for Baseline.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-propagation-delay--t-pd</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-psf---psf-xl--parameter-storage-format" data-category="Cadence/EDA" data-term="psf / psf xl (parameter storage format)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">PSF / PSF XL (Parameter Storage Format)</h3>
+            <span class="category-chip">Cadence/EDA</span>
+          </div>
+          <p class="glossary-def">Cadence binary simulation database format used by Spectre to store transient, DC, and AC simulation waveforms and operating point parameters.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Output generated in guest run directories (`run.raw`); converted to ASCII format or read via OCEAN expressions to extract delay, power, and nodal voltages.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#tools" class="glossary-cross-link">→ View in Section 7: Cadence Tool Tour</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-psf---psf-xl--parameter-storage-format</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-pvt--process--voltage--temperature" data-category="Verification" data-term="pvt (process, voltage, temperature)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">PVT (Process, Voltage, Temperature)</h3>
+            <span class="category-chip">Verification</span>
+          </div>
+          <p class="glossary-def">Comprehensive design robustness characterization assessing circuit functionality and performance across variations in semiconductor manufacturing, supply rail, and ambient temperature.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Tested across a 45-corner matrix (5 process corners $\times$ 3 temperatures [$-40, 27, 125^\circ\text{C}$] $\times$ 3 supplies [$0.9, 1.0, 1.1\text{ V}$]). Design D achieved 41/45 pass rate.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#results" class="glossary-cross-link">→ View in Section 4: Results Dashboard</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-pvt--process--voltage--temperature</span>
+          </div>
+        </article>
+        <div class="letter-section-marker" id="letter-Q"><h3 style="font-family:var(--serif);font-size:24px;border-bottom:2px solid var(--line);padding-bottom:6px;margin:24px 0 16px;color:var(--terracotta);">Q</h3></div>
+        <article class="glossary-entry-card" id="term-quantus-qrc" data-category="Verification" data-term="quantus qrc">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Quantus QRC</h3>
+            <span class="category-chip">Verification</span>
+          </div>
+          <p class="glossary-def">Cadence next-generation parasitic extraction tool replacing older Assura RCX, extracting accurate 3D field-solver capacitances and resistances.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Unavailable in our local GPDK045 copy because the required `qrc/` setup directory was absent, preventing post-layout extraction.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#layout" class="glossary-cross-link">→ View in Section 6: Layout &amp; Physical Verification</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-quantus-qrc</span>
+          </div>
+        </article>
+        <div class="letter-section-marker" id="letter-R"><h3 style="font-family:var(--serif);font-size:24px;border-bottom:2px solid var(--line);padding-bottom:6px;margin:24px 0 16px;color:var(--terracotta);">R</h3></div>
+        <article class="glossary-entry-card" id="term-raw-file---raw---nutascii" data-category="Cadence/EDA" data-term="raw file (.raw / nutascii)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Raw File (.raw / nutascii)</h3>
+            <span class="category-chip">Cadence/EDA</span>
+          </div>
+          <p class="glossary-def">Text-formatted SPICE simulation output format containing structured simulation vectors, time steps, and nodal waveforms.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Generated with `spectre -format nutascii -raw` inside the VM, enabling Python script `measure_guest.py` to parse waveforms without requiring Cadence GUI licenses.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#tools" class="glossary-cross-link">→ View in Section 7: Cadence Tool Tour</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-raw-file---raw---nutascii</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-rcx--parasitic-extraction" data-category="Verification" data-term="rcx (parasitic extraction)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">RCX (Parasitic Extraction)</h3>
+            <span class="category-chip">Verification</span>
+          </div>
+          <p class="glossary-def">Automated physical verification step that calculates parasitic interconnect resistances (R), ground capacitances (C), and cross-coupling capacitances from layout geometries.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Assura RCX was attempted via `run_verify.sh rcx`, but halted due to missing foundry QRC technology files (`qrcSetupDir`) in the PDK distribution.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#layout" class="glossary-cross-link">→ View in Section 6: Layout &amp; Physical Verification</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-rcx--parasitic-extraction</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-regeneration" data-category="Circuit" data-term="regeneration">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Regeneration</h3>
+            <span class="category-chip">Circuit</span>
+          </div>
+          <p class="glossary-def">The active latching process in a digital latch where positive feedback from a cross-coupled pair amplifies a small differential input voltage into full rail-to-rail logic levels.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Occurs in DLATCH during the hold phase ($CKb = 1$) via cross-coupled transistors M3 and M4, holding the sampled state when M6 conducts.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-regeneration</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-regeneration-condition--r1----1-1---3ron-m" data-category="Sizing" data-term="regeneration condition (r1 &gt;= 1.1 * 3ron/m)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Regeneration Condition (R1 &gt;= 1.1 * 3Ron/m)</h3>
+            <span class="category-chip">Sizing</span>
+          </div>
+          <p class="glossary-def">The fundamental design inequality derived in this project guaranteeing that the small-signal open-loop gain of the cross-coupled regenerative pair exceeds unity ($g_m R_1 &gt; 1$).</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Required $R_1 \ge 7.59\text{ k}\Omega$ for $m=1$, and $R_1 \ge 1.90\text{ k}\Omega$ for $m=4$. Proves mathematically why Kuo et al.&#x27;s unit sizing rule fails in 45 nm.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-regeneration-condition--r1----1-1---3ron-m</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-ring-topology" data-category="Circuit" data-term="ring topology">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Ring Topology</h3>
+            <span class="category-chip">Circuit</span>
+          </div>
+          <p class="glossary-def">A closed loop arrangement of logic elements where the output of each stage feeds the input of the subsequent stage, with an overall feedback loop inversion.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Four DLATCH stages are connected in a closed ring ($XD1 \to XD2 \to XD3 \to XD4 \to XD1$) with alternating cross-connections, eliminating the need for an 8-latch topology.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#paper" class="glossary-cross-link">→ View in Section 1: The Paper (Kuo et al.)</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-ring-topology</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-rsf--run-specific-file" data-category="Verification" data-term="rsf (run-specific file)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">RSF (Run-Specific File)</h3>
+            <span class="category-chip">Verification</span>
+          </div>
+          <p class="glossary-def">Cadence configuration control file for Assura DRC, LVS, and RCX containing execution parameters, cell names, view targets, and rule set inclusions.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Generated dynamically from template files in `cadence/skill/verify/templates/` (`drc.rsf.in`, `lvs.rsf.in`) by shell wrapper `run_verify.sh`.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#tools" class="glossary-cross-link">→ View in Section 7: Cadence Tool Tour</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-rsf--run-specific-file</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-rule-file---rul" data-category="Verification" data-term="rule file (.rul)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Rule File (.rul)</h3>
+            <span class="category-chip">Verification</span>
+          </div>
+          <p class="glossary-def">A foundry-supplied ASCII rule definition file specifying layer operations, geometric spacing rules, and electrical connectivity extraction statements for Assura.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> GPDK045 rule files include `assuraDRC.rul` (DRC rules), `extract.rul` (device and connectivity extraction), and `compare.rul` (LVS comparison tolerances).
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#tools" class="glossary-cross-link">→ View in Section 7: Cadence Tool Tour</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-rule-file---rul</span>
+          </div>
+        </article>
+        <div class="letter-section-marker" id="letter-S"><h3 style="font-family:var(--serif);font-size:24px;border-bottom:2px solid var(--line);padding-bottom:6px;margin:24px 0 16px;color:var(--terracotta);">S</h3></div>
+        <article class="glossary-entry-card" id="term-sampling" data-category="Circuit" data-term="sampling">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Sampling</h3>
+            <span class="category-chip">Circuit</span>
+          </div>
+          <p class="glossary-def">The operational phase in a latch where input signals are actively tracked and transferred to intermediate internal nodes under clock control.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Occurs when $CK = 1$, turning on clock switch M5 and enabling differential pair M1–M2 to track input signals D and Db.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-sampling</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-saturation-region" data-category="Device physics" data-term="saturation region">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Saturation Region</h3>
+            <span class="category-chip">Device physics</span>
+          </div>
+          <p class="glossary-def">The MOSFET operational state where drain-to-source voltage exceeds saturation voltage ($V_{ds} \ge V_{dsat} = V_{gs} - V_{th}$), causing drain current to saturate and depend primarily on $V_{gs}$.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Assumed for tail current source M7 in classical text design; detailed operating point analysis in Spectre proved M7 operates in triode, not saturation.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-saturation-region</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-schematic-check-and-save--schcheck" data-category="Cadence/EDA" data-term="schematic check and save (schcheck)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Schematic Check and Save (schCheck)</h3>
+            <span class="category-chip">Cadence/EDA</span>
+          </div>
+          <p class="glossary-def">Virtuoso schematic verification utility that detects open pins, floating nets, short circuits, and naming conflicts before netlisting.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Cleaned to 0 errors and 0 warnings on `DLATCH` and `divider_core` using `clean_floating.il`. Exactly 1 known warning remains on `tb_divider` (instance VDD collides with net VDD).
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#tools" class="glossary-cross-link">→ View in Section 7: Cadence Tool Tour</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-schematic-check-and-save--schcheck</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-schematic-driven-simulation" data-category="Project-specific" data-term="schematic-driven simulation">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Schematic-Driven Simulation</h3>
+            <span class="category-chip">Project-specific</span>
+          </div>
+          <p class="glossary-def">Spectre simulation executed directly from the Virtuoso schematic database using the Virtuoso netlister and OCEAN rather than a standalone hand-written netlist.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Simulated `tb_divider` at 1.4 GHz via `run_schematic_tb_param.ocn`, yielding $0.455\text{ mW}$ power and $26.66\text{ ps}$ delay, uncovering the layout-dependent parameter effect.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#power-gap" class="glossary-cross-link">→ View in Section 5: Schematic vs Standalone</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-schematic-driven-simulation</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-self-oscillation-frequency--f-osc" data-category="Metrics" data-term="self-oscillation frequency (f_osc)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Self-Oscillation Frequency (f_osc)</h3>
+            <span class="category-chip">Metrics</span>
+          </div>
+          <p class="glossary-def">The autonomous oscillation frequency of a closed-loop divider when clock input amplitude is reduced to zero, caused by positive loop gain.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> In the non-dividing paper sizing case ($R = 1.15\text{ k}\Omega$), the circuit autonomously self-oscillates at 2799.8 MHz ($2.0\times f_{in}$) with $15.3\text{ mV}$ swing.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#results" class="glossary-cross-link">→ View in Section 4: Results Dashboard</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-self-oscillation-frequency--f-osc</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-sizing-concept--kuo-et-al" data-category="Sizing" data-term="sizing concept (kuo et al.)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Sizing Concept (Kuo et al.)</h3>
+            <span class="category-chip">Sizing</span>
+          </div>
+          <p class="glossary-def">A transistor and load sizing strategy proposed by Kuo et al. setting unit NMOS width and designing load resistance to equal half of on-resistance ($R_1 = R_{on}/2$).</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Fails in 45 nm GPDK045 due to the 3-device pull-down stack; adapted in this project into the stack regeneration rule ($R_1 \ge 1.1 \times 3R_{on}/m$).
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#paper" class="glossary-cross-link">→ View in Section 1: The Paper (Kuo et al.)</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-sizing-concept--kuo-et-al</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-skill-language" data-category="Cadence/EDA" data-term="skill language">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">SKILL Language</h3>
+            <span class="category-chip">Cadence/EDA</span>
+          </div>
+          <p class="glossary-def">Cadence proprietary Lisp-like extension programming language used to automate and customize all operations across Virtuoso schematic, layout, and database editors.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Extensively used to automate schematic generation (`build_schematic_v2.il`), wire routing (`wire_schematics.il`), stub cleanup (`clean_floating.il`), and layout placement (`build_layout_v2.il`).
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#tools" class="glossary-cross-link">→ View in Section 7: Cadence Tool Tour</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-skill-language</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-spectre-circuit-simulator" data-category="Cadence/EDA" data-term="spectre circuit simulator">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Spectre Circuit Simulator</h3>
+            <span class="category-chip">Cadence/EDA</span>
+          </div>
+          <p class="glossary-def">Cadence flagship SPICE-class circuit simulator providing high-accuracy transient, RF, and reliability analysis for advanced nanometer nodes.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Spectre MMSIM121 (12.1.0) inside CentOS VM performed all simulation characterizations, transient runs, DC operating point sweeps, and 45-corner PVT analyses.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#tools" class="glossary-cross-link">→ View in Section 7: Cadence Tool Tour</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-spectre-circuit-simulator</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-stack-resistance--3-ron---m" data-category="Sizing" data-term="stack resistance (3 ron / m)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Stack Resistance (3 Ron / m)</h3>
+            <span class="category-chip">Sizing</span>
+          </div>
+          <p class="glossary-def">The effective series on-resistance of the three cascaded NMOS transistors in the DLATCH pull-down network (sampling device, clock switch, and tail transistor).</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Calculated as $R_{stack} = 3 R_{on} / m = 6.90\text{ k}\Omega$ for unit multiplier $m = 1$, and $1.725\text{ k}\Omega$ for sized multiplier $m = 4$.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-stack-resistance--3-ron---m</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-stamp-error--stamperrormult---stamperrorconnect" data-category="Layout" data-term="stamp error (stamperrormult / stamperrorconnect)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Stamp Error (StampErrorMult / StampErrorConnect)</h3>
+            <span class="category-chip">Layout</span>
+          </div>
+          <p class="glossary-def">Assura DRC substrate connectivity error occurring when a diffusion layer touches a substrate or well without a valid physical tap contact or when multiple conflicting taps exist.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Appeared in placement layout DRC: 1 error in Rule 220 (`psubstrate_StampErrorMult`) and 6 errors in Rule 221 (`psubstrate_StampErrorConnect`) due to missing substrate tie routing.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#layout" class="glossary-cross-link">→ View in Section 6: Layout &amp; Physical Verification</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-stamp-error--stamperrormult---stamperrorconnect</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-standalone-netlist--divider-gpdk45-scs" data-category="Project-specific" data-term="standalone netlist (divider_gpdk45.scs)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Standalone Netlist (divider_gpdk45.scs)</h3>
+            <span class="category-chip">Project-specific</span>
+          </div>
+          <p class="glossary-def">A headless Spectre netlist created for standalone simulation without opening Cadence Virtuoso, using default BSIM4 process parameters.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Used for all batch parameter sweeps, PVT matrices, and frequency sweeps; produces $0.541\text{ mW}$ power and $25.99\text{ ps}$ delay for Design D.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#power-gap" class="glossary-cross-link">→ View in Section 5: Schematic vs Standalone</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-standalone-netlist--divider-gpdk45-scs</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-sti-stress-effect--sa--sb--sd" data-category="Device physics" data-term="sti stress effect (sa, sb, sd)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">STI Stress Effect (sa, sb, sd)</h3>
+            <span class="category-chip">Device physics</span>
+          </div>
+          <p class="glossary-def">Mechanical stress exerted on transistor silicon active channels by surrounding Shallow Trench Isolation oxide, altering carrier mobility and threshold voltage based on distance to STI edge.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Quantified by BSIM4 instance parameters `sa=140n, sb=140n, sd=160n`; identified as one of the primary contributors to the schematic-vs-standalone power difference.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#power-gap" class="glossary-cross-link">→ View in Section 5: Schematic vs Standalone</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-sti-stress-effect--sa--sb--sd</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-strict-division-check--8-output-criteria" data-category="Verification" data-term="strict division check (8-output criteria)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Strict Division Check (8-output criteria)</h3>
+            <span class="category-chip">Verification</span>
+          </div>
+          <p class="glossary-def">A rigorous multi-channel validation algorithm requiring all eight outputs of the divider to toggle at exactly half the input frequency ($f_{in} / 2 \pm 0.1\%$) with swing $\ge 0.1\text{ V}$.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Implemented in `measure_guest.py` after earlier Q1-only checks yielded false passes on harmonic distortions at $2.0\times f_{in}$.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#results" class="glossary-cross-link">→ View in Section 4: Results Dashboard</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-strict-division-check--8-output-criteria</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-subagent-architecture--haiku---agy---gemini" data-category="Project-specific" data-term="subagent architecture (haiku / agy / gemini)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Subagent Architecture (Haiku / agy / Gemini)</h3>
+            <span class="category-chip">Project-specific</span>
+          </div>
+          <p class="glossary-def">A multi-agent autonomous engineering workflow distributing tasks between specialized LLM agents for VM execution, scripting, text auditing, and verification.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Haiku workers executed headless VM runs and log shipping; agy/Gemini conducted rigorous quantitative audits (`REVIEW3_numbers.md`, `REVIEW3_prose.md`) to eliminate marketing bias.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#timeline" class="glossary-cross-link">→ View in Section 3: Project Timeline</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-subagent-architecture--haiku---agy---gemini</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-substrate-tap---well-tap" data-category="Layout" data-term="substrate tap / well tap">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Substrate Tap / Well Tap</h3>
+            <span class="category-chip">Layout</span>
+          </div>
+          <p class="glossary-def">Heavily doped ohmic diffusion regions (p+ in p-substrate, n+ in n-well) that connect bulk silicon to ground (VSS) or power (VDD) to prevent latch-up.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Missing in early placement PCells, causing Assura DRC substrate stamp errors; required in final physical layout to tie `g45rnsnp` resistor bulk terminals.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#layout" class="glossary-cross-link">→ View in Section 6: Layout &amp; Physical Verification</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-substrate-tap---well-tap</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-subthreshold-leakage" data-category="Device physics" data-term="subthreshold leakage">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Subthreshold Leakage</h3>
+            <span class="category-chip">Device physics</span>
+          </div>
+          <p class="glossary-def">The weak diffusion current flowing between drain and source of a MOSFET when gate voltage is below threshold ($V_{gs} &lt; V_{th}$): $I_{sub} \propto \exp[(V_{gs} - V_{th}) / (n k_B T / q)]$.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Increases significantly at the high temperature corner ($125^\circ\text{C}$), reducing effective logic swing and causing the 4 failing PVT points in Design D.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#results" class="glossary-cross-link">→ View in Section 4: Results Dashboard</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-subthreshold-leakage</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-supply-corner--0-9-v--1-0-v--1-1-v" data-category="Verification" data-term="supply corner (0.9 v, 1.0 v, 1.1 v)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Supply Corner (0.9 V, 1.0 V, 1.1 V)</h3>
+            <span class="category-chip">Verification</span>
+          </div>
+          <p class="glossary-def">Power supply voltage variations evaluated during PVT characterization, spanning $\pm 10\%$ around nominal 1.0 V supply.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Tested at $0.9\text{ V}$ (worst-case drive current), $1.0\text{ V}$ (nominal), and $1.1\text{ V}$ (maximum PDK voltage rating for `nmos1v`).
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#results" class="glossary-cross-link">→ View in Section 4: Results Dashboard</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-supply-corner--0-9-v--1-0-v--1-1-v</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-supply-voltage--vdd" data-category="Circuit" data-term="supply voltage (vdd)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Supply Voltage (VDD)</h3>
+            <span class="category-chip">Circuit</span>
+          </div>
+          <p class="glossary-def">The positive direct current electrical supply rail providing operating power to the integrated circuit.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Nominal $V_{DD} = 1.0\text{ V}$ for GPDK045 standard devices, compared to $1.8\text{ V}$ in Kuo et al.&#x27;s 180 nm reference paper.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-supply-voltage--vdd</span>
+          </div>
+        </article>
+        <div class="letter-section-marker" id="letter-T"><h3 style="font-family:var(--serif);font-size:24px;border-bottom:2px solid var(--line);padding-bottom:6px;margin:24px 0 16px;color:var(--terracotta);">T</h3></div>
+        <article class="glossary-entry-card" id="term-tail-current-source" data-category="Circuit" data-term="tail current source">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Tail Current Source</h3>
+            <span class="category-chip">Circuit</span>
+          </div>
+          <p class="glossary-def">A current-regulating element connected between the common-source node of a differential pair and ground, establishing total bias current.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Implemented using transistor M7 ($W = 480\text{ nm}, L = 90\text{ nm}$) with gate tied to $v_b = 1.0\text{ V}$, operating in triode region.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-tail-current-source</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-temperature-corners---40-c--27-c--125-c" data-category="Verification" data-term="temperature corners (-40 c, 27 c, 125 c)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Temperature Corners (-40 C, 27 C, 125 C)</h3>
+            <span class="category-chip">Verification</span>
+          </div>
+          <p class="glossary-def">Operating temperature extremes evaluated during environmental characterization: industrial cold ($-40^\circ\text{C}$), room nominal ($27^\circ\text{C}$), and junction hot ($125^\circ\text{C}$).</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Simulated across all 5 process corners; Design D passed 15/15 corners at $-40^\circ\text{C}$, 15/15 at $27^\circ\text{C}$, and 11/15 at $125^\circ\text{C}$.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#results" class="glossary-cross-link">→ View in Section 4: Results Dashboard</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-temperature-corners---40-c--27-c--125-c</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-threshold-voltage--vth" data-category="Device physics" data-term="threshold voltage (vth)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Threshold Voltage (Vth)</h3>
+            <span class="category-chip">Device physics</span>
+          </div>
+          <p class="glossary-def">The minimum gate-to-source voltage required to invert the silicon surface and create a conducting channel between drain and source.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Nominal $V_{th} \approx 0.35\text{ V}$ for `g45n1svt` devices at $27^\circ\text{C}$; drops at high temperature ($125^\circ\text{C}$) and varies across process corners.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-threshold-voltage--vth</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-triode-region--linear---ohmic" data-category="Device physics" data-term="triode region (linear / ohmic)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Triode Region (Linear / Ohmic)</h3>
+            <span class="category-chip">Device physics</span>
+          </div>
+          <p class="glossary-def">The MOSFET operational state where drain-to-source voltage is smaller than saturation voltage ($V_{ds} &lt; V_{dsat} = V_{gs} - V_{th}$), acting as a voltage-controlled linear resistor.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Tail transistor M7 operates deeply in triode ($V_{ds} = 8\text{--}67\text{ mV} \ll V_{dsat} = 358\text{ mV}$), acting as an ohmic degeneration resistor rather than an ideal current source.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-triode-region--linear---ohmic</span>
+          </div>
+        </article>
+        <div class="letter-section-marker" id="letter-U"><h3 style="font-family:var(--serif);font-size:24px;border-bottom:2px solid var(--line);padding-bottom:6px;margin:24px 0 16px;color:var(--terracotta);">U</h3></div>
+        <article class="glossary-entry-card" id="term-unsized-baseline--u8k" data-category="Project-specific" data-term="unsized baseline (u8k)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Unsized Baseline (U8k)</h3>
+            <span class="category-chip">Project-specific</span>
+          </div>
+          <p class="glossary-def">The working unit-device frequency divider circuit using $m = 1$ transistors and $8\text{ k}\Omega$ load resistors operating at 1.4 GHz.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Yields 700.0 MHz output with $0.1375\text{ mW}$ power, $62.21\text{ ps}$ delay, $8.557\text{ fJ}$ PDP, $0.2289\text{ V}$ swing, and $26.42^\circ$ phase error, serving as the benchmark without sizing.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#results" class="glossary-cross-link">→ View in Section 4: Results Dashboard</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-unsized-baseline--u8k</span>
+          </div>
+        </article>
+        <div class="letter-section-marker" id="letter-V"><h3 style="font-family:var(--serif);font-size:24px;border-bottom:2px solid var(--line);padding-bottom:6px;margin:24px 0 16px;color:var(--terracotta);">V</h3></div>
+        <article class="glossary-entry-card" id="term-vdsat--drain-saturation-voltage" data-category="Device physics" data-term="vdsat (drain saturation voltage)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Vdsat (Drain Saturation Voltage)</h3>
+            <span class="category-chip">Device physics</span>
+          </div>
+          <p class="glossary-def">The drain-to-source voltage at which electron velocity saturation occurs in short-channel MOSFETs, demarcating the boundary between triode and saturation regions.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Extracted as $V_{dsat} = 0.3578\text{ V}$ ($357.8\text{ mV}$) for M7 in Spectre; transient tail node voltages stay below $68.2\text{ mV}$, proving M7 remains in triode.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#theory" class="glossary-cross-link">→ View in Section 2: Theory &amp; Physics</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-vdsat--drain-saturation-voltage</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-via--via1--via10" data-category="Layout" data-term="via (via1..via10)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Via (Via1..Via10)</h3>
+            <span class="category-chip">Layout</span>
+          </div>
+          <p class="glossary-def">A conductive vertical metal plug etched through inter-layer dielectric oxide connecting two adjacent horizontal metal routing layers.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Via1 connects Metal1 to Metal2; the automated router inserted 37 vias during the `DLATCH/layout_routed` routing pass.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#layout" class="glossary-cross-link">→ View in Section 6: Layout &amp; Physical Verification</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-via--via1--via10</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-virtualbox" data-category="Project-specific" data-term="virtualbox">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">VirtualBox</h3>
+            <span class="category-chip">Project-specific</span>
+          </div>
+          <p class="glossary-def">Type-2 hardware virtualization hypervisor hosted on the Linux workstation to run the legacy 32-bit CentOS 6.5 Cadence environment.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Managed headless via `VBoxManage controlvm CadenceVM` to dispatch keyboard strings and execute automated SKILL and Spectre batch runs.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#timeline" class="glossary-cross-link">→ View in Section 3: Project Timeline</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-virtualbox</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-virtuoso-visualization-and-analysis--viva" data-category="Cadence/EDA" data-term="virtuoso visualization and analysis (viva)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Virtuoso Visualization and Analysis (ViVA)</h3>
+            <span class="category-chip">Cadence/EDA</span>
+          </div>
+          <p class="glossary-def">Cadence graphical waveform display and signal analysis environment embedded in Virtuoso for viewing transient, frequency, and eye diagram waveforms.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Used to capture full-screen multi-phase transient waveforms (`viva_tran_D_1p4GHz_full.png`) displaying all 8 divided outputs and differential clock inputs.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#tools" class="glossary-cross-link">→ View in Section 7: Cadence Tool Tour</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-virtuoso-visualization-and-analysis--viva</span>
+          </div>
+        </article>
+        
+        <article class="glossary-entry-card" id="term-vldb--volume-layout-database" data-category="Verification" data-term="vldb (volume layout database)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">VLDB (Volume Layout Database)</h3>
+            <span class="category-chip">Verification</span>
+          </div>
+          <p class="glossary-def">Assura hierarchical compiled database format that stores schematic netlist structures for direct comparison against extracted layouts during LVS.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Produced by running `dfIIToVldb` on `divider_lib/DLATCH` schematic views inside the VM prior to executing `avLVS()`.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#tools" class="glossary-cross-link">→ View in Section 7: Cadence Tool Tour</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-vldb--volume-layout-database</span>
+          </div>
+        </article>
+        <div class="letter-section-marker" id="letter-W"><h3 style="font-family:var(--serif);font-size:24px;border-bottom:2px solid var(--line);padding-bottom:6px;margin:24px 0 16px;color:var(--terracotta);">W</h3></div>
+        <article class="glossary-entry-card" id="term-well-proximity-effect--wpe---sca--scb--scc" data-category="Device physics" data-term="well proximity effect (wpe / sca, scb, scc)">
+          <div class="glossary-entry-header">
+            <h3 class="glossary-term-name">Well Proximity Effect (WPE / sca, scb, scc)</h3>
+            <span class="category-chip">Device physics</span>
+          </div>
+          <p class="glossary-def">Threshold voltage and mobility shifts in MOSFETs caused by scattered high-energy dopant ion scattering off photoresist edges during retrograde well implantation.</p>
+          <div class="glossary-project-box">
+            <strong>In this project:</strong> Quantified by BSIM4 instance parameters `sca=226.00151, scb=0.11734, scc=0.02767` extracted by Virtuoso, explaining lower drive current and power in schematic runs.
+          </div>
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <a href="explainer.html#power-gap" class="glossary-cross-link">→ View in Section 5: Schematic vs Standalone</a>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);">#term-well-proximity-effect--wpe---sca--scb--scc</span>
+          </div>
+        </article>
+        
+        </div>
+
+        <div id="no-results-msg" style="display:none;padding:60px 20px;text-align:center;color:var(--ink-muted);background:var(--bg-card);border:1px dashed var(--line);border-radius:var(--radius-md);margin-top:20px;">
+          <h3 style="font-family:var(--serif);font-size:20px;margin-bottom:8px;color:var(--ink);">No Matching Terms Found</h3>
+          <p style="font-size:14.5px;">Try searching for a different keyword or resetting the category filter.</p>
+          <button onclick="resetFilters()" style="margin-top:14px;padding:8px 16px;background:var(--terracotta);color:#fff;border:none;border-radius:var(--radius-sm);cursor:pointer;font-weight:600;">Reset Filters</button>
+        </div>
+
+        <footer style="margin-top:80px;padding-top:24px;border-top:1px solid var(--line);text-align:center;color:var(--ink-muted);font-size:13.5px;">
+          <p>Cadence GPDK045 Multiphase Frequency Divider Project Defense — 100% Static & Self-Contained</p>
+          <p style="margin-top:6px;"><a href="explainer.html" class="text-link">Return to Main Defense Explainer</a></p>
+        </footer>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+
+// LocalStorage Theme Management
+(function initTheme() {
+  const savedTheme = localStorage.getItem('defense_site_theme');
+  if (savedTheme) {
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  } else {
+    document.documentElement.setAttribute('data-theme', 'light');
+  }
+})();
+
+function toggleTheme() {
+  const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', newTheme);
+  localStorage.setItem('defense_site_theme', newTheme);
+  updateThemeBtnText();
+}
+
+function updateThemeBtnText() {
+  const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+  const btns = document.querySelectorAll('.theme-toggle-text');
+  btns.forEach(b => {
+    b.textContent = currentTheme === 'dark' ? 'Light Theme' : 'Dark Theme';
+  });
+}
+
+// Mobile Sidebar Drawer
+function toggleMobileMenu() {
+  const sidebar = document.getElementById('sidebar');
+  if (sidebar) {
+    sidebar.classList.toggle('open');
+  }
+}
+
+// Copy Code Button Logic
+function copyCode(btn, codeId) {
+  const codeEl = document.getElementById(codeId);
+  if (!codeEl) return;
+  const text = codeEl.innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<span>✓</span> Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.innerHTML = originalText;
+      btn.classList.remove('copied');
+    }, 2000);
+  }).catch(err => {
+    console.error('Copy failed:', err);
+  });
+}
+
+// Lightbox Modal Logic
+function openLightbox(imgSrc, captionText) {
+  const overlay = document.getElementById('lightbox-overlay');
+  const lbImg = document.getElementById('lightbox-img');
+  const lbCaption = document.getElementById('lightbox-caption');
+  if (overlay && lbImg) {
+    lbImg.src = imgSrc;
+    lbCaption.textContent = captionText || '';
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function closeLightbox() {
+  const overlay = document.getElementById('lightbox-overlay');
+  if (overlay) {
+    overlay.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+}
+
+// Global Keyboard Handler (Escape key)
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeLightbox();
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar && sidebar.classList.contains('open')) {
+      sidebar.classList.remove('open');
+    }
+  }
+});
+
+// Scrollspy for Sidebar
+window.addEventListener('DOMContentLoaded', () => {
+  updateThemeBtnText();
+  
+  const sections = document.querySelectorAll('section[id]');
+  const navItems = document.querySelectorAll('.nav-item');
+  
+  if (sections.length > 0 && navItems.length > 0) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.getAttribute('id');
+          navItems.forEach(item => {
+            if (item.getAttribute('href') === '#' + id) {
+              item.classList.add('active');
+            } else {
+              item.classList.remove('active');
+            }
+          });
+        }
+      });
+    }, {
+      rootMargin: '-20% 0px -70% 0px'
+    });
+    
+    sections.forEach(s => observer.observe(s));
+  }
+});
+
+
+// Glossary Client-Side Search and Filtering
+let activeCategory = 'all';
+let searchKeyword = '';
+
+function filterCategory(cat, btnEl) {
+  activeCategory = cat;
+  
+  // Update button classes in control bar
+  const buttons = document.querySelectorAll('.filter-chip-btn');
+  buttons.forEach(b => {
+    if (b.getAttribute('data-category') === cat) {
+      b.classList.add('active');
+    } else {
+      b.classList.remove('active');
+    }
+  });
+  
+  // Update sidebar active link
+  const navItems = document.querySelectorAll('#sidebar .nav-item');
+  navItems.forEach(item => {
+    item.classList.remove('active');
+  });
+  if (cat === 'all') {
+    const allLink = document.getElementById('nav-cat-all');
+    if (allLink) allLink.classList.add('active');
+  }
+  
+  applyGlossaryFilter();
+}
+
+function handleSearch(val) {
+  searchKeyword = val.trim().toLowerCase();
+  applyGlossaryFilter();
+}
+
+function applyGlossaryFilter() {
+  const cards = document.querySelectorAll('.glossary-entry-card');
+  const letterMarkers = document.querySelectorAll('.letter-section-marker');
+  let visibleCount = 0;
+  
+  cards.forEach(card => {
+    const cardCat = card.getAttribute('data-category');
+    const cardTerm = card.getAttribute('data-term');
+    const cardText = card.innerText.toLowerCase();
+    
+    const matchesCat = (activeCategory === 'all' || cardCat === activeCategory);
+    const matchesSearch = (searchKeyword === '' || cardText.includes(searchKeyword));
+    
+    if (matchesCat && matchesSearch) {
+      card.style.display = '';
+      visibleCount++;
+    } else {
+      card.style.display = 'none';
+    }
+  });
+  
+  // Hide letter headers if all cards under them are hidden
+  letterMarkers.forEach(marker => {
+    if (searchKeyword !== '' || activeCategory !== 'all') {
+      marker.style.display = 'none';
+    } else {
+      marker.style.display = '';
+    }
+  });
+  
+  // Update count display
+  const countEl = document.getElementById('terms-count-display');
+  const totalCards = cards.length;
+  if (countEl) {
+    countEl.textContent = `Showing ${visibleCount} of ${totalCards} terms`;
+  }
+  
+  // No results message
+  const noRes = document.getElementById('no-results-msg');
+  if (noRes) {
+    noRes.style.display = visibleCount === 0 ? 'block' : 'none';
+  }
+}
+
+function resetFilters() {
+  const searchInput = document.getElementById('glossary-search');
+  if (searchInput) searchInput.value = '';
+  searchKeyword = '';
+  filterCategory('all');
+}
+  </script>
+</body>
+</html>
